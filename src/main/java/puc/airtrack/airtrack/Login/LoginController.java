@@ -1,5 +1,7 @@
 package puc.airtrack.airtrack.Login;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -7,19 +9,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @Controller
 public class LoginController {
-    String[] dados;
+    @Autowired
+    private UserService userService;
     String jwt;
+    User data = new User();
     @PostMapping("/login")
-    public String postMethodName(@RequestBody UserDTO entity) {
+    public ResponseEntity postLogin(@RequestBody UserDTO entity) {
         /* colocar a chamada do banco de dados, lembrar de fazer dinamicamente e não armazenar! */
+        data=userService.findByUsernameAndPassword(entity.getUsername(), entity.getPassword());
+            if(entity.getUsername().equals("admin") && entity.getPassword().equals("admin")) {
+                return ResponseEntity.ok("admin");
+            } else if(entity.getUsername() == data.getUsername() && entity.getPassword() == data.getPassword()) {
+                /*meter o jwt aqui*/
+                return ResponseEntity.ok("user");
+            }
         
-        if(entity.getUsername().equals("admin") && entity.getPassword().equals("admin")) {
-            return "admin";
-        } else if(entity.getUsername() == dados[0] && entity.getPassword() == dados[1]) {
-            return "user";
-        }
-        
-        return jwt;
+        return ResponseEntity.status(401).body("Invalid username or password");
     }
     
 }
