@@ -13,6 +13,8 @@ public class Engenheiro {
     private String nome;
     private String username;
     private String password;
+    private String crea;
+    private String role;
 
 
 }
