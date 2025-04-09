@@ -8,20 +8,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import puc.airtrack.airtrack.Login.UserDTO;
+
 
 
 @Controller
 public class EngenheiroController {
     
     @PostMapping("/cre")
-    public String CreateEngenheiro(@RequestBody EngenheiroDTO entity) {
+    public String CreateEngenheiro(@RequestBody UserDTO entity) {
         //TODO: process POST request
         
         return ResponseEntity.ok().body("Engenheiro created successfully").toString();
     }
     
     @PostMapping("/upe")
-    public String UpdateEngenheiro(@RequestBody EngenheiroDTO entity) {
+    public String UpdateEngenheiro(@RequestBody UserDTO entity) {
         //TODO: process POST request
 
         return ResponseEntity.ok().body("Engenheiro updated successfully").toString();
@@ -36,7 +38,7 @@ public class EngenheiroController {
     
     @PostMapping("/de")
     public String deleteEngenheiro(@RequestParam String param) {
-        //apenas trocar o active da base
+        //apenas trocar o Status da base
 
         return ResponseEntity.ok().body("Engenheiro deleted successfully").toString();
     }

@@ -15,11 +15,11 @@ public class LoginController {
     User data = new User();
     @PostMapping("/login")
     public ResponseEntity postLogin(@RequestBody UserDTO entity) {
-        /* colocar a chamada do banco de dados, lembrar de fazer dinamicamente e não armazenar! */
         data=userService.findByUsernameAndPassword(entity.getUsername(), entity.getPassword());
-            if(entity.getUsername().equals("admin") && entity.getPassword().equals("admin")) {
+            if(entity.getUsername() == data.getUsername() && entity.getPassword() == data.getPassword() && data.getRole() == 4) {
+                /*meter o jwt aqui*/
                 return ResponseEntity.ok("admin");
-            } else if(entity.getUsername() == data.getUsername() && entity.getPassword() == data.getPassword()) {
+            } else if(entity.getUsername() == data.getUsername() && entity.getPassword() == data.getPassword() && data.getRole() == 1) {
                 /*meter o jwt aqui*/
                 return ResponseEntity.ok("user");
             }

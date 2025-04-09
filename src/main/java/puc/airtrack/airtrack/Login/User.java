@@ -18,12 +18,19 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "username")
+    @Column(name = "Nome_Engenheiro")
+    private String name;
+
+    @Column(name = "Email_Engenheiro")
     private String username;
 
-    @Column(name = "password")
+    @Column(name = "Senha_Engenheiro")
     private String password;
 
     @Column(name = "role")
-    private String role;
+    private int role;
+
+    @Column(name = "Status_Engenheiro")
+    private Boolean status;
+    
 }

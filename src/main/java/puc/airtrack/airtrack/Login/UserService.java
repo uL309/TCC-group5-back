@@ -28,4 +28,12 @@ public class UserService {
     public void save(User user) {
         repositorio.save(user);
     }
+    
+    public User findByIdAndStatus(int id, Boolean status) {
+        return repositorio.findByIdAndStatus(id, status);
+    }
+
+    public User findByIdAndRole(int id, Boolean role) {
+        return repositorio.findByIdAndRole(id, role);
+    }
 }

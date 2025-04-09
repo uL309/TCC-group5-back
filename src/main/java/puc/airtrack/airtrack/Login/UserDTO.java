@@ -10,8 +10,10 @@ import lombok.Setter;
 @Setter
 public class UserDTO {
     private Integer id;
+    private String name;
     @NotBlank
     private String username;
     private String password;
-    private String role;
+    private int role;
+    private Boolean status;
 }
