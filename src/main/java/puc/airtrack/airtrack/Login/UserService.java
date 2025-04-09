@@ -1,5 +1,7 @@
 package puc.airtrack.airtrack.Login;
 
+import java.util.ArrayList;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import puc.airtrack.airtrack.Repositorio;
@@ -35,5 +37,8 @@ public class UserService {
 
     public User findByIdAndRole(int id, Boolean role) {
         return repositorio.findByIdAndRole(id, role);
+    }
+    public ArrayList<User> findAll() {
+        return (ArrayList<User>) repositorio.findAll();
     }
 }
