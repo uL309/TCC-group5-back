@@ -3,7 +3,6 @@ package puc.airtrack.airtrack.Engenheiro;
 
 import java.util.ArrayList;
 
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import puc.airtrack.airtrack.Repositorio;
 import puc.airtrack.airtrack.Login.User;
 import puc.airtrack.airtrack.Login.UserDTO;
 import puc.airtrack.airtrack.Login.UserService;
