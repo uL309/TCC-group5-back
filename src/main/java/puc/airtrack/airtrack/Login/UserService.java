@@ -35,7 +35,7 @@ public class UserService {
         return repositorio.findByIdAndStatus(id, status);
     }
 
-    public User findByIdAndRole(int id, Boolean role) {
+    public User findByIdAndRole(int id, int role) {
         return repositorio.findByIdAndRole(id, role);
     }
     public ArrayList<User> findAll() {

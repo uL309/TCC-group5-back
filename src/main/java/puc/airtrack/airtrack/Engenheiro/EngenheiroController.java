@@ -5,45 +5,54 @@ import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import puc.airtrack.airtrack.Login.User;
 import puc.airtrack.airtrack.Login.UserDTO;
+import puc.airtrack.airtrack.Login.UserRole;
 import puc.airtrack.airtrack.Login.UserService;
 
 
 
-@Controller
+@RestController
 public class EngenheiroController {
 
     @Autowired
     private UserService repositorio;
     
     @PostMapping("/cre")
-    public String CreateEngenheiro(@RequestBody UserDTO entity) {
+    public ResponseEntity<String> createEngenheiro(@RequestBody @Valid UserDTO entity) {
+        if (this.repositorio.findByUsername(entity.getEmail_Engenheiro()) != null) {
+            return ResponseEntity.badRequest().body("User already exists");
+        }
+        String epassword = new BCryptPasswordEncoder().encode(entity.getSenha_Engenheiro());
         User user = new User();
-        user.setName(entity.getName());
-        user.setUsername(entity.getUsername());
-        user.setPassword(entity.getPassword());
-        user.setRole(entity.getRole());
-        user.setStatus(entity.getStatus());
+        user.setName(entity.getNome_Engenheiro());
+        user.setUsername(entity.getEmail_Engenheiro());
+        user.setPassword(epassword);
+        user.setRole(UserRole.values()[entity.getRole_Engenheiro()]);
+        user.setStatus(entity.getStatus_Engenheiro());
         repositorio.save(user);
         
-        return ResponseEntity.ok().body("Engenheiro created successfully").toString();
+        return ResponseEntity.ok("Engenheiro created successfully");
     }
     
     @PostMapping("/upe")
-    public String UpdateEngenheiro(@RequestBody UserDTO entity) {
+    public String UpdateEngenheiro(@RequestBody @Valid UserDTO entity) {
+        getEngenheiro(entity.getID_Engenheiro().toString());
         User user = new User();
-        user.setName(entity.getName());
-        user.setUsername(entity.getUsername());
-        user.setPassword(entity.getPassword());
-        user.setRole(entity.getRole());
-        user.setStatus(entity.getStatus());
+        user.setName(entity.getNome_Engenheiro());
+        user.setUsername(entity.getEmail_Engenheiro());
+        user.setPassword(entity.getSenha_Engenheiro());
+        user.setRole(UserRole.values()[entity.getRole_Engenheiro()]);
+        user.setStatus(entity.getStatus_Engenheiro());
         repositorio.save(user);
 
         return ResponseEntity.ok().body("Engenheiro updated successfully").toString();
@@ -53,28 +62,30 @@ public class EngenheiroController {
     public ResponseEntity<UserDTO> getEngenheiro(@RequestParam String param) {
         User user = repositorio.findById(Integer.parseInt(param));
         UserDTO userDTO = new UserDTO();
-        userDTO.setName(user.getName());
-        userDTO.setId(user.getId()); 
-        userDTO.setUsername(user.getUsername());
-        userDTO.setPassword(user.getPassword());
-        userDTO.setRole(user.getRole());
-        userDTO.setStatus(user.getStatus());
+        
+        userDTO.setNome_Engenheiro(user.getName());
+        userDTO.setID_Engenheiro(user.getId()); 
+        userDTO.setEmail_Engenheiro(user.getUsername());
+        userDTO.setSenha_Engenheiro(user.getPassword());
+        userDTO.setRole_Engenheiro(user.getRole().ordinal());
+        userDTO.setStatus_Engenheiro(user.getStatus());
 
         return ResponseEntity.ok().body(userDTO);
     }
 
     @GetMapping("/gel")
-    public ResponseEntity<ArrayList<UserDTO>> getEngenheirolist(@RequestParam String param) {
+    public ResponseEntity<ArrayList<UserDTO>> getEngenheirolist() {
         ArrayList<UserDTO> userDTOList = new ArrayList<>();
         ArrayList<User> userList = (ArrayList<User>) repositorio.findAll();
         for (User user : userList) {
             UserDTO userDTO = new UserDTO();
-            userDTO.setName(user.getName());
-            userDTO.setId(user.getId()); 
-            userDTO.setUsername(user.getUsername());
-            userDTO.setPassword(user.getPassword());
-            userDTO.setRole(user.getRole());
-            userDTO.setStatus(user.getStatus());
+            userDTO.setNome_Engenheiro(user.getName());
+            userDTO.setID_Engenheiro(user.getId()); 
+            userDTO.setEmail_Engenheiro(user.getUsername());
+            userDTO.setSenha_Engenheiro(user.getPassword());
+            userDTO.setRole_Engenheiro(user.getRole().ordinal());
+            userDTO.setStatus_Engenheiro(user.getStatus());
+    
             userDTOList.add(userDTO);
         }
         return ResponseEntity.ok().body(userDTOList);
