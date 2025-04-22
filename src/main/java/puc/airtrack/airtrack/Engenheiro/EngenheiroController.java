@@ -37,7 +37,7 @@ public class EngenheiroController {
         user.setName(entity.getNome_Engenheiro());
         user.setUsername(entity.getEmail_Engenheiro());
         user.setPassword(epassword);
-        user.setRole(UserRole.values()[entity.getRole_Engenheiro()]);
+        user.setRole(UserRole.fromRoleValue(entity.getRole_Engenheiro()));
         user.setStatus(entity.getStatus_Engenheiro());
         repositorio.save(user);
         
@@ -51,7 +51,7 @@ public class EngenheiroController {
         user.setName(entity.getNome_Engenheiro());
         user.setUsername(entity.getEmail_Engenheiro());
         user.setPassword(entity.getSenha_Engenheiro());
-        user.setRole(UserRole.values()[entity.getRole_Engenheiro()]);
+        user.setRole(UserRole.fromRoleValue(entity.getRole_Engenheiro()));
         user.setStatus(entity.getStatus_Engenheiro());
         repositorio.save(user);
 

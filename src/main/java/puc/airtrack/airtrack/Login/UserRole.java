@@ -1,10 +1,10 @@
 package puc.airtrack.airtrack.Login;
 
 public enum UserRole {
-    ADMIN(4),
-    ENGENHEIRO(3),
-    SUPERVISOR(2),
-    AUDITOR(1);
+    ENGENHEIRO(1),
+    AUDITOR(2),
+    SUPERVISOR(3),
+    ADMIN(4);
 
     private int role;
 

@@ -25,15 +25,16 @@ public class LoginController {
 
     @Autowired
     private UserService userService;
+
     
     @PostMapping("/login")
-    public ResponseEntity<String> postLogin(@RequestBody LoginDTO entity) {
+    public ResponseEntity<ResponseDTO> postLogin(@RequestBody LoginDTO entity) {
         
         var UsernamePassword = new UsernamePasswordAuthenticationToken(entity.getUsername(), entity.getPassword());
         var auth = this.AuthenticationManager.authenticate(UsernamePassword);
         var token = tokenService.generateToken((User) auth.getPrincipal());
 
-        return ResponseEntity.ok().body(token);
+        return ResponseEntity.ok().body(new ResponseDTO(entity.getUsername(), token));
     }
 
     @PostMapping("/register")
@@ -44,7 +45,7 @@ public class LoginController {
         user.setRole(UserRole.fromRoleValue(entity.getRole_Engenheiro()));
         user.setStatus(entity.getStatus_Engenheiro());
         user.setName(entity.getNome_Engenheiro());
-
+        userService.save(user);
         return ResponseEntity.ok().body("User registered successfully: " + user.getUsername());
     }
 }
