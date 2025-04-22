@@ -1,3 +1,6 @@
 package puc.airtrack.airtrack.Login;
 
-public record ResponseDTO(String username, String JWT) {}
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record ResponseDTO(@JsonProperty("username") String username, @JsonProperty("auth-token") String JWT) {
+}
