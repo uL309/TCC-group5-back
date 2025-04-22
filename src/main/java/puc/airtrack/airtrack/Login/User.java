@@ -13,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,7 +32,8 @@ public class User implements UserDetails {
     @Column(name = "Nome_Engenheiro")
     private String name;
 
-    @Column(name = "Email_Engenheiro")
+    
+    @Column(name = "Email_Engenheiro", unique = true)
     private String username;
 
     @Column(name = "Senha_Engenheiro")

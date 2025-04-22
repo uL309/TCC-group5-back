@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import puc.airtrack.airtrack.AuthService;
 import puc.airtrack.airtrack.TokenService;
@@ -40,8 +41,9 @@ public class LoginController {
     @PostMapping("/register")
     public ResponseEntity<String> postRegister(@RequestBody UserDTO entity) {
         User user = new User();
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         user.setUsername(entity.getEmail_Engenheiro());
-        user.setPassword(entity.getSenha_Engenheiro());
+        user.setPassword(passwordEncoder.encode(entity.getSenha_Engenheiro()));
         user.setRole(UserRole.fromRoleValue(entity.getRole_Engenheiro()));
         user.setStatus(entity.getStatus_Engenheiro());
         user.setName(entity.getNome_Engenheiro());
