@@ -41,7 +41,7 @@ public class LoginController {
         User user = new User();
         user.setUsername(entity.getEmail_Engenheiro());
         user.setPassword(entity.getSenha_Engenheiro());
-        user.setRole(UserRole.values()[entity.getRole_Engenheiro()]);
+        user.setRole(UserRole.fromRoleValue(entity.getRole_Engenheiro()));
         user.setStatus(entity.getStatus_Engenheiro());
         user.setName(entity.getNome_Engenheiro());
 
