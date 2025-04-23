@@ -15,28 +15,28 @@ public class EngenheiroController {
     
     @PostMapping("/cre")
     public String CreateEngenheiro(@RequestBody EngenheiroDTO entity) {
-        //TODO: process POST request
+        save(entity)
         
         return ResponseEntity.ok().body("Engenheiro created successfully").toString();
     }
     
     @PostMapping("/upe")
     public String UpdateEngenheiro(@RequestBody EngenheiroDTO entity) {
-        //TODO: process POST request
+        update(entity)
 
         return ResponseEntity.ok().body("Engenheiro updated successfully").toString();
     }
 
     @GetMapping("/ge")
     public String getEngenheiro(@RequestParam String param) {
-        //TODO: process GET request
+        get(entity)
 
         return ResponseEntity.ok().body("Engenheiro found successfully").toString();
     }
     
     @PostMapping("/de")
     public String deleteEngenheiro(@RequestParam String param) {
-        //apenas trocar o active da base
+        delete(entity)
 
         return ResponseEntity.ok().body("Engenheiro deleted successfully").toString();
     }
