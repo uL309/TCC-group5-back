@@ -15,6 +15,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import puc.airtrack.airtrack.Login.UserRole;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
@@ -38,7 +41,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/login","/","/register").permitAll()
-                        .requestMatchers("/cre","/ge","/gel","/upe","/de").hasAnyRole("ADMIN")
+                        .requestMatchers("/cre","/ge","/gel","/upe","/de").hasAnyRole("ROLE_ADMIN")
                     )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class); // ajuste conforme sua regra
 

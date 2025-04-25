@@ -28,6 +28,7 @@ public class TokenService {
             String token = JWT.create()
                     .withIssuer("login-auth-Backend")
                     .withSubject(user.getUsername())
+                    .withClaim("role", user.getRole().toString())
                     .withExpiresAt(this.generateExpirationDate())
                     .sign(algorithm);
             return token;
