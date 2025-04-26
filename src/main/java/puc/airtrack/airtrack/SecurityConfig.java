@@ -41,7 +41,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/login","/","/register").permitAll()
-                        .requestMatchers("/cre","/ge","/gel","/upe","/de").hasAnyRole("ROLE_ADMIN")
+                        .requestMatchers("/cre","/ge","/gel","/upe","/de").hasAnyRole("ADMIN")
                     )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class); // ajuste conforme sua regra
 
