@@ -1,7 +1,7 @@
 package puc.airtrack.airtrack;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,7 +15,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import puc.airtrack.airtrack.Login.User;
 import puc.airtrack.airtrack.Login.UserService;
 
 @Component
@@ -28,13 +27,19 @@ public class SecurityFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         var token = this.recoverToken(request);
-        
 
         if (token != null) {
-            var login = tokenService.validateToken(token);
-            UserDetails user = userService.findByUsername(login);
-            var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            var decodedJWT = tokenService.decodeToken(token);
+            if (decodedJWT != null) {
+                String username = decodedJWT.getSubject();
+                String role = decodedJWT.getClaim("role").asString();
+                if (username != null && role != null) {
+                    UserDetails user = userService.findByUsername(username);
+                    var authorities = List.of(new SimpleGrantedAuthority(role));
+                    var authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            }
         }
         filterChain.doFilter(request, response);
     }
