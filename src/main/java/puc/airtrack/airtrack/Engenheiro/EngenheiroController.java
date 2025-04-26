@@ -1,13 +1,14 @@
 package puc.airtrack.airtrack.Engenheiro;
 
 
+import java.net.URI;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -41,14 +42,17 @@ public class EngenheiroController {
         user.setStatus(entity.getStatus_Engenheiro());
         repositorio.save(user);
         
-        return ResponseEntity.ok("Engenheiro created successfully");
+        URI location = URI.create("/ge/" + user.getId());
+        return ResponseEntity.created(location).body("Engenheiro created successfully");
     }
     
-    @PostMapping("/upe")
+    @PutMapping("/upe")
     public String UpdateEngenheiro(@RequestBody @Valid UserDTO entity) {
         String epassword = new BCryptPasswordEncoder().encode(entity.getSenha_Engenheiro());
-        getEngenheiro(entity.getID_Engenheiro().toString());
-        User user = new User();
+        if (getEngenheiro(entity.getID_Engenheiro().toString()) == null) {
+            return ResponseEntity.badRequest().body("User not found").toString();
+        }
+        User user = repositorio.findById(entity.getID_Engenheiro());
         user.setName(entity.getNome_Engenheiro());
         user.setUsername(entity.getEmail_Engenheiro());
         user.setPassword(epassword);
