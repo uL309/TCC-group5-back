@@ -1,8 +1,8 @@
 package puc.airtrack.airtrack;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -11,9 +11,9 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 
 import puc.airtrack.airtrack.Login.User;
-
 
 @Service
 public class TokenService {
@@ -21,7 +21,7 @@ public class TokenService {
     @Value("${jwt.secret}")
     private String secret;
 
-     public String generateToken(User user){
+    public String generateToken(User user){
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
 
@@ -50,7 +50,19 @@ public class TokenService {
         }
     }
 
-    private Instant generateExpirationDate(){
-        return LocalDateTime.now().plusHours(12).toInstant(ZoneOffset.of("-03:00"));
+    public DecodedJWT decodeToken(String token) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(secret);
+            return JWT.require(algorithm)
+                    .withIssuer("login-auth-Backend")
+                    .build()
+                    .verify(token);
+        } catch (JWTVerificationException exception) {
+            return null;
+        }
+    }
+
+    private Date generateExpirationDate(){
+        return Date.from(LocalDateTime.now().plusHours(12).toInstant(ZoneOffset.of("-03:00")));
     }
 }
