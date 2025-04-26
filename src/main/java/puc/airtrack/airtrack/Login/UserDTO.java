@@ -11,6 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserDTO {
+    @NotBlank(message = "ID_Engenheiro is mandatory")
     @JsonProperty("ID_Engenheiro")
     private Integer ID_Engenheiro;
 

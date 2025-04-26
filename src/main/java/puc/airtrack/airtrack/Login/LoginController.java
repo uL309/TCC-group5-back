@@ -8,15 +8,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-import puc.airtrack.airtrack.AuthService;
 import puc.airtrack.airtrack.TokenService;
 
 
 @Controller
 public class LoginController {
-    @Autowired
-    private AuthService authService;
 
     @Autowired
     private AuthenticationManager AuthenticationManager;
