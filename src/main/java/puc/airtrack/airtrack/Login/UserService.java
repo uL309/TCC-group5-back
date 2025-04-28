@@ -30,6 +30,10 @@ public class UserService {
     public void save(User user) {
         repositorio.save(user);
     }
+    public int newSave(User user) {
+        User savedUser = repositorio.save(user);
+        return savedUser.getId();
+    }
     
     public User findByIdAndStatus(int id, Boolean status) {
         return repositorio.findByIdAndStatus(id, status);
@@ -40,5 +44,8 @@ public class UserService {
     }
     public ArrayList<User> findAll() {
         return (ArrayList<User>) repositorio.findAll();
+    }
+    public ArrayList<User> findAllByRole(int role) {
+        return (ArrayList<User>) repositorio.findAllByRole(role);
     }
 }

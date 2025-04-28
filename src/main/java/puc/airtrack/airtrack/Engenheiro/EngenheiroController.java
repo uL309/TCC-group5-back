@@ -35,15 +35,30 @@ public class EngenheiroController {
         }
         String epassword = new BCryptPasswordEncoder().encode(entity.getSenha_Engenheiro());
         User user = new User();
+        URI location = null;
         user.setName(entity.getNome_Engenheiro());
         user.setUsername(entity.getEmail_Engenheiro());
         user.setPassword(epassword);
-        user.setRole(UserRole.fromRoleValue(entity.getRole_Engenheiro()));
         user.setStatus(entity.getStatus_Engenheiro());
-        repositorio.save(user);
+        user.setId(repositorio.newSave(user));
         
-        URI location = URI.create("/ge?param=" + user.getId());
-        return ResponseEntity.created(location).body("Engenheiro created successfully");
+        if (user.getRole() == UserRole.ROLE_ENGENHEIRO) {
+            location = URI.create("/ge?param=" + user.getId());
+            user.setRole(UserRole.fromRoleValue(entity.getRole_Engenheiro()));
+        }else if (user.getRole() == UserRole.ROLE_AUDITOR) {
+            location = URI.create("/ga?param=" + user.getId());
+            user.setRole(UserRole.fromRoleValue(entity.getRole_Engenheiro()));
+        } else if (user.getRole() == UserRole.ROLE_SUPERVISOR) {
+            location = URI.create("/gs?param=" + user.getId());
+            user.setRole(UserRole.fromRoleValue(entity.getRole_Engenheiro()));
+        } else if (user.getRole() == UserRole.ROLE_ADMIN) {
+            location = URI.create("/ga?param=" + user.getId());
+            user.setRole(UserRole.fromRoleValue(entity.getRole_Engenheiro()));
+        } else {
+            return ResponseEntity.badRequest().body("Invalid role");
+        }
+        
+        return ResponseEntity.created(location).body("User created successfully");
     }
     
     @PutMapping("/upe")
@@ -65,7 +80,10 @@ public class EngenheiroController {
 
     @GetMapping("/ge")
     public ResponseEntity<UserDTO> getEngenheiro(@RequestParam String param) {
-        User user = repositorio.findById(Integer.parseInt(param));
+        User user = repositorio.findByIdAndRole(Integer.parseInt(param), UserRole.ROLE_ENGENHEIRO.getRole());
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
         UserDTO userDTO = new UserDTO();
         
         userDTO.setNome_Engenheiro(user.getName());
@@ -81,7 +99,7 @@ public class EngenheiroController {
     @GetMapping("/gel")
     public ResponseEntity<ArrayList<UserDTO>> getEngenheirolist() {
         ArrayList<UserDTO> userDTOList = new ArrayList<>();
-        ArrayList<User> userList = (ArrayList<User>) repositorio.findAll();
+        ArrayList<User> userList = (ArrayList<User>) repositorio.findAllByRole(UserRole.ROLE_ENGENHEIRO.getRole());
         for (User user : userList) {
             UserDTO userDTO = new UserDTO();
             userDTO.setNome_Engenheiro(user.getName());
@@ -90,7 +108,6 @@ public class EngenheiroController {
             userDTO.setSenha_Engenheiro(user.getPassword());
             userDTO.setRole_Engenheiro(user.getRole().ordinal());
             userDTO.setStatus_Engenheiro(user.getStatus());
-    
             userDTOList.add(userDTO);
         }
         return ResponseEntity.ok().body(userDTOList);
