@@ -42,7 +42,7 @@ public class EngenheiroController {
         user.setStatus(entity.getStatus_Engenheiro());
         repositorio.save(user);
         
-        URI location = URI.create("/ge/" + user.getId());
+        URI location = URI.create("/ge?param=" + user.getId());
         return ResponseEntity.created(location).body("Engenheiro created successfully");
     }
     
