@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.RequestParam;
 import puc.airtrack.airtrack.TokenService;
+import puc.airtrack.airtrack.services.PasswordResetService;
 
 
 @Controller
@@ -22,6 +24,9 @@ public class LoginController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private PasswordResetService passwordResetService;
 
     
     @PostMapping("/login")
@@ -45,5 +50,11 @@ public class LoginController {
         user.setName(entity.getNome_Engenheiro());
         userService.save(user);
         return ResponseEntity.ok().body("User registered successfully: " + user.getUsername());
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestParam String email) {
+        passwordResetService.resetPassword(email);
+        return ResponseEntity.ok().build();
     }
 }
