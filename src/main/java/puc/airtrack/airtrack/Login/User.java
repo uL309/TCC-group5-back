@@ -3,16 +3,11 @@ package puc.airtrack.airtrack.Login;
 import java.util.Collection;
 import java.util.List;
 
+import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,6 +33,7 @@ public class User implements UserDetails {
     private String password;
 
     @Column(name = "Role_Engenheiro")
+    @Enumerated(EnumType.ORDINAL)
     private UserRole role;
 
     @Column(name = "Status_Engenheiro")

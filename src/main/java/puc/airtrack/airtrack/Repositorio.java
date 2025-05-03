@@ -5,8 +5,10 @@ import org.springframework.stereotype.Repository;
 import puc.airtrack.airtrack.Login.User;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.*;
+import puc.airtrack.airtrack.Login.UserRole;
 
 
 @Repository
@@ -16,5 +18,5 @@ public interface Repositorio extends JpaRepository<User, Integer> {
     User findByUsernameAndPassword(String username, String password);
     User findByIdAndStatus(int id, Boolean status);
     User findByIdAndRole(int id , int role);
-    ArrayList<User> findAllByRole(int role);
+    List<User> findAllByRole(UserRole role);
 }

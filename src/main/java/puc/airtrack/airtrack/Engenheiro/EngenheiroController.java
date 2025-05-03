@@ -3,6 +3,7 @@ package puc.airtrack.airtrack.Engenheiro;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,11 +27,11 @@ import puc.airtrack.airtrack.Login.UserService;
 public class EngenheiroController {
 
     @Autowired
-    private UserService repositorio;
+    private UserService service;
     
     @PostMapping("/cre")
     public ResponseEntity<String> createEngenheiro(@RequestBody @Valid UserDTO entity) {
-        if (this.repositorio.findByUsername(entity.getEmail_Engenheiro()) != null) {
+        if (this.service.findByUsername(entity.getEmail_Engenheiro()) != null) {
             return ResponseEntity.badRequest().body("User already exists");
         }
         String epassword = new BCryptPasswordEncoder().encode(entity.getSenha_Engenheiro());
@@ -40,7 +41,7 @@ public class EngenheiroController {
         user.setUsername(entity.getEmail_Engenheiro());
         user.setPassword(epassword);
         user.setStatus(entity.getStatus_Engenheiro());
-        user.setId(repositorio.newSave(user));
+        user.setId(service.newSave(user));
         
         if (user.getRole() == UserRole.ROLE_ENGENHEIRO) {
             location = URI.create("/ge?param=" + user.getId());
@@ -67,20 +68,20 @@ public class EngenheiroController {
         if (getEngenheiro(entity.getID_Engenheiro().toString()) == null) {
             return ResponseEntity.badRequest().body("User not found").toString();
         }
-        User user = repositorio.findById(entity.getID_Engenheiro());
+        User user = service.findById(entity.getID_Engenheiro());
         user.setName(entity.getNome_Engenheiro());
         user.setUsername(entity.getEmail_Engenheiro());
         user.setPassword(epassword);
         user.setRole(UserRole.fromRoleValue(entity.getRole_Engenheiro()));
         user.setStatus(entity.getStatus_Engenheiro());
-        repositorio.save(user);
+        service.save(user);
 
         return ResponseEntity.ok().body("Engenheiro updated successfully").toString();
     }
 
     @GetMapping("/ge")
     public ResponseEntity<UserDTO> getEngenheiro(@RequestParam String param) {
-        User user = repositorio.findByIdAndRole(Integer.parseInt(param), UserRole.ROLE_ENGENHEIRO.getRole());
+        User user = service.findByIdAndRole(Integer.parseInt(param), UserRole.ROLE_ENGENHEIRO.getRole());
         if (user == null) {
             return ResponseEntity.notFound().build();
         }
@@ -97,29 +98,28 @@ public class EngenheiroController {
     }
 
     @GetMapping("/gel")
-    public ResponseEntity<ArrayList<UserDTO>> getEngenheirolist() {
-        ArrayList<UserDTO> userDTOList = new ArrayList<>();
-        ArrayList<User> userList = (ArrayList<User>) repositorio.findAllByRole(UserRole.ROLE_ENGENHEIRO.getRole());
-        for (User user : userList) {
-            UserDTO userDTO = new UserDTO();
-            userDTO.setNome_Engenheiro(user.getName());
-            userDTO.setID_Engenheiro(user.getId()); 
-            userDTO.setEmail_Engenheiro(user.getUsername());
-            userDTO.setSenha_Engenheiro(user.getPassword());
-            userDTO.setRole_Engenheiro(user.getRole().ordinal());
-            userDTO.setStatus_Engenheiro(user.getStatus());
-            userDTOList.add(userDTO);
-        }
-        return ResponseEntity.ok().body(userDTOList);
+    public ResponseEntity<List<UserDTO>> getEngenheirolist() {
+        List<User> userList = service.findAllByRole(UserRole.ROLE_ENGENHEIRO);
+        List<UserDTO> dto = userList.stream().map(user -> {
+            UserDTO u = new UserDTO();
+            u.setID_Engenheiro(user.getId());
+            u.setNome_Engenheiro(user.getName());
+            u.setEmail_Engenheiro(user.getUsername());
+            u.setRole_Engenheiro(user.getRole().getRole());
+            u.setStatus_Engenheiro(user.getStatus());
+            return u;
+        }).toList();
+
+        return ResponseEntity.ok(dto);
     }
     
     
     @PostMapping("/de")
     public String deleteEngenheiro(@RequestParam String param) {
-        User user = repositorio.findById(Integer.parseInt(param));
+        User user = service.findById(Integer.parseInt(param));
         if (user != null && user.getStatus()) {
             user.setStatus(false); // Set status to false instead of deleting
-            repositorio.save(user);
+            service.save(user);
         } else {
             return ResponseEntity.status(404).body("Engenheiro not found").toString();
         }
