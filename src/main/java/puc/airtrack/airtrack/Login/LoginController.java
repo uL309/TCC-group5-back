@@ -34,6 +34,8 @@ public class LoginController {
         return ResponseEntity.ok().body(new ResponseDTO(user.getName(), token));
     }
 
+
+    // Endpoint para registrar um novo usuário(remover)
     @PostMapping("/register")
     public ResponseEntity<String> postRegister(@RequestBody UserDTO entity) {
         User user = new User();

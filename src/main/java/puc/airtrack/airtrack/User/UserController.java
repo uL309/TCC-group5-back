@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Engenheiro;
+package puc.airtrack.airtrack.User;
 
 
 import java.net.URI;
@@ -24,7 +24,7 @@ import puc.airtrack.airtrack.Login.UserService;
 
 
 @Controller
-public class EngenheiroController {
+public class UserController {
 
     @Autowired
     private UserService service;
@@ -34,11 +34,9 @@ public class EngenheiroController {
         if (this.service.findByUsername(entity.getEmail_Engenheiro()) != null) {
             return ResponseEntity.badRequest().body("User already exists");
         }
-
         if (entity.getRole_Engenheiro() == null) {
             return ResponseEntity.badRequest().body("Invalid role");
         }
-
         String ePassword = new BCryptPasswordEncoder().encode(entity.getSenha_Engenheiro());
         User user = new User();
         user.setName(entity.getNome_Engenheiro());
@@ -46,9 +44,7 @@ public class EngenheiroController {
         user.setPassword(ePassword);
         user.setStatus(entity.getStatus_Engenheiro());
         user.setRole(entity.getRole_Engenheiro());
-
         user.setId(service.newSave(user));
-
         URI location;
         switch (user.getRole()) {
             case ROLE_ENGENHEIRO:
@@ -66,14 +62,13 @@ public class EngenheiroController {
             default:
                 return ResponseEntity.badRequest().body("Unknown role");
         }
-
         return ResponseEntity.created(location).body("User created successfully");
     }
     
     @PutMapping("/upe")
     public String UpdateEngenheiro(@RequestBody @Valid UserDTO entity) {
         String epassword = new BCryptPasswordEncoder().encode(entity.getSenha_Engenheiro());
-        if (getEngenheiro(entity.getID_Engenheiro().toString()) == null) {
+        if (getEngenheiro(entity.getID_Engenheiro().toString(), entity.getRole_Engenheiro().toString()) == null) {
             return ResponseEntity.badRequest().body("User not found").toString();
         }
         User user = service.findById(entity.getID_Engenheiro());
@@ -88,17 +83,19 @@ public class EngenheiroController {
     }
 
     @GetMapping("/ge")
-    public ResponseEntity<UserDTO> getEngenheiro(@RequestParam String param) {
-        User user = service.findByIdAndRole(Integer.parseInt(param), UserRole.ROLE_ENGENHEIRO.getRole());
+    public ResponseEntity<UserDTO> getEngenheiro(@RequestParam String param, @RequestParam String role) {
+        if (param == null || param.isEmpty() || role == null || role.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        UserRole userRole = UserRole.fromRoleValue(Integer.parseInt(role));
+        User user = service.findByIdAndRole(Integer.parseInt(param), userRole);
         if (user == null) {
             return ResponseEntity.notFound().build();
         }
         UserDTO userDTO = new UserDTO();
-        
         userDTO.setNome_Engenheiro(user.getName());
-        userDTO.setID_Engenheiro(user.getId()); 
+        userDTO.setID_Engenheiro(user.getId());
         userDTO.setEmail_Engenheiro(user.getUsername());
-        userDTO.setSenha_Engenheiro(user.getPassword());
         userDTO.setRole_Engenheiro(user.getRole());
         userDTO.setStatus_Engenheiro(user.getStatus());
 
@@ -106,8 +103,12 @@ public class EngenheiroController {
     }
 
     @GetMapping("/gel")
-    public ResponseEntity<List<UserDTO>> getEngenheirolist() {
-        List<User> userList = service.findAllByRole(UserRole.ROLE_ENGENHEIRO);
+    public ResponseEntity<List<UserDTO>> getEngenheirolist(@RequestParam String param) {
+        if (param == null || param.isEmpty()) {
+            return ResponseEntity.badRequest().body(new ArrayList<>());
+        }
+        UserRole userRole = UserRole.fromRoleValue(Integer.parseInt(param));
+        List<User> userList = service.findAllByRole(userRole);
         List<UserDTO> dto = userList.stream().map(user -> {
             UserDTO u = new UserDTO();
             u.setID_Engenheiro(user.getId());
