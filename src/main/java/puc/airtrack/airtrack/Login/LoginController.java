@@ -40,7 +40,7 @@ public class LoginController {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         user.setUsername(entity.getEmail_Engenheiro());
         user.setPassword(passwordEncoder.encode(entity.getSenha_Engenheiro()));
-        user.setRole(UserRole.fromRoleValue(entity.getRole_Engenheiro()));
+        user.setRole(entity.getRole_Engenheiro());
         user.setStatus(entity.getStatus_Engenheiro());
         user.setName(entity.getNome_Engenheiro());
         userService.save(user);

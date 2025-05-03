@@ -25,7 +25,7 @@ public class UserDTO {
     private String Senha_Engenheiro;
 
     @JsonProperty("Role_Engenheiro")
-    private int Role_Engenheiro;
+    private UserRole Role_Engenheiro;
 
     @JsonProperty("Status_Engenheiro")
     private Boolean Status_Engenheiro;

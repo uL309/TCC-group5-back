@@ -28,37 +28,45 @@ public class EngenheiroController {
 
     @Autowired
     private UserService service;
-    
+
     @PostMapping("/cre")
     public ResponseEntity<String> createEngenheiro(@RequestBody @Valid UserDTO entity) {
         if (this.service.findByUsername(entity.getEmail_Engenheiro()) != null) {
             return ResponseEntity.badRequest().body("User already exists");
         }
-        String epassword = new BCryptPasswordEncoder().encode(entity.getSenha_Engenheiro());
-        User user = new User();
-        URI location = null;
-        user.setName(entity.getNome_Engenheiro());
-        user.setUsername(entity.getEmail_Engenheiro());
-        user.setPassword(epassword);
-        user.setStatus(entity.getStatus_Engenheiro());
-        user.setId(service.newSave(user));
-        
-        if (user.getRole() == UserRole.ROLE_ENGENHEIRO) {
-            location = URI.create("/ge?param=" + user.getId());
-            user.setRole(UserRole.fromRoleValue(entity.getRole_Engenheiro()));
-        }else if (user.getRole() == UserRole.ROLE_AUDITOR) {
-            location = URI.create("/ga?param=" + user.getId());
-            user.setRole(UserRole.fromRoleValue(entity.getRole_Engenheiro()));
-        } else if (user.getRole() == UserRole.ROLE_SUPERVISOR) {
-            location = URI.create("/gs?param=" + user.getId());
-            user.setRole(UserRole.fromRoleValue(entity.getRole_Engenheiro()));
-        } else if (user.getRole() == UserRole.ROLE_ADMIN) {
-            location = URI.create("/ga?param=" + user.getId());
-            user.setRole(UserRole.fromRoleValue(entity.getRole_Engenheiro()));
-        } else {
+
+        if (entity.getRole_Engenheiro() == null) {
             return ResponseEntity.badRequest().body("Invalid role");
         }
-        
+
+        String ePassword = new BCryptPasswordEncoder().encode(entity.getSenha_Engenheiro());
+        User user = new User();
+        user.setName(entity.getNome_Engenheiro());
+        user.setUsername(entity.getEmail_Engenheiro());
+        user.setPassword(ePassword);
+        user.setStatus(entity.getStatus_Engenheiro());
+        user.setRole(entity.getRole_Engenheiro());
+
+        user.setId(service.newSave(user));
+
+        URI location;
+        switch (user.getRole()) {
+            case ROLE_ENGENHEIRO:
+                location = URI.create("/ge?param=" + user.getId());
+                break;
+            case ROLE_AUDITOR:
+                location = URI.create("/gau?param=" + user.getId());
+                break;
+            case ROLE_SUPERVISOR:
+                location = URI.create("/gs?param=" + user.getId());
+                break;
+            case ROLE_ADMIN:
+                location = URI.create("/ga?param=" + user.getId());
+                break;
+            default:
+                return ResponseEntity.badRequest().body("Unknown role");
+        }
+
         return ResponseEntity.created(location).body("User created successfully");
     }
     
@@ -72,7 +80,7 @@ public class EngenheiroController {
         user.setName(entity.getNome_Engenheiro());
         user.setUsername(entity.getEmail_Engenheiro());
         user.setPassword(epassword);
-        user.setRole(UserRole.fromRoleValue(entity.getRole_Engenheiro()));
+        user.setRole(entity.getRole_Engenheiro());
         user.setStatus(entity.getStatus_Engenheiro());
         service.save(user);
 
@@ -91,7 +99,7 @@ public class EngenheiroController {
         userDTO.setID_Engenheiro(user.getId()); 
         userDTO.setEmail_Engenheiro(user.getUsername());
         userDTO.setSenha_Engenheiro(user.getPassword());
-        userDTO.setRole_Engenheiro(user.getRole().ordinal());
+        userDTO.setRole_Engenheiro(user.getRole());
         userDTO.setStatus_Engenheiro(user.getStatus());
 
         return ResponseEntity.ok().body(userDTO);
@@ -105,7 +113,7 @@ public class EngenheiroController {
             u.setID_Engenheiro(user.getId());
             u.setNome_Engenheiro(user.getName());
             u.setEmail_Engenheiro(user.getUsername());
-            u.setRole_Engenheiro(user.getRole().getRole());
+            u.setRole_Engenheiro(user.getRole());
             u.setStatus_Engenheiro(user.getStatus());
             return u;
         }).toList();
