@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // só se for API REST
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/login","/","/register").permitAll()
+                        .requestMatchers("/login","/","/register", "/reset-password").permitAll()
                         .requestMatchers("/cre","/ge","/gel","/upe","/de").hasAnyRole("ADMIN")
                     )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class); // ajuste conforme sua regra
