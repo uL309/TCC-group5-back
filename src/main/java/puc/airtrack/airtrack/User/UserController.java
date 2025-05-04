@@ -66,12 +66,13 @@ public class UserController {
     }
     
     @PutMapping("/upe")
-    public String UpdateEngenheiro(@RequestBody @Valid UserDTO entity) {
+    public ResponseEntity<String> UpdateEngenheiro(@RequestBody @Valid UserDTO entity) {
         String epassword = new BCryptPasswordEncoder().encode(entity.getSenha_Engenheiro());
-        if (getEngenheiro(entity.getID_Engenheiro().toString(), entity.getRole_Engenheiro().toString()) == null) {
-            return ResponseEntity.badRequest().body("User not found").toString();
-        }
+        // FIX: getEngenheiro returns a ResponseEntity, not null if not found. Check user existence directly.
         User user = service.findById(entity.getID_Engenheiro());
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found");
+        }
         user.setName(entity.getNome_Engenheiro());
         user.setUsername(entity.getEmail_Engenheiro());
         user.setPassword(epassword);
@@ -79,7 +80,7 @@ public class UserController {
         user.setStatus(entity.getStatus_Engenheiro());
         service.save(user);
 
-        return ResponseEntity.ok().body("Engenheiro updated successfully").toString();
+        return ResponseEntity.ok().body("Engenheiro updated successfully");
     }
 
     @GetMapping("/ge")
