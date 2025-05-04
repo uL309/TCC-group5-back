@@ -64,34 +64,46 @@ public class UserController {
         }
         return ResponseEntity.created(location).body("User created successfully");
     }
-    
+
     @PutMapping("/upe")
-    public ResponseEntity<String> UpdateEngenheiro(@RequestBody @Valid UserDTO entity) {
-        // FIX: getEngenheiro returns a ResponseEntity, not null if not found. Check user existence directly.
+    public ResponseEntity<String> updateEngenheiro(@RequestBody @Valid UserDTO entity) {
         User user = service.findById(entity.getID_Engenheiro());
         if (user == null) {
             return ResponseEntity.badRequest().body("User not found");
         }
-        user.setName(entity.getNome_Engenheiro());
-        user.setUsername(entity.getEmail_Engenheiro());
-        if (entity.getSenha_Engenheiro() != null && !entity.getSenha_Engenheiro().isEmpty()) {
-            String ePassword = new BCryptPasswordEncoder().encode(entity.getSenha_Engenheiro());
-            user.setPassword(ePassword);
-        }
-        user.setRole(entity.getRole_Engenheiro());
-        user.setStatus(entity.getStatus_Engenheiro());
-        service.save(user);
 
+        if (entity.getNome_Engenheiro() != null && !entity.getNome_Engenheiro().isBlank()) {
+            user.setName(entity.getNome_Engenheiro());
+        }
+
+        if (entity.getEmail_Engenheiro() != null && !entity.getEmail_Engenheiro().isBlank()) {
+            user.setUsername(entity.getEmail_Engenheiro());
+        }
+
+        String password = entity.getSenha_Engenheiro();
+        if (password != null && !password.isBlank()) {
+            user.setPassword(new BCryptPasswordEncoder().encode(password));
+        }
+
+        if (entity.getRole_Engenheiro() != null) {
+            user.setRole(entity.getRole_Engenheiro());
+        }
+
+        if (entity.getStatus_Engenheiro() != null) {
+            user.setStatus(entity.getStatus_Engenheiro());
+        }
+
+        service.save(user);
         return ResponseEntity.ok().body("Engenheiro updated successfully");
     }
 
+
     @GetMapping("/ge")
-    public ResponseEntity<UserDTO> getEngenheiro(@RequestParam String param, @RequestParam String role) {
-        if (param == null || param.isEmpty() || role == null || role.isEmpty()) {
+    public ResponseEntity<UserDTO> getEngenheiro(@RequestParam String param, @RequestParam UserRole role) {
+        if (param == null || param.isEmpty() || role == null || role.toString().isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
-        UserRole userRole = UserRole.fromRoleValue(Integer.parseInt(role));
-        User user = service.findByIdAndRole(Integer.parseInt(param), userRole);
+        User user = service.findByIdAndRole(Integer.parseInt(param), role);
         if (user == null) {
             return ResponseEntity.notFound().build();
         }
@@ -106,12 +118,11 @@ public class UserController {
     }
 
     @GetMapping("/gel")
-    public ResponseEntity<List<UserDTO>> getEngenheirolist(@RequestParam String param) {
-        if (param == null || param.isEmpty()) {
+    public ResponseEntity<List<UserDTO>> getEngenheirolist(@RequestParam UserRole param) {
+        if (param == null || param.toString().isEmpty()) {
             return ResponseEntity.badRequest().body(new ArrayList<>());
         }
-        UserRole userRole = UserRole.fromRoleValue(Integer.parseInt(param));
-        List<User> userList = service.findAllByRole(userRole);
+        List<User> userList = service.findAllByRole(param);
         List<UserDTO> dto = userList.stream().map(user -> {
             UserDTO u = new UserDTO();
             u.setID_Engenheiro(user.getId());
