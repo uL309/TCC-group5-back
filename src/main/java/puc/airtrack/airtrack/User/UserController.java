@@ -67,7 +67,6 @@ public class UserController {
     
     @PutMapping("/upe")
     public ResponseEntity<String> UpdateEngenheiro(@RequestBody @Valid UserDTO entity) {
-        String epassword = new BCryptPasswordEncoder().encode(entity.getSenha_Engenheiro());
         // FIX: getEngenheiro returns a ResponseEntity, not null if not found. Check user existence directly.
         User user = service.findById(entity.getID_Engenheiro());
         if (user == null) {
@@ -75,7 +74,10 @@ public class UserController {
         }
         user.setName(entity.getNome_Engenheiro());
         user.setUsername(entity.getEmail_Engenheiro());
-        user.setPassword(epassword);
+        if (entity.getSenha_Engenheiro() != null && !entity.getSenha_Engenheiro().isEmpty()) {
+            String ePassword = new BCryptPasswordEncoder().encode(entity.getSenha_Engenheiro());
+            user.setPassword(ePassword);
+        }
         user.setRole(entity.getRole_Engenheiro());
         user.setStatus(entity.getStatus_Engenheiro());
         service.save(user);
@@ -125,15 +127,15 @@ public class UserController {
     
     
     @PostMapping("/de")
-    public String deleteEngenheiro(@RequestParam String param) {
+    public ResponseEntity<String> deleteEngenheiro(@RequestParam String param) {
         User user = service.findById(Integer.parseInt(param));
         if (user != null && user.getStatus()) {
             user.setStatus(false); // Set status to false instead of deleting
             service.save(user);
         } else {
-            return ResponseEntity.status(404).body("Engenheiro not found").toString();
+            return ResponseEntity.status(404).body("Engenheiro not found");
         }
 
-        return ResponseEntity.ok().body("Engenheiro deleted successfully").toString();
+        return ResponseEntity.ok().body("Engenheiro deleted successfully");
     }
 }
