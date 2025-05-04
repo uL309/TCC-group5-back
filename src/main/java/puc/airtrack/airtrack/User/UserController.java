@@ -138,15 +138,15 @@ public class UserController {
     
     
     @PostMapping("/de")
-    public String deleteEngenheiro(@RequestParam String param) {
+    public ResponseEntity<String> deleteEngenheiro(@RequestParam String param) {
         User user = service.findById(Integer.parseInt(param));
         if (user != null && user.getStatus()) {
             user.setStatus(false); // Set status to false instead of deleting
             service.save(user);
         } else {
-            return ResponseEntity.status(404).body("Engenheiro not found").toString();
+            return ResponseEntity.status(404).body("Engenheiro not found");
         }
 
-        return ResponseEntity.ok().body("Engenheiro deleted successfully").toString();
+        return ResponseEntity.ok().body("Engenheiro deleted successfully");
     }
 }
