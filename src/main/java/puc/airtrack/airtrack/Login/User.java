@@ -39,6 +39,9 @@ public class User implements UserDetails {
     @Column(name = "Status_Engenheiro")
     private Boolean status;
 
+    @Column(name = "Salario_Engenheiro")
+    private float salario;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(this.role.name()));

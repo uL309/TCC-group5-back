@@ -50,6 +50,7 @@ public class LoginController {
         user.setRole(entity.getRole_Engenheiro());
         user.setStatus(entity.getStatus_Engenheiro());
         user.setName(entity.getNome_Engenheiro());
+        user.setSalario(entity.getSalario_Engenheiro());
         userService.save(user);
         return ResponseEntity.ok().body("User registered successfully: " + user.getUsername());
     }

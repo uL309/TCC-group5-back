@@ -29,4 +29,7 @@ public class UserDTO {
 
     @JsonProperty("Status_Engenheiro")
     private Boolean Status_Engenheiro;
+
+    @JsonProperty("Salario_Engenheiro")
+    private float Salario_Engenheiro;
 }

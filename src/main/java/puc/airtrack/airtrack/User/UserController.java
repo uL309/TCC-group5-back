@@ -44,6 +44,7 @@ public class UserController {
         user.setPassword(ePassword);
         user.setStatus(entity.getStatus_Engenheiro());
         user.setRole(entity.getRole_Engenheiro());
+        user.setSalario(entity.getSalario_Engenheiro());
         user.setId(service.newSave(user));
         URI location;
         switch (user.getRole()) {
@@ -93,6 +94,10 @@ public class UserController {
             user.setStatus(entity.getStatus_Engenheiro());
         }
 
+        if (entity.getSalario_Engenheiro() > 0) {
+            user.setSalario(entity.getSalario_Engenheiro());
+        }
+
         service.save(user);
         return ResponseEntity.ok().body("Engenheiro updated successfully");
     }
@@ -113,6 +118,7 @@ public class UserController {
         userDTO.setEmail_Engenheiro(user.getUsername());
         userDTO.setRole_Engenheiro(user.getRole());
         userDTO.setStatus_Engenheiro(user.getStatus());
+        userDTO.setSalario_Engenheiro(user.getSalario());
 
         return ResponseEntity.ok().body(userDTO);
     }
@@ -130,6 +136,7 @@ public class UserController {
             u.setEmail_Engenheiro(user.getUsername());
             u.setRole_Engenheiro(user.getRole());
             u.setStatus_Engenheiro(user.getStatus());
+            u.setSalario_Engenheiro(user.getSalario());
             return u;
         }).toList();
 
