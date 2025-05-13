@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import jakarta.persistence.*;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,7 +27,7 @@ public class User implements UserDetails {
     @Column(name = "Nome_Engenheiro")
     private String name;
 
-    @Column(name = "Email_Engenheiro", unique = true)
+    @Column(name = "Email_Engenheiro")
     private String username;
 
     @Column(name = "Senha_Engenheiro")

@@ -24,6 +24,7 @@ public class PasswordResetService {
 
         String novaSenha = generateRandomPassword(10);
         user.setPassword(new BCryptPasswordEncoder().encode(novaSenha));
+        //TODO: Campo bool da primeira senha
         repo.save(user);
 
         try {
