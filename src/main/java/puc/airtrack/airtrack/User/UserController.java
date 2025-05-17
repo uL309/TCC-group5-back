@@ -44,6 +44,8 @@ public class UserController {
         user.setPassword(ePassword);
         user.setStatus(entity.getStatus_Engenheiro());
         user.setRole(entity.getRole_Engenheiro());
+        user.setFirstAccess(entity.getPrimeiro_Acesso());
+        user.setCpf(entity.getCpf_Engenheiro());
         user.setId(service.newSave(user));
         URI location;
         switch (user.getRole()) {
