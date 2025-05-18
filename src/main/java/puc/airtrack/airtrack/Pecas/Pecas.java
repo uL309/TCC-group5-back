@@ -6,7 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.Getter;
@@ -43,8 +43,8 @@ public class Pecas {
     @Column(name = "id_engenheiro")
     private int id_engenheiro;
 
-    @OneToMany /*pegar exemplo caso necessário */
-    @JoinColumn(name = "Fornecedor", referencedColumnName = "ID_Fornecedor", foreignKey = @jakarta.persistence.ForeignKey(name = "Fornecedor"))
+    @ManyToOne/*pegar exemplo caso necessário */
+    @JoinColumn(name = "Fornecedor", referencedColumnName = "CNPJ", foreignKey = @jakarta.persistence.ForeignKey(name = "Fornecedor"))
     private Fornecedor fornecedor;
 
 }

@@ -40,6 +40,14 @@ public class User implements UserDetails {
     @Column(name = "Status_Engenheiro")
     private Boolean status;
 
+    @Column(name = "Primeiro_Acesso")
+    private Boolean firstAccess;
+
+
+    @Column(name = "Cpf_Engenheiro")
+    private String cpf;
+
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(this.role.name()));

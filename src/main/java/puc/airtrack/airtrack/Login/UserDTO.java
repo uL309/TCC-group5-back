@@ -29,4 +29,10 @@ public class UserDTO {
 
     @JsonProperty("Status_Engenheiro")
     private Boolean Status_Engenheiro;
+
+    @JsonProperty("Primeiro_Acesso")
+    private Boolean Primeiro_Acesso;
+
+    @JsonProperty("Cpf_Engenheiro")
+    private String Cpf_Engenheiro;
 }
