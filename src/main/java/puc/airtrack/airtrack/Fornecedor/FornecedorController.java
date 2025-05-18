@@ -3,42 +3,48 @@ package puc.airtrack.airtrack.Fornecedor;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+@RestController
 public class FornecedorController {
     
     @Autowired
     private FornecedorRepo fornecedorRepo;
 
-    @GetMapping("/cforn")
-    public ResponseEntity<String> getFornecedorById(@RequestBody FornecedorDTO entity) {
+    @PostMapping("/cforn")
+    public ResponseEntity<String> createFornecedor(@RequestBody FornecedorDTO entity) {
         if (entity != null) {
             Fornecedor fornecedor = new Fornecedor();
-            URI location;
             fornecedor.setId(entity.getId());
             fornecedor.setName(entity.getName());
             fornecedor.setEmail(entity.getEmail());
             fornecedor.setContato(entity.getContato());
-            fornecedor.setCategory(entity.getCategory());
+            fornecedor.setCategoria(entity.getCategoria());
             fornecedor.setStatus(entity.getStatus());
-            location = URI.create("/cforn?param=" + entity.getId());
+            fornecedorRepo.save(fornecedor);
+            URI location = URI.create("/gforn?param=" + fornecedor.getId());
             return ResponseEntity.created(location).body("Fornecedor created successfully");
         }
         return ResponseEntity.badRequest().body("Fornecedor already exists");
     }
 
-    @PostMapping("/uforn")
+    @PutMapping("/uforn")
     public ResponseEntity<String> updateFornecedor(@RequestBody FornecedorDTO entity) {
         if (entity != null) {
-            Fornecedor fornecedor = fornecedorRepo.findById(entity.getId());
-            if (fornecedor != null) {
+            Optional<Fornecedor> fornecedorOpt = fornecedorRepo.findById(entity.getId());
+            if (fornecedorOpt.isPresent()) {
+            Fornecedor fornecedor = fornecedorOpt.get();
+                if (fornecedor != null) {
                 if (entity.getId() != fornecedor.getId()) {
                     fornecedor.setId(entity.getId());
                 }
@@ -51,8 +57,8 @@ public class FornecedorController {
                 if (entity.getContato() != fornecedor.getContato()) {
                     fornecedor.setContato(entity.getContato());
                 }
-                if (entity.getCategory() != fornecedor.getCategory()) {
-                    fornecedor.setCategory(entity.getCategory());
+                if (entity.getCategoria() != fornecedor.getCategoria()) {
+                    fornecedor.setCategoria(entity.getCategoria());
                 }
                 if (entity.getStatus() != fornecedor.getStatus()) {
                     fornecedor.setStatus(entity.getStatus());
@@ -62,24 +68,29 @@ public class FornecedorController {
                 }
                 fornecedorRepo.save(fornecedor);
                 return ResponseEntity.ok("Fornecedor updated successfully");
+            }           
+            
             }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Fornecedor not found");
     }
 
     @GetMapping("/gforn")
-    public ResponseEntity<FornecedorDTO> getFornecedor(@RequestParam int id) {
-        Fornecedor fornecedor = fornecedorRepo.findById(id);
-        if (fornecedor != null) {
+    public ResponseEntity<FornecedorDTO> getFornecedor(@RequestParam String id) {
+        Optional<Fornecedor> fornecedorOpt = fornecedorRepo.findById(id);
+            if (fornecedorOpt.isPresent()) {
+            Fornecedor fornecedor = fornecedorOpt.get();
+    // ...
             FornecedorDTO fornecedorDTO = new FornecedorDTO();
             fornecedorDTO.setId(fornecedor.getId());
             fornecedorDTO.setName(fornecedor.getName());
             fornecedorDTO.setEmail(fornecedor.getEmail());
             fornecedorDTO.setContato(fornecedor.getContato());
-            fornecedorDTO.setCategory(fornecedor.getCategory());
+            fornecedorDTO.setCategoria(fornecedor.getCategoria());
             fornecedorDTO.setStatus(fornecedor.getStatus());
             return ResponseEntity.ok(fornecedorDTO);
         }
+   
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
     @GetMapping("/gforns")
@@ -92,15 +103,15 @@ public class FornecedorController {
             fornecedorDTO.setName(fornecedor.getName());
             fornecedorDTO.setEmail(fornecedor.getEmail());
             fornecedorDTO.setContato(fornecedor.getContato());
-            fornecedorDTO.setCategory(fornecedor.getCategory());
+            fornecedorDTO.setCategoria(fornecedor.getCategoria());
             fornecedorDTO.setStatus(fornecedor.getStatus());
             fornecedorDTOs.add(fornecedorDTO);
         }
         return ResponseEntity.ok(fornecedorDTOs);
     }
-
+/* 
     @GetMapping("/dforn")
-    public ResponseEntity<String> deleteFornecedor(@RequestParam int id) {
+    public ResponseEntity<String> deleteFornecedor(@RequestParam String id) {
         Fornecedor fornecedor = fornecedorRepo.findById(id);
         if (fornecedor != null) {
             fornecedor.setStatus(false);
@@ -108,5 +119,5 @@ public class FornecedorController {
             return ResponseEntity.ok("Fornecedor deleted successfully");
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Fornecedor not found");
-    }
+    }*/
 }
