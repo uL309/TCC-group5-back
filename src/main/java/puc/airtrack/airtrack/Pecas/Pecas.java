@@ -1,5 +1,6 @@
 package puc.airtrack.airtrack.Pecas;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 import jakarta.persistence.Column;
@@ -32,7 +33,7 @@ public class Pecas {
     private String num_serie;
 
     @Column(name = "data_aquisicao")
-    private Date data_aquisicao;
+    private LocalDate data_aquisicao;
 
     @Column(name = "status")
     private String status;

@@ -1,6 +1,7 @@
 package puc.airtrack.airtrack.Pecas;
 
-import java.util.Date;
+import java.time.LocalDate;
+
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,9 +13,9 @@ public class PecasDTO {
     private int id;
     private String nome;
     private String num_serie;
-    private Date data_aquisicao;
+    private LocalDate data_aquisicao;
     private String status;
     private String categoria;
     private int id_engenheiro;
-    private Integer fornecedorId; // Use only the Fornecedor ID for DTO
+    private String fornecedorId; // Use only the Fornecedor ID for DTO
 }
