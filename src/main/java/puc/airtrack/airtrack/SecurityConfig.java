@@ -40,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers("/login","/","/register", "/reset-password").permitAll()
                         .requestMatchers("/cre","/ge","/gel","/upe","/de").hasAnyRole("ADMIN")
                         .requestMatchers("/cforn","/gforn","/gforns","/uforn","/dforn").hasAnyRole("SUPERVISOR")
+                        .requestMatchers("/first-access").authenticated()
                     )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class); // ajuste conforme sua regra
 

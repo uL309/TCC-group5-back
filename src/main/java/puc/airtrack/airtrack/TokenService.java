@@ -29,6 +29,8 @@ public class TokenService {
                     .withIssuer("login-auth-Backend")
                     .withSubject(user.getUsername())
                     .withClaim("role", user.getRole().toString())
+                    .withClaim("firstAccess", user.getFirstAccess())
+                    .withClaim("cpf", user.getCpf())
                     .withExpiresAt(this.generateExpirationDate())
                     .sign(algorithm);
             return token;

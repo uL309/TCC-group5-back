@@ -18,4 +18,6 @@ public interface Repositorio extends JpaRepository<User, Integer> {
     User findByIdAndStatus(int id, Boolean status);
     User findByIdAndRole(int id , UserRole role);
     List<User> findAllByRole(UserRole role);
+
+    User findByCpf(String cpf);
 }

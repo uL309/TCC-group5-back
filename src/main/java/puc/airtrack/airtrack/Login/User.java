@@ -43,7 +43,6 @@ public class User implements UserDetails {
     @Column(name = "Primeiro_Acesso")
     private Boolean firstAccess;
 
-
     @Column(name = "Cpf_Engenheiro")
     private String cpf;
 

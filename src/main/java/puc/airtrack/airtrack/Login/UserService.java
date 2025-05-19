@@ -49,4 +49,7 @@ public class UserService {
     public List<User> findAllByRole(UserRole role) {
         return repositorio.findAllByRole(role);
     }
+    public User findByCpf(String cpf) {
+        return repositorio.findByCpf(cpf);
+    }
 }
