@@ -1,6 +1,7 @@
 package puc.airtrack.airtrack.Pecas;
 
-import java.util.Date;
+import java.time.LocalDate;
+
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -16,9 +17,9 @@ public class PecasDTO {
     @JsonProperty("nome")
     private String nome;
     private String num_serie;
-    private Date data_aquisicao;
+    private LocalDate data_aquisicao;
     private String status;
     private String categoria;
     private int id_engenheiro;
-    private Integer fornecedorId; // Use only the Fornecedor ID for DTO
+    private String fornecedorId; // Use only the Fornecedor ID for DTO
 }

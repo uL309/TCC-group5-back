@@ -1,5 +1,6 @@
 package puc.airtrack.airtrack.Pecas;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 import jakarta.persistence.Column;
@@ -32,7 +33,7 @@ public class Pecas {
     private String num_serie;
 
     @Column(name = "data_aquisicao")
-    private Date data_aquisicao;
+    private LocalDate data_aquisicao;
 
     @Column(name = "status")
     private String status;
@@ -44,7 +45,7 @@ public class Pecas {
     private int id_engenheiro;
 
     @ManyToOne/*pegar exemplo caso necessário */
-    @JoinColumn(name = "Fornecedor", referencedColumnName = "CNPJ", foreignKey = @jakarta.persistence.ForeignKey(name = "Fornecedor"))
+    @JoinColumn(name = "fornecedor", referencedColumnName = "CNPJ", foreignKey = @jakarta.persistence.ForeignKey(name = "fornecedor"))
     private Fornecedor fornecedor;
 
 }
