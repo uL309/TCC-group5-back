@@ -1,6 +1,9 @@
 package puc.airtrack.airtrack.Pecas;
 
 import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,6 +13,7 @@ import lombok.Setter;
 @Setter
 public class PecasDTO {
     private int id;
+    @JsonProperty("nome")
     private String nome;
     private String num_serie;
     private Date data_aquisicao;

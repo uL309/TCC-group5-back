@@ -31,6 +31,7 @@ public class TokenService {
                     .withClaim("role", user.getRole().toString())
                     .withClaim("firstAccess", user.getFirstAccess())
                     .withClaim("cpf", user.getCpf())
+                    .withClaim("id", user.getId())
                     .withExpiresAt(this.generateExpirationDate())
                     .sign(algorithm);
             return token;
