@@ -1,15 +1,11 @@
-package puc.airtrack.airtrack.Fornecedor;
+package puc.airtrack.airtrack.Cliente;
 
 import java.util.Optional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
 import io.micrometer.common.lang.NonNull;
 
-
-
 @Repository
-public interface FornecedorRepo extends JpaRepository<Fornecedor, String> {
-    @NonNull Optional<Fornecedor> findById(@NonNull String id);
+public interface ClienteRepo extends JpaRepository<Cliente, String> {
+    @NonNull Optional<Cliente> findById(@NonNull String id);
 }

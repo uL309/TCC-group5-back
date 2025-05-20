@@ -109,15 +109,16 @@ public class FornecedorController {
         }
         return ResponseEntity.ok(fornecedorDTOs);
     }
-/* 
+
     @GetMapping("/dforn")
     public ResponseEntity<String> deleteFornecedor(@RequestParam String id) {
-        Fornecedor fornecedor = fornecedorRepo.findById(id);
-        if (fornecedor != null) {
+        Optional<Fornecedor> fornecedorOpt = fornecedorRepo.findById(id);
+        if (fornecedorOpt.isPresent()) {
+            Fornecedor fornecedor = fornecedorOpt.get();
             fornecedor.setStatus(false);
             fornecedorRepo.save(fornecedor);
             return ResponseEntity.ok("Fornecedor deleted successfully");
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Fornecedor not found");
-    }*/
+    }
 }
