@@ -26,7 +26,7 @@ public class Pecas {
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "Nome")
+    @Column(name = "nome")
     private String nome;
 
     @Column(name = "num_serie")
