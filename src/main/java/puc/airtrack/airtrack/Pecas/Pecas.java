@@ -38,5 +38,14 @@ public class Pecas {
     @Column(name = "status")
     private String status;
 
+    @Column(name = "categoria")
+    private String categoria;
+
+    @Column(name = "id_engenheiro")
+    private int id_engenheiro;
+
+    @ManyToOne/*pegar exemplo caso necessário */
+    @JoinColumn(name = "fornecedor", referencedColumnName = "CNPJ", foreignKey = @jakarta.persistence.ForeignKey(name = "fornecedor"))
+    private Fornecedor fornecedor;
 
 }
