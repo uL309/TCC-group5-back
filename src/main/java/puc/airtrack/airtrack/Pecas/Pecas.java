@@ -1,10 +1,10 @@
 package puc.airtrack.airtrack.Pecas;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -13,7 +13,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import puc.airtrack.airtrack.Fornecedor.Fornecedor;
-import jakarta.persistence.GeneratedValue;
 
 @Data
 @Getter
@@ -36,7 +35,7 @@ public class Pecas {
     private LocalDate data_aquisicao;
 
     @Column(name = "status")
-    private String status;
+    private Boolean status;
 
     @Column(name = "categoria")
     private String categoria;

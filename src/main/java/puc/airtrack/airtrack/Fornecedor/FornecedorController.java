@@ -93,6 +93,23 @@ public class FornecedorController {
    
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
+    @GetMapping("/gfornc")
+    public ResponseEntity<List<FornecedorDTO>> getFornecedorbyCategory(@RequestParam String category) {
+        List<Fornecedor> fornecedores = fornecedorRepo.findByCategoria(category);
+        List<FornecedorDTO> fornecedorDTOs = new ArrayList<>();
+        for (Fornecedor fornecedor : fornecedores) {
+            FornecedorDTO fornecedorDTO = new FornecedorDTO();
+            fornecedorDTO.setId(fornecedor.getId());
+            fornecedorDTO.setName(fornecedor.getName());
+            fornecedorDTO.setEmail(fornecedor.getEmail());
+            fornecedorDTO.setContato(fornecedor.getContato());
+            fornecedorDTO.setCategoria(fornecedor.getCategoria());
+            fornecedorDTO.setStatus(fornecedor.getStatus());
+            fornecedorDTOs.add(fornecedorDTO);
+        }
+        return ResponseEntity.ok(fornecedorDTOs);
+        }
+
     @GetMapping("/gforns")
     public ResponseEntity<List<FornecedorDTO>> getAllFornecedores() {
         List<Fornecedor> fornecedores = fornecedorRepo.findAll();
