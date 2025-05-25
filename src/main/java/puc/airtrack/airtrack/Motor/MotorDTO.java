@@ -6,7 +6,7 @@ public class MotorDTO {
     private int id;
     private String marca;
     private LocalDate data_cadastro;
-    private String status;
+    private Boolean status;
     private String serie_motor;
 
     public int getId() {
@@ -33,11 +33,11 @@ public class MotorDTO {
         this.data_cadastro = data_cadastro;
     }
 
-    public String getStatus() {
+    public Boolean getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Boolean status) {
         this.status = status;
     }
 
