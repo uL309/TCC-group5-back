@@ -40,7 +40,8 @@ public class SecurityConfig {
                         .requestMatchers("/login","/","/register", "/reset-password").permitAll()
                         .requestMatchers("/cre","/ge","/gel","/upe","/de").hasAnyRole("ADMIN")
                         .requestMatchers("/cforn","/gforn","/gforns","/uforn","/dforn").hasAnyRole("SUPERVISOR","ADMIN")
-                        .requestMatchers("/cpeca","/gpeca","/gpecas","/upeca","/dpeca").hasAnyRole("ENGENHEIRO","ADMIN")
+                        .requestMatchers("/cpeca","/gpeca","/gpecas","/upeca","/dpeca", "/gfornc").hasAnyRole("ENGENHEIRO","ADMIN")
+                        .requestMatchers("/ccli","/gcli","/gclis","/ucli","/dcli").hasAnyRole("AUDITOR","ADMIN") 
                         .requestMatchers("/first-access").authenticated()
                     )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class); // ajuste conforme sua regra
