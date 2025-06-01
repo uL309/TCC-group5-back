@@ -38,7 +38,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/login","/","/register", "/reset-password").permitAll()
-                        .requestMatchers("/cre","/ge","/gel","/upe","/de").hasAnyRole("ADMIN")
+                        .requestMatchers("/cre","/ge","/gel","/upe","/de", "ordem/create").hasAnyRole("ADMIN")
                         .requestMatchers("/cforn","/gforn","/gforns","/uforn","/dforn").hasAnyRole("SUPERVISOR","ADMIN")
                         .requestMatchers("/cpeca","/gpeca","/gpecas","/upeca","/dpeca", "/gfornc").hasAnyRole("ENGENHEIRO","ADMIN")
                         .requestMatchers("/ccli","/gcli","/gclis","/ucli","/dcli").hasAnyRole("AUDITOR","ADMIN")

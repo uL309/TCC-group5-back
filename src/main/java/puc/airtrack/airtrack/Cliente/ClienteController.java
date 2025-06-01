@@ -10,8 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import puc.airtrack.airtrack.Fornecedor.Fornecedor;
-
 @RestController
 public class ClienteController {
 
