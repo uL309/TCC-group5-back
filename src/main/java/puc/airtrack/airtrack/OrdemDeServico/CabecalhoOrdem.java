@@ -18,6 +18,8 @@ import puc.airtrack.airtrack.Login.User;
 import puc.airtrack.airtrack.Motor.Motor;
 import lombok.Getter;
 
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -49,5 +51,4 @@ public class CabecalhoOrdem {
     @Max(value = 2, message = "Status deve ser 0, 1 ou 2")
     @Min(value = 0, message = "Status deve ser 0, 1 ou 2")
     private int status;
-
 }

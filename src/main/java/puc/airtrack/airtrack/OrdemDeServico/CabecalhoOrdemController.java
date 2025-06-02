@@ -25,6 +25,8 @@ public class CabecalhoOrdemController {
     private MotorRepository motorRepository;
     @Autowired
     private UserService userService;
+    @Autowired
+    private LinhaOrdemService linhaOrdemService;
 
     @PostMapping("/create")
     public ResponseEntity<String> createCabecalho(@RequestBody CabecalhoOrdemDTO dto) {
@@ -112,13 +114,17 @@ public class CabecalhoOrdemController {
             dto.setStatus(entity.getStatus());
             if (entity.getCliente() != null) {
                 dto.setClienteId(entity.getCliente().getId());
+                dto.setClienteNome(entity.getCliente().getName());
             }
             if (entity.getNumSerieMotor() != null) {
                 dto.setMotorId(String.valueOf(entity.getNumSerieMotor().getId()));
+                dto.setMotorNome(entity.getNumSerieMotor().getSerie_motor());
             }
             if (entity.getSupervisor() != null) {
                 dto.setSupervisorId(String.valueOf(entity.getSupervisor().getId()));
+                dto.setSupervisorNome(entity.getSupervisor().getName());
             }
+            dto.setLinhas(linhaOrdemService.findByCabecalhoId(id));
             return ResponseEntity.ok(dto);
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
@@ -138,12 +144,15 @@ public class CabecalhoOrdemController {
             dto.setStatus(entity.getStatus());
             if (entity.getCliente() != null) {
                 dto.setClienteId(entity.getCliente().getId());
+                dto.setClienteNome(entity.getCliente().getName());
             }
             if (entity.getNumSerieMotor() != null) {
                 dto.setMotorId(String.valueOf(entity.getNumSerieMotor().getId()));
+                dto.setMotorNome(entity.getNumSerieMotor().getSerie_motor());
             }
             if (entity.getSupervisor() != null) {
                 dto.setSupervisorId(String.valueOf(entity.getSupervisor().getId()));
+                dto.setSupervisorNome(entity.getSupervisor().getName());
             }
             dtos.add(dto);
         }

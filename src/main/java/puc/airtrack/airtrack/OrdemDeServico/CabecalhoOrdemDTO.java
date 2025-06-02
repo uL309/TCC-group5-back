@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Data
 @Getter
 @Setter
@@ -14,8 +16,14 @@ public class CabecalhoOrdemDTO {
     @JsonProperty("cliente")
     private String clienteId; // Only the id of Cliente
 
+    @JsonProperty("cliente_nome")
+    private String clienteNome;
+
     @JsonProperty("motor")
     private String motorId; // Only the id of Motor
+
+    @JsonProperty("motor_nome")
+    private String motorNome;
 
     @JsonProperty("data_abertura")
     private String dataAbertura;
@@ -34,4 +42,19 @@ public class CabecalhoOrdemDTO {
 
     @JsonProperty("supervisor")
     private String supervisorId; // Only the id of Supervisor (User)
+
+    @JsonProperty("supervisor_nome")
+    private String supervisorNome;
+
+    @JsonProperty("status_descricao")
+    public String getStatusDescricao() {
+        return switch (status) {
+            case 0 -> "Pendente";
+            case 1 -> "Andamento";
+            case 2 -> "Concluída";
+            default -> "Desconhecido";
+        };
+    }
+
+    private List<LinhaOrdemDTO> linhas;
 }

@@ -24,6 +24,8 @@ public class LinhaOrdemController {
     private PecasRepository pecasRepository;
     @Autowired
     private UserService userService;
+    @Autowired
+    private LinhaOrdemService linhaOrdemService;
 
     @PostMapping("/create")
     public ResponseEntity<String> createLinhaOrdem(@RequestBody LinhaOrdemDTO dto) {
@@ -83,48 +85,14 @@ public class LinhaOrdemController {
 
     @GetMapping("/get")
     public ResponseEntity<LinhaOrdemDTO> getLinhaOrdem(@RequestParam int id) {
-        Optional<LinhaOrdem> opt = linhaOrdemRepository.findById(id);
-        if (opt.isPresent()) {
-            LinhaOrdem entity = opt.get();
-            LinhaOrdemDTO dto = new LinhaOrdemDTO();
-            dto.setId(entity.getId());
-            dto.setQuantidade(entity.getQuantidade());
-            dto.setTempoGasto(entity.getTempoGasto());
-            if (entity.getOrdem() != null) {
-                dto.setOrdemId(entity.getOrdem().getId());
-            }
-            if (entity.getPeca() != null) {
-                dto.setPecaId(entity.getPeca().getId());
-            }
-            if (entity.getEngenheiro() != null) {
-                dto.setEngenheiroId(String.valueOf(entity.getEngenheiro().getId()));
-            }
-            return ResponseEntity.ok(dto);
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        return linhaOrdemService.findDtoById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
     }
 
     @GetMapping("/list")
     public ResponseEntity<List<LinhaOrdemDTO>> getAllLinhaOrdem() {
-        List<LinhaOrdem> list = linhaOrdemRepository.findAll();
-        List<LinhaOrdemDTO> dtos = new ArrayList<>();
-        for (LinhaOrdem entity : list) {
-            LinhaOrdemDTO dto = new LinhaOrdemDTO();
-            dto.setId(entity.getId());
-            dto.setQuantidade(entity.getQuantidade());
-            dto.setTempoGasto(entity.getTempoGasto());
-            if (entity.getOrdem() != null) {
-                dto.setOrdemId(entity.getOrdem().getId());
-            }
-            if (entity.getPeca() != null) {
-                dto.setPecaId(entity.getPeca().getId());
-            }
-            if (entity.getEngenheiro() != null) {
-                dto.setEngenheiroId(String.valueOf(entity.getEngenheiro().getId()));
-            }
-            dtos.add(dto);
-        }
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(linhaOrdemService.findAllDto());
     }
 
     @DeleteMapping("/delete")
@@ -139,22 +107,6 @@ public class LinhaOrdemController {
 
     @GetMapping("/bycabecalho")
     public ResponseEntity<List<LinhaOrdemDTO>> getByCabecalho(@RequestParam Integer cabecalhoId) {
-        List<LinhaOrdem> list = linhaOrdemRepository.findByOrdem_Id(cabecalhoId);
-        List<LinhaOrdemDTO> dtos = new ArrayList<>();
-        for (LinhaOrdem entity : list) {
-            LinhaOrdemDTO dto = new LinhaOrdemDTO();
-            dto.setId(entity.getId());
-            dto.setQuantidade(entity.getQuantidade());
-            dto.setTempoGasto(entity.getTempoGasto());
-            dto.setOrdemId(entity.getOrdem() != null ? entity.getOrdem().getId() : null);
-            if (entity.getPeca() != null) {
-                dto.setPecaId(entity.getPeca().getId());
-            }
-            if (entity.getEngenheiro() != null) {
-                dto.setEngenheiroId(String.valueOf(entity.getEngenheiro().getId()));
-            }
-            dtos.add(dto);
-        }
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(linhaOrdemService.findByCabecalhoId(cabecalhoId));
     }
 }

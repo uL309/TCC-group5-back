@@ -19,6 +19,9 @@ public class LinhaOrdemDTO {
     @JsonProperty("peca")
     private Integer pecaId;
 
+    @JsonProperty("peca_nome")
+    private String pecaNome;
+
     @JsonProperty("quantidade")
     private ArrayList<Integer> quantidade;
 
