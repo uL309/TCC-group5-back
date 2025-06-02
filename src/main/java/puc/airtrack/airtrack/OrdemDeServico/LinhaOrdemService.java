@@ -2,7 +2,9 @@ package puc.airtrack.airtrack.OrdemDeServico;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import puc.airtrack.airtrack.Cliente.ClienteRepo;
 import puc.airtrack.airtrack.Login.UserService;
+import puc.airtrack.airtrack.Motor.MotorRepository;
 import puc.airtrack.airtrack.Pecas.PecasRepository;
 
 import java.util.List;
@@ -14,6 +16,12 @@ public class LinhaOrdemService {
 
     @Autowired
     private LinhaOrdemRepository linhaOrdemRepository;
+    @Autowired
+    private CabecalhoOrdemRepository cabecalhoOrdemRepository;
+    @Autowired
+    private PecasRepository pecasRepository;
+    @Autowired
+    private UserService userService;
 
     public Optional<LinhaOrdemDTO> findDtoById(int id) {
         return linhaOrdemRepository.findById(id).map(this::convertToDTO);
@@ -49,5 +57,42 @@ public class LinhaOrdemService {
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
+
+    public void deleteAllByOrdemId(Integer ordemId) {
+        linhaOrdemRepository.deleteByOrdem_Id(ordemId);
+    }
+
+
+    public LinhaOrdemDTO create(LinhaOrdemDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("DTO inválido");
+        }
+
+        LinhaOrdem entity = new LinhaOrdem();
+        entity.setQuantidade(dto.getQuantidade());
+        entity.setTempoGasto(dto.getTempoGasto());
+
+        if (dto.getOrdemId() != null) {
+            cabecalhoOrdemRepository.findById(dto.getOrdemId())
+                    .ifPresent(entity::setOrdem);
+        }
+
+        if (dto.getPecaId() != null) {
+            pecasRepository.findById(dto.getPecaId())
+                    .ifPresent(entity::setPeca);
+        }
+
+        if (dto.getEngenheiroId() != null) {
+            try {
+                int engenheiroId = Integer.parseInt(dto.getEngenheiroId());
+                entity.setEngenheiro(userService.findById(engenheiroId));
+            } catch (NumberFormatException e) {
+                entity.setEngenheiro(null);
+            }
+        }
+
+        LinhaOrdem saved = linhaOrdemRepository.save(entity);
+        return convertToDTO(saved);
     }
 }

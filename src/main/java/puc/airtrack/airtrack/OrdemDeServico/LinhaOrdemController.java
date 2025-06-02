@@ -29,29 +29,13 @@ public class LinhaOrdemController {
 
     @PostMapping("/create")
     public ResponseEntity<String> createLinhaOrdem(@RequestBody LinhaOrdemDTO dto) {
-        if (dto != null) {
-            LinhaOrdem entity = new LinhaOrdem();
-            entity.setQuantidade(dto.getQuantidade());
-            entity.setTempoGasto(dto.getTempoGasto());
-            if (dto.getOrdemId() != null) {
-                entity.setOrdem(cabecalhoOrdemRepository.findById(dto.getOrdemId()).orElse(null));
-            }
-            if (dto.getPecaId() != null) {
-                entity.setPeca(pecasRepository.findById(dto.getPecaId()).orElse(null));
-            }
-            if (dto.getEngenheiroId() != null) {
-                try {
-                    int engenheiroId = Integer.parseInt(dto.getEngenheiroId());
-                    entity.setEngenheiro(userService.findById(engenheiroId));
-                } catch (NumberFormatException e) {
-                    entity.setEngenheiro(null);
-                }
-            }
-            linhaOrdemRepository.save(entity);
-            URI location = URI.create("/linhaordem/get?id=" + entity.getId());
+        try {
+            LinhaOrdemDTO savedDto = linhaOrdemService.create(dto);
+            URI location = URI.create("/linhaordem/get?id=" + savedDto.getId());
             return ResponseEntity.created(location).body("LinhaOrdem created successfully");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.badRequest().body("Invalid data");
     }
 
     @PutMapping("/update")

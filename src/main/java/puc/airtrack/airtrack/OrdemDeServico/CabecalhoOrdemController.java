@@ -27,77 +27,17 @@ public class CabecalhoOrdemController {
     private UserService userService;
     @Autowired
     private LinhaOrdemService linhaOrdemService;
+    @Autowired
+    private CabecalhoOrdemService cabecalhoOrdemService;
 
     @PostMapping("/create")
     public ResponseEntity<String> createCabecalho(@RequestBody CabecalhoOrdemDTO dto) {
-        if (dto != null) {
-            CabecalhoOrdem entity = new CabecalhoOrdem();
-            entity.setDataAbertura(dto.getDataAbertura());
-            entity.setDataFechamento(dto.getDataFechamento());
-            entity.setDescricao(dto.getDescricao());
-            entity.setTempoUsado(dto.getTempoUsado());
-            entity.setStatus(dto.getStatus());
-            if (dto.getClienteId() != null) {
-                entity.setCliente(clienteRepo.findById(dto.getClienteId()).orElse(null));
-            }
-            if (dto.getMotorId() != null) {
-                try {
-                    int motorId = Integer.parseInt(dto.getMotorId());
-                    entity.setNumSerieMotor(motorRepository.findById(motorId).orElse(null));
-                } catch (NumberFormatException e) {
-                    entity.setNumSerieMotor(null);
-                }
-            }
-            if (dto.getSupervisorId() != null) {
-                try {
-                    int supervisorId = Integer.parseInt(dto.getSupervisorId());
-                    entity.setSupervisor(userService.findById(supervisorId));
-                } catch (NumberFormatException e) {
-                    entity.setSupervisor(null);
-                }
-            }
-            cabecalhoOrdemRepository.save(entity);
-            URI location = URI.create("/ordem/get?id=" + entity.getId());
-            return ResponseEntity.created(location).body("CabecalhoOrdem created successfully");
-        }
-        return ResponseEntity.badRequest().body("Invalid data");
+        return cabecalhoOrdemService.createCabecalho(dto);
     }
 
     @PutMapping("/update")
     public ResponseEntity<String> updateCabecalho(@RequestBody CabecalhoOrdemDTO dto) {
-        if (dto != null && dto.getId() != null) {
-            Optional<CabecalhoOrdem> opt = cabecalhoOrdemRepository.findById(dto.getId());
-            if (opt.isPresent()) {
-                CabecalhoOrdem entity = opt.get();
-                entity.setDataAbertura(dto.getDataAbertura());
-                entity.setDataFechamento(dto.getDataFechamento());
-                entity.setDescricao(dto.getDescricao());
-                entity.setTempoUsado(dto.getTempoUsado());
-                entity.setStatus(dto.getStatus());
-                if (dto.getClienteId() != null) {
-                    entity.setCliente(clienteRepo.findById(dto.getClienteId()).orElse(null));
-                }
-                if (dto.getMotorId() != null) {
-                    try {
-                        int motorId = Integer.parseInt(dto.getMotorId());
-                        entity.setNumSerieMotor(motorRepository.findById(motorId).orElse(null));
-                    } catch (NumberFormatException e) {
-                        entity.setNumSerieMotor(null);
-                    }
-                }
-                if (dto.getSupervisorId() != null) {
-                    try {
-                        int supervisorId = Integer.parseInt(dto.getSupervisorId());
-                        entity.setSupervisor(userService.findById(supervisorId));
-                    } catch (NumberFormatException e) {
-                        entity.setSupervisor(null);
-                    }
-                }
-                cabecalhoOrdemRepository.save(entity);
-                return ResponseEntity.ok("CabecalhoOrdem updated successfully");
-            }
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("CabecalhoOrdem not found");
+        return cabecalhoOrdemService.updateCabecalho(dto);
     }
 
     @GetMapping("/get")
@@ -167,5 +107,12 @@ public class CabecalhoOrdemController {
             return ResponseEntity.ok("CabecalhoOrdem deleted successfully");
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("CabecalhoOrdem not found");
+    }
+
+    @PutMapping("/atualizar-status")
+    public ResponseEntity<String> atualizarStatus(
+            @RequestParam int cabecalhoId,
+            @RequestParam int status) {
+        return cabecalhoOrdemService.atualizarStatusCabecalho(cabecalhoId, status);
     }
 }

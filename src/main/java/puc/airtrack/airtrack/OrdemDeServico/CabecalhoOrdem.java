@@ -1,14 +1,6 @@
 package puc.airtrack.airtrack.OrdemDeServico;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -28,13 +20,13 @@ public class CabecalhoOrdem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "cliente", referencedColumnName = "CPF", foreignKey = @ForeignKey(name = "cliente"))
     private Cliente cliente;
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "Motor", referencedColumnName = "id", foreignKey = @ForeignKey(name = "motor"))
     private Motor numSerieMotor;
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "Supervisor", referencedColumnName = "ID_Engenheiro", foreignKey = @ForeignKey(name = "user"))
     private User supervisor;
     @Column(name = "data_abertura")

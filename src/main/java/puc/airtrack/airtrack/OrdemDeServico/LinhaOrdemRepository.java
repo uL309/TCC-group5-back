@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface LinhaOrdemRepository extends JpaRepository<LinhaOrdem, Integer> {
     List<LinhaOrdem> findByOrdem_Id(Integer ordemId);
+    void deleteByOrdem_Id(Integer ordemId);
 }
