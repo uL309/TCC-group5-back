@@ -34,8 +34,8 @@ public class PecasController {
             Pecas pecas = new Pecas();
             URI location;
             pecas.setNome(entity.getNome());
-            pecas.setNum_serie(entity.getNum_serie());
-            pecas.setData_aquisicao(entity.getData_aquisicao());
+            pecas.setNum_serie(entity.getNumSerie());
+            pecas.setData_aquisicao(entity.getDataAquisicao());
             pecas.setStatus(entity.getStatus());
             pecas.setCategoria(entity.getCategoria());
             pecas.setId_engenheiro(entity.getId_engenheiro());
@@ -57,8 +57,8 @@ public class PecasController {
             if (optionalPecas.isPresent()) {
                 Pecas pecas = optionalPecas.get();
                 pecas.setNome(entity.getNome());
-                pecas.setNum_serie(entity.getNum_serie());
-                pecas.setData_aquisicao(entity.getData_aquisicao());
+                pecas.setNum_serie(entity.getNumSerie());
+                pecas.setData_aquisicao(entity.getDataAquisicao());
                 pecas.setStatus(entity.getStatus());
                 pecas.setCategoria(entity.getCategoria());
                 pecas.setId_engenheiro(entity.getId_engenheiro());
@@ -83,8 +83,8 @@ public class PecasController {
             PecasDTO dto = new PecasDTO();
             dto.setId(pecas.getId());
             dto.setNome(pecas.getNome());
-            dto.setNum_serie(pecas.getNum_serie());
-            dto.setData_aquisicao(pecas.getData_aquisicao());
+            dto.setNumSerie(pecas.getNum_serie());
+            dto.setDataAquisicao(pecas.getData_aquisicao());
             dto.setStatus(pecas.getStatus());
             dto.setCategoria(pecas.getCategoria());
             dto.setId_engenheiro(pecas.getId_engenheiro());
@@ -102,8 +102,8 @@ public class PecasController {
             PecasDTO dto = new PecasDTO();
             dto.setId(pecas.getId());
             dto.setNome(pecas.getNome());
-            dto.setNum_serie(pecas.getNum_serie());
-            dto.setData_aquisicao(pecas.getData_aquisicao());
+            dto.setNumSerie(pecas.getNum_serie());
+            dto.setDataAquisicao(pecas.getData_aquisicao());
             dto.setStatus(pecas.getStatus());
             dto.setCategoria(pecas.getCategoria());
             dto.setId_engenheiro(pecas.getId_engenheiro());

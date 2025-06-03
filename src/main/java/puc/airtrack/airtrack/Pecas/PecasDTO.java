@@ -15,11 +15,11 @@ public class PecasDTO {
     private int id;
     @JsonProperty("nome")
     private String nome;
-    @JsonProperty("num_serie")
-    private String num_serie;
+    @JsonProperty("numSerie")
+    private String numSerie;
 
-    @JsonProperty("data_aquisicao")
-    private LocalDate data_aquisicao;
+    @JsonProperty("dataAquisicao")
+    private LocalDate dataAquisicao;
 
     @JsonProperty("status")
     private Boolean status;
@@ -27,7 +27,7 @@ public class PecasDTO {
     @JsonProperty("categoria")
     private String categoria;
 
-    @JsonProperty("id_engenheiro")
+    @JsonProperty("idEngenheiro")
     private int id_engenheiro;
 
     @JsonProperty("fornecedor")

@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 public class ClienteDTO {
 
-    @JsonProperty("CPF")
+    @JsonProperty("cpf")
     private String id;
 
     @JsonProperty("name")

@@ -16,25 +16,25 @@ public class CabecalhoOrdemDTO {
     @JsonProperty("cliente")
     private String clienteId; // Only the id of Cliente
 
-    @JsonProperty("cliente_nome")
+    @JsonProperty("clienteNome")
     private String clienteNome;
 
     @JsonProperty("motor")
     private String motorId; // Only the id of Motor
 
-    @JsonProperty("motor_nome")
+    @JsonProperty("motorNome")
     private String motorNome;
 
-    @JsonProperty("data_abertura")
+    @JsonProperty("dataAbertura")
     private String dataAbertura;
 
-    @JsonProperty("data_fechamento")
+    @JsonProperty("dataFechamento")
     private String dataFechamento;
 
     @JsonProperty("descricao")
     private String descricao;
 
-    @JsonProperty("tempo_usado")
+    @JsonProperty("tempoUsado")
     private float tempoUsado;
 
     @JsonProperty("status")
@@ -43,10 +43,10 @@ public class CabecalhoOrdemDTO {
     @JsonProperty("supervisor")
     private String supervisorId; // Only the id of Supervisor (User)
 
-    @JsonProperty("supervisor_nome")
+    @JsonProperty("supervisorNome")
     private String supervisorNome;
 
-    @JsonProperty("status_descricao")
+    @JsonProperty("statusDescricao")
     public String getStatusDescricao() {
         return switch (status) {
             case 0 -> "Pendente";

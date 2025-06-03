@@ -11,28 +11,28 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserDTO {
-    @NotBlank(message = "ID_Engenheiro is mandatory")
-    @JsonProperty("ID_Engenheiro")
+    @NotBlank(message = "id is mandatory")
+    @JsonProperty("id")
     private Integer ID_Engenheiro;
 
-    @JsonProperty("Nome_Engenheiro")
+    @JsonProperty("nome")
     private String Nome_Engenheiro;
 
-    @JsonProperty("Email_Engenheiro")
+    @JsonProperty("email")
     private String Email_Engenheiro;
     
-    @JsonProperty("Senha_Engenheiro")
+    @JsonProperty("senha")
     private String Senha_Engenheiro;
 
-    @JsonProperty("Role_Engenheiro")
+    @JsonProperty("role")
     private UserRole Role_Engenheiro;
 
-    @JsonProperty("Status_Engenheiro")
+    @JsonProperty("status")
     private Boolean Status_Engenheiro;
 
-    @JsonProperty("Primeiro_Acesso")
+    @JsonProperty("primeiroAcesso")
     private Boolean Primeiro_Acesso;
 
-    @JsonProperty("Cpf_Engenheiro")
+    @JsonProperty("cpf")
     private String Cpf_Engenheiro;
 }

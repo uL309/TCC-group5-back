@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class FornecedorDTO {
 
-    @JsonProperty("CNPJ")
+    @JsonProperty("cnpj")
     private String id;
 
     @JsonProperty("name")
@@ -23,7 +23,7 @@ public class FornecedorDTO {
     @JsonProperty("contato")
     private String contato;
 
-    @JsonProperty("category")
+    @JsonProperty("categoria")
     private String categoria;
 
     @JsonProperty("status")
