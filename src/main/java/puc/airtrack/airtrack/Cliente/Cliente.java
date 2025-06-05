@@ -12,21 +12,21 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "cliente")
+@Table(name = "Cliente")
 public class Cliente {
     @Id
-    @Column(name = "CPF")
+    @Column(name = "cpf")
     private String id;
 
-    @Column(name = "Nome")
+    @Column(name = "nome")
     private String name;
 
-    @Column(name = "Email")
+    @Column(name = "email")
     private String email;
 
-    @Column(name = "Contato")
+    @Column(name = "contato")
     private String contato;
 
-    @Column(name = "Status")
+    @Column(name = "status")
     private Boolean status;
 }

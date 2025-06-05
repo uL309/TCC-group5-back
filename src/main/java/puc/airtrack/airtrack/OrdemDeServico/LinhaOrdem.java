@@ -24,7 +24,7 @@ public class LinhaOrdem {
     @JoinColumn(name = "peca", referencedColumnName = "id", foreignKey = @ForeignKey(name = "peca"))
     private Pecas peca;
     @OneToOne
-    @JoinColumn(name = "Engenheiro", referencedColumnName = "ID_Engenheiro", foreignKey = @ForeignKey(name = "engenheiro"))
+    @JoinColumn(name = "Engenheiro", referencedColumnName = "id", foreignKey = @ForeignKey(name = "engenheiro"))
     private User engenheiro;
     private ArrayList<Integer> quantidade;
     private float tempoGasto;

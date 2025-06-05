@@ -21,13 +21,13 @@ public class CabecalhoOrdem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @ManyToOne
-    @JoinColumn(name = "cliente", referencedColumnName = "CPF", foreignKey = @ForeignKey(name = "cliente"))
+    @JoinColumn(name = "Cliente", referencedColumnName = "cpf", foreignKey = @ForeignKey(name = "Cliente"))
     private Cliente cliente;
     @ManyToOne
     @JoinColumn(name = "Motor", referencedColumnName = "id", foreignKey = @ForeignKey(name = "motor"))
     private Motor numSerieMotor;
     @ManyToOne
-    @JoinColumn(name = "Supervisor", referencedColumnName = "ID_Engenheiro", foreignKey = @ForeignKey(name = "user"))
+    @JoinColumn(name = "Supervisor", referencedColumnName = "id", foreignKey = @ForeignKey(name = "user"))
     private User supervisor;
     @Column(name = "data_abertura")
     @NotBlank(message = "Data de abertura não pode ser vazia")

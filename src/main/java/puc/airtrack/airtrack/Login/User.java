@@ -17,33 +17,33 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "base_engenheiro")
+@Table(name = "Usuario")
 public class User implements UserDetails {
     @Id
-    @Column(name = "ID_Engenheiro")
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "Nome_Engenheiro")
+    @Column(name = "nome")
     private String name;
 
-    @Column(name = "Email_Engenheiro")
+    @Column(name = "email")
     private String username;
 
-    @Column(name = "Senha_Engenheiro")
+    @Column(name = "senha")
     private String password;
 
-    @Column(name = "Role_Engenheiro")
+    @Column(name = "role")
     @Enumerated(EnumType.ORDINAL)
     private UserRole role;
 
-    @Column(name = "Status_Engenheiro")
+    @Column(name = "status")
     private Boolean status;
 
-    @Column(name = "Primeiro_Acesso")
+    @Column(name = "primeiro_acesso")
     private Boolean firstAccess;
 
-    @Column(name = "Cpf_Engenheiro")
+    @Column(name = "cpf")
     private String cpf;
 
 

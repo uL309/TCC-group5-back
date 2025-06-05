@@ -1,8 +1,7 @@
 package puc.airtrack.airtrack.Login;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,28 +10,28 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserDTO {
-    @NotBlank(message = "id is mandatory")
+    @NotNull(message = "id is mandatory")
     @JsonProperty("id")
-    private Integer ID_Engenheiro;
+    private Integer id;
 
-    @JsonProperty("nome")
-    private String Nome_Engenheiro;
+    @JsonProperty("name")
+    private String name;
 
-    @JsonProperty("email")
-    private String Email_Engenheiro;
-    
-    @JsonProperty("senha")
-    private String Senha_Engenheiro;
+    @JsonProperty("username")
+    private String username;
+
+    @JsonProperty("password")
+    private String password;
 
     @JsonProperty("role")
-    private UserRole Role_Engenheiro;
+    private UserRole role;
 
     @JsonProperty("status")
-    private Boolean Status_Engenheiro;
+    private Boolean status;
 
-    @JsonProperty("primeiroAcesso")
-    private Boolean Primeiro_Acesso;
+    @JsonProperty("firstAccess")
+    private Boolean firstAccess;
 
     @JsonProperty("cpf")
-    private String Cpf_Engenheiro;
+    private String cpf;
 }

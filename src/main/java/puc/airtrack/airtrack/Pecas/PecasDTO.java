@@ -27,7 +27,7 @@ public class PecasDTO {
     @JsonProperty("categoria")
     private String categoria;
 
-    @JsonProperty("idEngenheiro")
+    @JsonProperty("id_engenheiro")
     private int id_engenheiro;
 
     @JsonProperty("fornecedor")
