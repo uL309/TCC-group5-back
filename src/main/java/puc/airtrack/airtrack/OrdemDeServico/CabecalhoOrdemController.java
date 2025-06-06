@@ -53,7 +53,7 @@ public class CabecalhoOrdemController {
             dto.setTempoUsado(entity.getTempoUsado());
             dto.setStatus(entity.getStatus());
             if (entity.getCliente() != null) {
-                dto.setClienteId(entity.getCliente().getId());
+                dto.setClienteId(entity.getCliente().getCpf());
                 dto.setClienteNome(entity.getCliente().getName());
             }
             if (entity.getNumSerieMotor() != null) {
@@ -83,7 +83,7 @@ public class CabecalhoOrdemController {
             dto.setTempoUsado(entity.getTempoUsado());
             dto.setStatus(entity.getStatus());
             if (entity.getCliente() != null) {
-                dto.setClienteId(entity.getCliente().getId());
+                dto.setClienteId(entity.getCliente().getCpf());
                 dto.setClienteNome(entity.getCliente().getName());
             }
             if (entity.getNumSerieMotor() != null) {

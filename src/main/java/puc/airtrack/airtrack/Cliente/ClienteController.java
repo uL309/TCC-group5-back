@@ -20,13 +20,13 @@ public class ClienteController {
     public ResponseEntity<String> createCliente(@RequestBody ClienteDTO entity) {
         if (entity != null) {
             Cliente cliente = new Cliente();
-            cliente.setId(entity.getId());
+            cliente.setCpf(entity.getId());
             cliente.setName(entity.getName());
             cliente.setEmail(entity.getEmail());
             cliente.setContato(entity.getContato());
             cliente.setStatus(entity.getStatus());
             clienteRepo.save(cliente);
-            URI location = URI.create("/gcli?param=" + cliente.getId());
+            URI location = URI.create("/gcli?param=" + cliente.getCpf());
             return ResponseEntity.created(location).body("Cliente created successfully");
         }
         return ResponseEntity.badRequest().body("Cliente already exists");
@@ -35,11 +35,11 @@ public class ClienteController {
     @PutMapping("/ucli")
     public ResponseEntity<String> updateCliente(@RequestBody ClienteDTO entity) {
         if (entity != null) {
-            Optional<Cliente> clienteOpt = clienteRepo.findById(entity.getId());
+            Optional<Cliente> clienteOpt = clienteRepo.findByCpf(entity.getId());
             if (clienteOpt.isPresent()) {
                 Cliente cliente = clienteOpt.get();
-                if (entity.getId() != null && !entity.getId().equals(cliente.getId())) {
-                    cliente.setId(entity.getId());
+                if (entity.getId() != null && !entity.getId().equals(cliente.getCpf())) {
+                    cliente.setCpf(entity.getId());
                 }
                 if (entity.getName() != null && !entity.getName().equals(cliente.getName())) {
                     cliente.setName(entity.getName());
@@ -62,11 +62,11 @@ public class ClienteController {
 
     @GetMapping("/gcli")
     public ResponseEntity<ClienteDTO> getCliente(@RequestParam String id) {
-        Optional<Cliente> clienteOpt = clienteRepo.findById(id);
+        Optional<Cliente> clienteOpt = clienteRepo.findByCpf(id);
         if (clienteOpt.isPresent()) {
             Cliente cliente = clienteOpt.get();
             ClienteDTO clienteDTO = new ClienteDTO();
-            clienteDTO.setId(cliente.getId());
+            clienteDTO.setId(cliente.getCpf());
             clienteDTO.setName(cliente.getName());
             clienteDTO.setEmail(cliente.getEmail());
             clienteDTO.setContato(cliente.getContato());
@@ -82,7 +82,7 @@ public class ClienteController {
         List<ClienteDTO> clienteDTOs = new ArrayList<>();
         for (Cliente cliente : clientes) {
             ClienteDTO clienteDTO = new ClienteDTO();
-            clienteDTO.setId(cliente.getId());
+            clienteDTO.setId(cliente.getCpf());
             clienteDTO.setName(cliente.getName());
             clienteDTO.setEmail(cliente.getEmail());
             clienteDTO.setContato(cliente.getContato());
@@ -94,7 +94,7 @@ public class ClienteController {
 
     @GetMapping("/dcli")
     public ResponseEntity<String> deleteFornecedor(@RequestParam String id) {
-        Optional<Cliente> clienteOpt = clienteRepo.findById(id);
+        Optional<Cliente> clienteOpt = clienteRepo.findByCpf(id);
         if (clienteOpt.isPresent()) {
             Cliente fornecedor = clienteOpt.get();
             fornecedor.setStatus(false);

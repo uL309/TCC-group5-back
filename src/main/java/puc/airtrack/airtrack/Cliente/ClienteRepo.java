@@ -6,6 +6,8 @@ import org.springframework.stereotype.Repository;
 import io.micrometer.common.lang.NonNull;
 
 @Repository
-public interface ClienteRepo extends JpaRepository<Cliente, String> {
-    @NonNull Optional<Cliente> findById(@NonNull String id);
+public interface ClienteRepo extends JpaRepository<Cliente, Integer> {
+
+    @NonNull
+    Optional<Cliente> findByCpf(@NonNull String cpf);
 }

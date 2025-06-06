@@ -33,7 +33,7 @@ public class CabecalhoOrdemService {
             entity.setTempoUsado(dto.getTempoUsado());
             entity.setStatus(dto.getStatus());
             if (dto.getClienteId() != null) {
-                entity.setCliente(clienteRepo.findById(dto.getClienteId()).orElse(null));
+                entity.setCliente(clienteRepo.findByCpf(dto.getClienteId()).orElse(null));
             }
             if (dto.getMotorId() != null) {
                 try {
@@ -75,7 +75,7 @@ public class CabecalhoOrdemService {
                 entity.setStatus(dto.getStatus());
 
                 if (dto.getClienteId() != null) {
-                    entity.setCliente(clienteRepo.findById(dto.getClienteId()).orElse(null));
+                    entity.setCliente(clienteRepo.findByCpf(dto.getClienteId()).orElse(null));
                 }
 
                 if (dto.getMotorId() != null) {

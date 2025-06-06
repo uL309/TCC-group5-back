@@ -21,7 +21,7 @@ public class CabecalhoOrdem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @ManyToOne
-    @JoinColumn(name = "Cliente", referencedColumnName = "cpf", foreignKey = @ForeignKey(name = "Cliente"))
+    @JoinColumn(name = "Cliente", referencedColumnName = "id", foreignKey = @ForeignKey(name = "Cliente"))
     private Cliente cliente;
     @ManyToOne
     @JoinColumn(name = "Motor", referencedColumnName = "id", foreignKey = @ForeignKey(name = "motor"))
