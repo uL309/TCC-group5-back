@@ -17,13 +17,12 @@ import puc.airtrack.airtrack.Login.UserRole;
 import puc.airtrack.airtrack.Login.UserService;
 
 @Controller
-@RequestMapping("/user")
 public class UserController {
 
     @Autowired
     private UserService service;
 
-    @PostMapping("/create")
+    @PostMapping("/cre")
     public ResponseEntity<String> createUser(@RequestBody @Valid UserDTO entity) {
         if (service.findByUsername(entity.getUsername()) != null) {
             return ResponseEntity.badRequest().body("User already exists");
@@ -45,7 +44,7 @@ public class UserController {
         return ResponseEntity.created(location).body("User created successfully");
     }
 
-    @PutMapping("/update")
+    @PutMapping("/upe")
     public ResponseEntity<String> updateUser(@RequestBody @Valid UserDTO entity) {
         User user = service.findById(entity.getId());
         if (user == null) {
@@ -77,7 +76,7 @@ public class UserController {
         return ResponseEntity.ok("User updated successfully");
     }
 
-    @GetMapping("/get")
+    @GetMapping("/ge")
     public ResponseEntity<UserDTO> getUser(@RequestParam int id, @RequestParam UserRole role) {
         User user = service.findByIdAndRole(id, role);
         if (user == null) {
@@ -94,7 +93,7 @@ public class UserController {
         return ResponseEntity.ok(userDTO);
     }
 
-    @GetMapping("/list")
+    @GetMapping("/gel")
     public ResponseEntity<List<UserDTO>> getUserList(@RequestParam UserRole role) {
         List<User> userList = service.findAllByRole(role);
         List<UserDTO> dtoList = userList.stream().map(user -> {
@@ -111,7 +110,7 @@ public class UserController {
         return ResponseEntity.ok(dtoList);
     }
 
-    @PostMapping("/delete")
+    @PostMapping("/de")
     public ResponseEntity<String> deleteUser(@RequestParam int id) {
         User user = service.findById(id);
         if (user != null && Boolean.TRUE.equals(user.getStatus())) {
