@@ -10,7 +10,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserDTO {
-    @NotNull(message = "id is mandatory")
     @JsonProperty("id")
     private Integer id;
 
