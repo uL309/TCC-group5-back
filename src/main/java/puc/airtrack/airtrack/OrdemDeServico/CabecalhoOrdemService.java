@@ -1,16 +1,17 @@
 package puc.airtrack.airtrack.OrdemDeServico;
 
-import jakarta.transaction.Transactional;
+import java.net.URI;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import jakarta.transaction.Transactional;
 import puc.airtrack.airtrack.Cliente.ClienteRepo;
 import puc.airtrack.airtrack.Login.UserService;
 import puc.airtrack.airtrack.Motor.MotorRepository;
-
-import java.net.URI;
-import java.util.Optional;
 
 @Service
 public class CabecalhoOrdemService {
@@ -53,6 +54,7 @@ public class CabecalhoOrdemService {
             }
             cabecalhoOrdemRepository.save(entity);
             for (LinhaOrdemDTO linha : dto.getLinhas()) {
+                linha.setOrdemId(entity.getId());
                 linhaOrdemService.create(linha);
             }
             URI location = URI.create("/ordem/get?id=" + entity.getId());

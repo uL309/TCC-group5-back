@@ -1,11 +1,12 @@
 package puc.airtrack.airtrack.OrdemDeServico;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 @Data
 @Getter
@@ -16,25 +17,25 @@ public class CabecalhoOrdemDTO {
     @JsonProperty("cliente")
     private String clienteId; // Only the id of Cliente
 
-    @JsonProperty("clienteNome")
+    @JsonProperty("cliente_nome")
     private String clienteNome;
 
     @JsonProperty("motor")
     private String motorId; // Only the id of Motor
 
-    @JsonProperty("motorNome")
+    @JsonProperty("motor_nome")
     private String motorNome;
 
-    @JsonProperty("dataAbertura")
+    @JsonProperty("data_abertura")
     private String dataAbertura;
 
-    @JsonProperty("dataFechamento")
+    @JsonProperty("data_fechamento")
     private String dataFechamento;
 
     @JsonProperty("descricao")
     private String descricao;
 
-    @JsonProperty("tempoUsado")
+    @JsonProperty("tempo_usado")
     private float tempoUsado;
 
     @JsonProperty("status")
@@ -43,10 +44,10 @@ public class CabecalhoOrdemDTO {
     @JsonProperty("supervisor")
     private String supervisorId; // Only the id of Supervisor (User)
 
-    @JsonProperty("supervisorNome")
+    @JsonProperty("supervisor_nome")
     private String supervisorNome;
 
-    @JsonProperty("statusDescricao")
+    @JsonProperty("status_descricao")
     public String getStatusDescricao() {
         return switch (status) {
             case 0 -> "Pendente";
