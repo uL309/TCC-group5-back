@@ -20,7 +20,7 @@ import puc.airtrack.airtrack.services.PasswordResetService;
 public class LoginController {
 
     @Autowired
-    private AuthenticationManager AuthenticationManager;
+    private AuthenticationManager authenticationManager;
 
     @Autowired
     private TokenService tokenService;
@@ -31,35 +31,36 @@ public class LoginController {
     @Autowired
     private PasswordResetService passwordResetService;
 
-    
     @PostMapping("/login")
     public ResponseEntity<ResponseDTO> postLogin(@RequestBody LoginDTO entity) {
         
-        var UsernamePassword = new UsernamePasswordAuthenticationToken(entity.getUsername(), entity.getPassword());
-        var auth = this.AuthenticationManager.authenticate(UsernamePassword);
+        var usernamePassword = new UsernamePasswordAuthenticationToken(entity.getUsername(), entity.getPassword());
+        var auth = this.authenticationManager.authenticate(usernamePassword);
         User user = (User) auth.getPrincipal();
         var token = tokenService.generateToken(user);
         return ResponseEntity.ok().body(new ResponseDTO(user.getName(), token));
     }
 
 
-    // Endpoint para registrar um novo usuário(remover)
+    // Endpoint para registrar um novo usuário (ajustado para novo padrão User/UserDTO)
     @PostMapping("/register")
-    public ResponseEntity<String> postRegister(@RequestBody UserDTO entity) {
+    public ResponseEntity<String> postRegister(@RequestBody @Valid UserDTO entity) {
         User user = new User();
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        user.setUsername(entity.getEmail_Engenheiro());
-        user.setPassword(passwordEncoder.encode(entity.getSenha_Engenheiro()));
-        user.setRole(entity.getRole_Engenheiro());
-        user.setStatus(entity.getStatus_Engenheiro());
-        user.setName(entity.getNome_Engenheiro());
+        user.setUsername(entity.getUsername());
+        user.setPassword(passwordEncoder.encode(entity.getPassword()));
+        user.setRole(entity.getRole());
+        user.setStatus(entity.getStatus());
+        user.setName(entity.getName());
+        user.setFirstAccess(entity.getFirstAccess());
+        user.setCpf(entity.getCpf());
         userService.save(user);
         return ResponseEntity.ok().body("User registered successfully: " + user.getUsername());
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<Void> resetPassword(@RequestParam String email) {
-        passwordResetService.resetPassword(email);
+    public ResponseEntity<Void> resetPassword(@RequestParam String username) {
+        passwordResetService.resetPassword(username);
         return ResponseEntity.ok().build();
     }
 

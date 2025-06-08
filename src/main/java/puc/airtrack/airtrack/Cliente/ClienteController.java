@@ -8,7 +8,12 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class ClienteController {
@@ -20,13 +25,13 @@ public class ClienteController {
     public ResponseEntity<String> createCliente(@RequestBody ClienteDTO entity) {
         if (entity != null) {
             Cliente cliente = new Cliente();
-            cliente.setId(entity.getId());
+            cliente.setCpf(entity.getCpf());
             cliente.setName(entity.getName());
             cliente.setEmail(entity.getEmail());
             cliente.setContato(entity.getContato());
             cliente.setStatus(entity.getStatus());
             clienteRepo.save(cliente);
-            URI location = URI.create("/gcli?param=" + cliente.getId());
+            URI location = URI.create("/gcli?param=" + cliente.getCpf());
             return ResponseEntity.created(location).body("Cliente created successfully");
         }
         return ResponseEntity.badRequest().body("Cliente already exists");
@@ -35,7 +40,7 @@ public class ClienteController {
     @PutMapping("/ucli")
     public ResponseEntity<String> updateCliente(@RequestBody ClienteDTO entity) {
         if (entity != null) {
-            Optional<Cliente> clienteOpt = clienteRepo.findById(entity.getId());
+            Optional<Cliente> clienteOpt = clienteRepo.findByCpf(entity.getCpf());
             if (clienteOpt.isPresent()) {
                 Cliente cliente = clienteOpt.get();
                 if (entity.getId() != null && !entity.getId().equals(cliente.getId())) {
@@ -62,11 +67,12 @@ public class ClienteController {
 
     @GetMapping("/gcli")
     public ResponseEntity<ClienteDTO> getCliente(@RequestParam String id) {
-        Optional<Cliente> clienteOpt = clienteRepo.findById(id);
+        Optional<Cliente> clienteOpt = clienteRepo.findByCpf(id);
         if (clienteOpt.isPresent()) {
             Cliente cliente = clienteOpt.get();
             ClienteDTO clienteDTO = new ClienteDTO();
             clienteDTO.setId(cliente.getId());
+            clienteDTO.setCpf(cliente.getCpf());
             clienteDTO.setName(cliente.getName());
             clienteDTO.setEmail(cliente.getEmail());
             clienteDTO.setContato(cliente.getContato());
@@ -83,6 +89,7 @@ public class ClienteController {
         for (Cliente cliente : clientes) {
             ClienteDTO clienteDTO = new ClienteDTO();
             clienteDTO.setId(cliente.getId());
+            clienteDTO.setCpf(cliente.getCpf());
             clienteDTO.setName(cliente.getName());
             clienteDTO.setEmail(cliente.getEmail());
             clienteDTO.setContato(cliente.getContato());
@@ -94,7 +101,7 @@ public class ClienteController {
 
     @GetMapping("/dcli")
     public ResponseEntity<String> deleteFornecedor(@RequestParam String id) {
-        Optional<Cliente> clienteOpt = clienteRepo.findById(id);
+        Optional<Cliente> clienteOpt = clienteRepo.findByCpf(id);
         if (clienteOpt.isPresent()) {
             Cliente fornecedor = clienteOpt.get();
             fornecedor.setStatus(false);

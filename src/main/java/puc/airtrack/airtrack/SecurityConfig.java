@@ -38,11 +38,13 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/login","/","/register", "/reset-password").permitAll()
-                        .requestMatchers("/cre","/ge","/gel","/upe","/de", "/linhaordem/**", "/ordem/**").hasAnyRole("ADMIN")
-                        .requestMatchers("/cforn","/gforn","/gforns","/uforn","/dforn").hasAnyRole("SUPERVISOR","ADMIN")
-                        .requestMatchers("/cpeca","/gpeca","/gpecas","/upeca","/dpeca", "/gfornc").hasAnyRole("ENGENHEIRO","ADMIN")
-                        .requestMatchers("/ccli","/gcli","/gclis","/ucli","/dcli").hasAnyRole("AUDITOR","ADMIN")
-                        .requestMatchers("/cmotor","/gmotores","/umotor","/gmotor").hasAnyRole("SUPERVISOR","ADMIN")
+                        .requestMatchers("/cre","/ge","/gel","/upe","/de").hasAnyRole("ADMIN")
+                        .requestMatchers("/cforn","/gforn","/gforns","/uforn","/dforn", "/linhaordem/get", 
+                        "/linhaordem/list", "/cmotor","/umotor","/gmotor").hasAnyRole("SUPERVISOR","ADMIN")
+                        .requestMatchers("/cpeca","/gpeca","/gpecas","/upeca","/dpeca", "/gfornc","/linhaordem/**").hasAnyRole("ENGENHEIRO","ADMIN")
+                        .requestMatchers("/ccli","/gcli","/ucli","/dcli").hasAnyRole("AUDITOR","ADMIN")
+                        .requestMatchers("/ordem/**", "/gmotores").hasAnyRole("SUPERVISOR", "ENGENHEIRO","ADMIN")
+                        .requestMatchers("/gclis" ).hasAnyRole("SUPERVISOR","AUDITOR", "ENGENHEIRO","ADMIN")
                         .requestMatchers("/first-access").authenticated()
                     )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class); // ajuste conforme sua regra

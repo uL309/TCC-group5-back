@@ -44,7 +44,7 @@ public class Pecas {
     private int id_engenheiro;
 
     @ManyToOne/*pegar exemplo caso necessário */
-    @JoinColumn(name = "fornecedor", referencedColumnName = "CNPJ", foreignKey = @jakarta.persistence.ForeignKey(name = "fornecedor"))
+    @JoinColumn(name = "fornecedor", referencedColumnName = "cnpj", foreignKey = @jakarta.persistence.ForeignKey(name = "fornecedor"))
     private Fornecedor fornecedor;
 
 }
