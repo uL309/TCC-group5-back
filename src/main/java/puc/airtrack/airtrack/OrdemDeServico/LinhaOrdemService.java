@@ -2,9 +2,7 @@ package puc.airtrack.airtrack.OrdemDeServico;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import puc.airtrack.airtrack.Cliente.ClienteRepo;
 import puc.airtrack.airtrack.Login.UserService;
-import puc.airtrack.airtrack.Motor.MotorRepository;
 import puc.airtrack.airtrack.Pecas.PecasRepository;
 
 import java.util.List;

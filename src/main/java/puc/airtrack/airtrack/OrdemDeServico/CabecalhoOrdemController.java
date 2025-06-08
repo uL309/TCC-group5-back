@@ -16,21 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import puc.airtrack.airtrack.Cliente.ClienteRepo;
-import puc.airtrack.airtrack.Login.UserService;
-import puc.airtrack.airtrack.Motor.MotorRepository;
-
 @RestController
 @RequestMapping("/ordem")
 public class CabecalhoOrdemController {
     @Autowired
     private CabecalhoOrdemRepository cabecalhoOrdemRepository;
-    @Autowired
-    private ClienteRepo clienteRepo;
-    @Autowired
-    private MotorRepository motorRepository;
-    @Autowired
-    private UserService userService;
     @Autowired
     private LinhaOrdemService linhaOrdemService;
     @Autowired

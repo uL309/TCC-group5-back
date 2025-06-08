@@ -1,7 +1,6 @@
 package puc.airtrack.airtrack.User;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;

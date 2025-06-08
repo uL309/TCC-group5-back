@@ -10,8 +10,6 @@ import puc.airtrack.airtrack.Login.User;
 import puc.airtrack.airtrack.Motor.Motor;
 import lombok.Getter;
 
-import java.util.List;
-
 @Entity
 @Getter
 @Setter
