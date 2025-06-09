@@ -23,7 +23,7 @@ public class LinhaOrdem {
     @ManyToOne
     @JoinColumn(name = "peca", referencedColumnName = "id", foreignKey = @ForeignKey(name = "peca"))
     private Pecas peca;
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "Engenheiro", referencedColumnName = "id", foreignKey = @ForeignKey(name = "engenheiro"))
     private User engenheiro;
     private ArrayList<Integer> quantidade;

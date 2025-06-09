@@ -34,20 +34,42 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable()) // só se for API REST
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/login","/","/register", "/reset-password").permitAll()
-                        .requestMatchers("/cre","/ge","/gel","/upe","/de").hasAnyRole("ADMIN")
-                        .requestMatchers("/cforn","/gforn","/gforns","/uforn","/dforn", "/linhaordem/get", 
-                        "/linhaordem/list", "/cmotor","/umotor","/gmotor").hasAnyRole("SUPERVISOR","ADMIN")
-                        .requestMatchers("/cpeca","/gpeca","/gpecas","/upeca","/dpeca", "/gfornc","/linhaordem/**").hasAnyRole("ENGENHEIRO","ADMIN")
-                        .requestMatchers("/ccli","/gcli","/ucli","/dcli").hasAnyRole("AUDITOR","ADMIN")
-                        .requestMatchers("/ordem/**", "/gmotores").hasAnyRole("SUPERVISOR", "ENGENHEIRO","ADMIN")
-                        .requestMatchers("/gclis" ).hasAnyRole("SUPERVISOR","AUDITOR", "ENGENHEIRO","ADMIN")
+                        // Endpoints públicos
+                        .requestMatchers("/login", "/", "/register", "/reset-password").permitAll()
+
+                        // ADMIN only
+                        .requestMatchers("/cre", "/ge", "/gel", "/upe", "/de").hasRole("ADMIN")
+
+                        // SUPERVISOR or ADMIN
+                        .requestMatchers("/cforn", "/gforn", "/gforns", "/uforn", "/dforn",
+                                "/linhaordem/get", "/linhaordem/list",
+                                "/cmotor", "/umotor", "/gmotor").hasAnyRole("SUPERVISOR", "ADMIN")
+
+                        // ENGENHEIRO or ADMIN
+                        .requestMatchers("/cpeca", "/gpeca", "/gpecas", "/upeca", "/dpeca",
+                                "/gfornc", "/linhaordem/**").hasAnyRole("ENGENHEIRO", "ADMIN")
+
+                        // AUDITOR or ADMIN
+                        .requestMatchers("/ccli", "/gcli", "/ucli", "/dcli").hasAnyRole("AUDITOR", "ADMIN")
+
+                        // SUPERVISOR, ENGENHEIRO, or ADMIN
+                        .requestMatchers("/gmotores").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "ADMIN")
+
+                        // SUPERVISOR, AUDITOR, ENGENHEIRO, or ADMIN
+                        .requestMatchers("/gclis").hasAnyRole("SUPERVISOR", "AUDITOR", "ENGENHEIRO", "ADMIN")
+
+                        // ORDENS - controle específico por endpoint
+                        .requestMatchers("/ordem/get", "/ordem/list").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
+                        .requestMatchers("/ordem/update", "/ordem/atualizar-status").hasAnyRole("ENGENHEIRO", "SUPERVISOR", "ADMIN")
+                        .requestMatchers("/ordem/create").hasAnyRole("SUPERVISOR", "ADMIN")
+
+                        // Authenticated
                         .requestMatchers("/first-access").authenticated()
-                    )
-                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class); // ajuste conforme sua regra
+                )
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
