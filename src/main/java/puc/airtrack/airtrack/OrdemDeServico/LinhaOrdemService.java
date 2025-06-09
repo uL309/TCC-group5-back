@@ -94,7 +94,6 @@ public class LinhaOrdemService {
         CabecalhoOrdem cabecalho = saved.getOrdem();
         if (cabecalho != null) {
             cabecalho.setStatus(1);
-            cabecalho.setTempoUsado(cabecalho.getTempoUsado() + saved.getTempoGasto());
             cabecalhoOrdemRepository.save(cabecalho);
         } else {
             throw new IllegalArgumentException("Ordem não encontrada para a Linha de Ordem");
