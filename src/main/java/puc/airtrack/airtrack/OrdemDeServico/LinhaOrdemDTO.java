@@ -19,13 +19,13 @@ public class LinhaOrdemDTO {
     @JsonProperty("peca")
     private Integer pecaId;
 
-    @JsonProperty("pecaNome")
+    @JsonProperty("peca_nome")
     private String pecaNome;
 
     @JsonProperty("quantidade")
     private ArrayList<Integer> quantidade;
 
-    @JsonProperty("tempoGasto")
+    @JsonProperty("tempo_gasto")
     private float tempoGasto;
 
     @JsonProperty("engenheiro")
