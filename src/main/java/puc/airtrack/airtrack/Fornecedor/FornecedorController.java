@@ -24,6 +24,10 @@ public class FornecedorController {
     @PostMapping("/cforn")
     public ResponseEntity<String> createFornecedor(@RequestBody FornecedorDTO entity) {
         if (entity != null) {
+            Optional<Fornecedor> existingFornecedor = fornecedorRepo.findById(entity.getId());
+            if (existingFornecedor.isPresent()) {
+                return ResponseEntity.badRequest().body("Fornecedor already exists");
+            }
             Fornecedor fornecedor = new Fornecedor();
             fornecedor.setId(entity.getId());
             fornecedor.setName(entity.getName());
