@@ -108,6 +108,7 @@ public class PecasController {
             dto.setCategoria(pecas.getCategoria());
             dto.setId_engenheiro(pecas.getId_engenheiro());
             dto.setFornecedorId(pecas.getFornecedor() != null ? pecas.getFornecedor().getId() : null);
+            dto.setFornecedorNome(pecas.getFornecedor() != null ? pecas.getFornecedor().getName() : null);
             pecasDTOs.add(dto);
         }
         return ResponseEntity.ok(pecasDTOs);
