@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import puc.airtrack.airtrack.Fornecedor.Fornecedor;
 
 @RestController
 public class ClienteController {
@@ -24,6 +25,10 @@ public class ClienteController {
     @PostMapping("/ccli")
     public ResponseEntity<String> createCliente(@RequestBody ClienteDTO entity) {
         if (entity != null) {
+            Optional<Cliente> existingCliente = clienteRepo.findByCpf(entity.getCpf());
+            if (existingCliente.isPresent()) {
+                return ResponseEntity.badRequest().body("Cliente already exists");
+            }
             Cliente cliente = new Cliente();
             cliente.setCpf(entity.getCpf());
             cliente.setName(entity.getName());
