@@ -38,6 +38,7 @@ public class PecasController {
             pecas.setData_aquisicao(entity.getDataAquisicao());
             pecas.setStatus(entity.getStatus());
             pecas.setCategoria(entity.getCategoria());
+            pecas.setValor(entity.getValor());
             pecas.setId_engenheiro(entity.getId_engenheiro());
             if (entity.getFornecedorId() != null) {
                 Optional<Fornecedor> fornecedor = fornecedorRepository.findById(entity.getFornecedorId());
@@ -61,6 +62,7 @@ public class PecasController {
                 pecas.setData_aquisicao(entity.getDataAquisicao());
                 pecas.setStatus(entity.getStatus());
                 pecas.setCategoria(entity.getCategoria());
+                pecas.setValor(entity.getValor());
                 pecas.setId_engenheiro(entity.getId_engenheiro());
                 if (entity.getFornecedorId() != null) {
                     Optional<Fornecedor> fornecedor = fornecedorRepository.findById(entity.getFornecedorId().toString());
@@ -88,7 +90,9 @@ public class PecasController {
             dto.setStatus(pecas.getStatus());
             dto.setCategoria(pecas.getCategoria());
             dto.setId_engenheiro(pecas.getId_engenheiro());
+            dto.setValor(pecas.getValor());
             dto.setFornecedorId(pecas.getFornecedor() != null ? pecas.getFornecedor().getId() : null);
+            dto.setFornecedorNome(pecas.getFornecedor() != null ? pecas.getFornecedor().getName() : null);
             return ResponseEntity.ok(dto);
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
@@ -107,6 +111,7 @@ public class PecasController {
             dto.setStatus(pecas.getStatus());
             dto.setCategoria(pecas.getCategoria());
             dto.setId_engenheiro(pecas.getId_engenheiro());
+            dto.setValor(pecas.getValor());
             dto.setFornecedorId(pecas.getFornecedor() != null ? pecas.getFornecedor().getId() : null);
             dto.setFornecedorNome(pecas.getFornecedor() != null ? pecas.getFornecedor().getName() : null);
             pecasDTOs.add(dto);

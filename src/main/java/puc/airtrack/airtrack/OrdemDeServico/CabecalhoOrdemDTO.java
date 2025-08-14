@@ -47,6 +47,14 @@ public class CabecalhoOrdemDTO {
     @JsonProperty("supervisor_nome")
     private String supervisorNome;
 
+    @JsonProperty("valor_hora")
+    private float valorHora;
+
+    @JsonProperty("valor_total")
+    public float getValorTotal() {
+        return tempoUsado * valorHora;
+    }
+
     @JsonProperty("status_descricao")
     public String getStatusDescricao() {
         return switch (status) {
