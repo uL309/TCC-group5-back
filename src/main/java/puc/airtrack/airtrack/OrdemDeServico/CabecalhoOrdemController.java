@@ -26,7 +26,7 @@ public class CabecalhoOrdemController {
     @Autowired
     private CabecalhoOrdemService cabecalhoOrdemService;
 
-        @PostMapping("/create")
+    @PostMapping("/create")
     public ResponseEntity<String> createCabecalho(@RequestBody CabecalhoOrdemDTO dto) {
         return cabecalhoOrdemService.createCabecalho(dto);
     }

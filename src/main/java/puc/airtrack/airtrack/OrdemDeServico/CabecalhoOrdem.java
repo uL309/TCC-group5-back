@@ -37,7 +37,6 @@ public class CabecalhoOrdem {
     @Column(name = "Tempo_usado")
     private float tempoUsado;
     @Column(name = "status")
-    @NotBlank(message = "Status não pode ser vazio")
     @Max(value = 2, message = "Status deve ser 0, 1 ou 2")
     @Min(value = 0, message = "Status deve ser 0, 1 ou 2")
     private int status;
