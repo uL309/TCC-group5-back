@@ -40,4 +40,6 @@ public class CabecalhoOrdem {
     @Max(value = 2, message = "Status deve ser 0, 1 ou 2")
     @Min(value = 0, message = "Status deve ser 0, 1 ou 2")
     private int status;
+    @Column(name = "valor_hora")
+    private float valorHora;
 }
