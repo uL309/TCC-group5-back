@@ -31,7 +31,7 @@ public class PecasDTO {
     private int id_engenheiro;
 
     @JsonProperty("valor")
-    private float valor;
+    private Float valor;
 
     @JsonProperty("fornecedor")
     private String fornecedorId; // Use only the Fornecedor ID for DTO

@@ -41,5 +41,5 @@ public class CabecalhoOrdem {
     @Min(value = 0, message = "Status deve ser 0, 1 ou 2")
     private int status;
     @Column(name = "valor_hora")
-    private float valorHora;
+    private Float valorHora;
 }

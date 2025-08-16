@@ -44,7 +44,7 @@ public class Pecas {
     private int id_engenheiro;
 
     @Column(name = "valor")
-    private float valor;
+    private Float valor;
 
     @ManyToOne/*pegar exemplo caso necessário */
     @JoinColumn(name = "fornecedor", referencedColumnName = "cnpj", foreignKey = @jakarta.persistence.ForeignKey(name = "fornecedor"))

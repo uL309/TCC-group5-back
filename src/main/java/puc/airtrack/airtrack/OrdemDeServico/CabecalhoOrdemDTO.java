@@ -48,7 +48,7 @@ public class CabecalhoOrdemDTO {
     private String supervisorNome;
 
     @JsonProperty("valor_hora")
-    private float valorHora;
+    private Float valorHora;
 
     @JsonProperty("valor_total")
     public float getValorTotal() {
