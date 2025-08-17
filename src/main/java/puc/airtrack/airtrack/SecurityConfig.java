@@ -72,9 +72,8 @@ public class SecurityConfig {
                         .requestMatchers("/ordem/get", "/ordem/list").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         .requestMatchers("/ordem/update", "/ordem/atualizar-status").hasAnyRole("ENGENHEIRO", "SUPERVISOR", "ADMIN")
                         .requestMatchers("/ordem/create").hasAnyRole("SUPERVISOR", "ADMIN")
-
                         // Authenticated
-                        .requestMatchers("/first-access").authenticated()
+                        .requestMatchers("/first-access", "/notifications/**").authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
 
