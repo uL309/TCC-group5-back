@@ -17,6 +17,7 @@ import puc.airtrack.airtrack.Login.User;
 import puc.airtrack.airtrack.Login.UserRole;
 import puc.airtrack.airtrack.Login.UserService;
 import puc.airtrack.airtrack.Motor.MotorRepository;
+import puc.airtrack.airtrack.notifications.NotificationType;
 import puc.airtrack.airtrack.services.AuthUtil;
 import puc.airtrack.airtrack.notifications.DomainEventPublisher;
 import puc.airtrack.airtrack.notifications.DomainEvent;
@@ -75,21 +76,10 @@ public class CabecalhoOrdemService {
             cabecalhoOrdemRepository.save(entity);
             URI location = URI.create("/ordem/get?id=" + entity.getId());
 
-            // Publica evento OS_CREATED
-            String eventId = UUID.randomUUID().toString();
-            String actorId = entity.getSupervisor() != null ? String.valueOf(entity.getSupervisor().getId()) : null;
-            domainEventPublisher.publish(
-                "os.created",
-                new DomainEvent(
-                    eventId,
-                    "OS_CREATED",
-                    "OS",
-                    String.valueOf(entity.getId()),
-                    actorId,
-                    Instant.now(),
-                    new HashMap<>()
-                )
-            );
+            // Publica evento OS_PENDING se status for PENDENTE
+            if (entity.getStatus() == OrdemStatus.PENDENTE) {
+                publishPendingEvent(entity);
+            }
             return ResponseEntity.created(location).body("CabecalhoOrdem created successfully");
         }
         return ResponseEntity.badRequest().body("Invalid data");
@@ -144,25 +134,10 @@ public class CabecalhoOrdemService {
 
                 // Publica evento se mudou para EM_ANDAMENTO
                 OrdemStatus newStatus = entity.getStatus();
-                if (oldStatus != OrdemStatus.ANDAMENTO && newStatus == OrdemStatus.ANDAMENTO) {
-                    String eventId = UUID.randomUUID().toString();
-                    User usuario = AuthUtil.getUsuarioLogado();
-                    String actorId = usuario != null ? String.valueOf(usuario.getId()) : null;
-                    HashMap<String, Object> data = new HashMap<>();
-                    data.put("old", oldStatus.name());
-                    data.put("new", newStatus.name());
-                    domainEventPublisher.publish(
-                        "os.status.changed",
-                        new DomainEvent(
-                            eventId,
-                            "OS_STATUS_CHANGED",
-                            "OS",
-                            String.valueOf(entity.getId()),
-                            actorId,
-                            Instant.now(),
-                            data
-                        )
-                    );
+                if (oldStatus != OrdemStatus.PENDENTE && newStatus == OrdemStatus.PENDENTE) {
+                    publishPendingEvent(entity);
+                } else {
+                    publishStatusChangedEvent(entity, oldStatus, newStatus);
                 }
                 return ResponseEntity.ok("CabecalhoOrdem updated successfully");
             }
@@ -179,32 +154,63 @@ public class CabecalhoOrdemService {
             OrdemStatus status = OrdemStatus.values()[novoStatus];
             entity.setStatus(status);
             cabecalhoOrdemRepository.save(entity);
-
-            // Publica evento se mudou para EM_ANDAMENTO
             OrdemStatus newStatus = entity.getStatus();
-            if (oldStatus != OrdemStatus.ANDAMENTO && newStatus == OrdemStatus.ANDAMENTO) {
-                String eventId = UUID.randomUUID().toString();
-                User usuario = AuthUtil.getUsuarioLogado();
-                String actorId = usuario != null ? String.valueOf(usuario.getId()) : null;
-                HashMap<String, Object> data = new HashMap<>();
-                data.put("old", oldStatus.name());
-                data.put("new", newStatus.name());
-                domainEventPublisher.publish(
-                    "os.status.changed",
-                    new DomainEvent(
-                        eventId,
-                        "OS_STATUS_CHANGED",
-                        "OS",
-                        String.valueOf(entity.getId()),
-                        actorId,
-                        Instant.now(),
-                        data
-                    )
-                );
+            if (oldStatus != OrdemStatus.PENDENTE && newStatus == OrdemStatus.PENDENTE) {
+                publishPendingEvent(entity);
+            } else {
+                publishStatusChangedEvent(entity, oldStatus, newStatus);
             }
             return ResponseEntity.ok("Status atualizado com sucesso");
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cabeçalho não encontrado");
+    }
+
+    /**
+     * Publica um evento OS_PENDING no RabbitMQ quando o status da OS é PENDENTE.
+     */
+    private void publishPendingEvent(CabecalhoOrdem entity) {
+        String eventId = UUID.randomUUID().toString();
+        User usuario = AuthUtil.getUsuarioLogado();
+        String actorId = usuario != null ? String.valueOf(usuario.getId()) : null;
+        domainEventPublisher.publish(
+            "os.pending",
+            new DomainEvent(
+                eventId,
+                NotificationType.OS_PENDING,
+                "OS",
+                String.valueOf(entity.getId()),
+                actorId,
+                Instant.now(),
+                new HashMap<>()
+            )
+        );
+    }
+
+    /**
+     * Publica um evento OS_STATUS_CHANGED no RabbitMQ quando o status da OS muda para ANDAMENTO ou CONCLUIDA.
+     */
+    private void publishStatusChangedEvent(CabecalhoOrdem entity, OrdemStatus oldStatus, OrdemStatus newStatus) {
+        if ((oldStatus != OrdemStatus.ANDAMENTO && newStatus == OrdemStatus.ANDAMENTO) ||
+            (oldStatus != OrdemStatus.CONCLUIDA && newStatus == OrdemStatus.CONCLUIDA)) {
+            String eventId = UUID.randomUUID().toString();
+            User usuario = AuthUtil.getUsuarioLogado();
+            String actorId = usuario != null ? String.valueOf(usuario.getId()) : null;
+            HashMap<String, Object> data = new HashMap<>();
+            data.put("old", oldStatus.name());
+            data.put("new", newStatus.name());
+            domainEventPublisher.publish(
+                "os.status.changed",
+                new DomainEvent(
+                    eventId,
+                    NotificationType.OS_STATUS_CHANGED,
+                    "OS",
+                    String.valueOf(entity.getId()),
+                    actorId,
+                    Instant.now(),
+                    data
+                )
+            );
+        }
     }
 
 

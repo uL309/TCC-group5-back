@@ -12,7 +12,7 @@ public class DomainEventPublisher {
     public void publish(String routingKey, DomainEvent event) {
         rabbit.convertAndSend(RabbitConfig.EXCHANGE, routingKey, event, m -> {
             m.getMessageProperties().setMessageId(event.eventId());
-            m.getMessageProperties().setType(event.type());
+            m.getMessageProperties().setType(String.valueOf(event.type()));
             return m;
         });
     }

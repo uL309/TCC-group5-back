@@ -6,8 +6,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import puc.airtrack.airtrack.Login.UserService;
 import puc.airtrack.airtrack.Login.UserRole;
+import puc.airtrack.airtrack.OrdemDeServico.OrdemStatus;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -21,34 +24,57 @@ public class NotificationConsumer {
         // Idempotência básica por eventId
         if (e.eventId() != null && repo.findByEventId(e.eventId()).isPresent()) return;
 
+
         switch (e.type()) {
-            case "OS_CREATED" -> notifyEngineersOnOsCreated(e);
-            case "OS_STATUS_CHANGED" -> expireOnOsInProgress(e);
-            case "MOTOR_CREATED" -> notifySupervisorsOnMotorCreated(e);
+            case OS_PENDING -> notifyEngineersOnOsPending(e);
+            case OS_STATUS_CHANGED -> expireOnOsStatusChanged(e);
+            case MOTOR_CREATED -> notifySupervisorsOnMotorCreated(e);
             default -> { /* ignorar ou logar */ }
         }
     }
 
-    private void notifyEngineersOnOsCreated(DomainEvent e) {
+    /**
+     * Notifica engenheiros quando uma OS fica pendente.
+     */
+    private void notifyEngineersOnOsPending(DomainEvent e) {
         var engineers = userService.findAllByRole(UserRole.ROLE_ENGENHEIRO);
         if (engineers.isEmpty()) return;
-        var notifs = engineers.stream().map(user -> {
-            var n = new Notification();
-            n.setUserId((long) user.getId());
-            n.setType("OS_CREATED");
-            n.setEntity("OS");
-            n.setEntityId(e.entityId());
-            n.setTitle("Nova OS disponível");
-            n.setBody("Uma ordem de serviço aguarda um engenheiro.");
-            n.setEventId(e.eventId());
-            return n;
-        }).toList();
-        repo.saveAll(notifs);
+        List<Notification> notifs = new ArrayList<>();
+        for (var user : engineers) {
+            boolean exists = repo.existsByUserIdAndEntityAndEntityIdAndTypeAndStatus(
+                (long) user.getId(), "OS", e.entityId(), NotificationType.OS_PENDING, NotificationStatus.ACTIVE);
+            if (!exists) {
+                var n = new Notification();
+                n.setUserId((long) user.getId());
+                n.setType(NotificationType.OS_PENDING);
+                n.setEntity("OS");
+                n.setEntityId(e.entityId());
+                n.setTitle("Nova OS pendente");
+                n.setBody("Uma ordem de serviço está pendente e aguarda um engenheiro.");
+                n.setEventId(e.eventId());
+                notifs.add(n);
+            }
+        }
+        if (!notifs.isEmpty()) {
+            repo.saveAll(notifs);
+        }
     }
 
-    private void expireOnOsInProgress(DomainEvent e) {
-        var newStatus = String.valueOf(e.data().get("new"));
-        if ("ANDAMENTO".equalsIgnoreCase(newStatus)) {
+    /**
+     * Expira notificações ativas de OS quando o status muda para ANDAMENTO ou CONCLUIDA.
+     */
+    private void expireOnOsStatusChanged(DomainEvent e) {
+        Object newStatusObj = e.data().get("new");
+        if (newStatusObj == null) return;
+        String newStatusStr = newStatusObj.toString();
+        OrdemStatus newStatus;
+        try {
+            newStatus = OrdemStatus.valueOf(newStatusStr);
+        } catch (IllegalArgumentException ex) {
+            // Status desconhecido, não expira notificações
+            return;
+        }
+        if (newStatus == OrdemStatus.ANDAMENTO || newStatus == OrdemStatus.CONCLUIDA) {
             repo.expireActiveByOs(e.entityId(), Instant.now());
         }
     }
@@ -59,7 +85,7 @@ public class NotificationConsumer {
         var notifs = supers.stream().map(user -> {
             var n = new Notification();
             n.setUserId((long) user.getId());
-            n.setType("MOTOR_CREATED");
+            n.setType(NotificationType.MOTOR_CREATED);
             n.setEntity("MOTOR");
             n.setEntityId(e.entityId());
             n.setTitle("Novo motor cadastrado");

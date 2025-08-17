@@ -5,7 +5,7 @@ import java.util.Map;
 
 public record DomainEvent(
     String eventId,
-    String type,
+    NotificationType type,
     String entity,
     String entityId,
     String actorId,
