@@ -9,7 +9,7 @@ import java.time.Instant;
 @Setter
 @Getter
 @Entity
-@Table(name = "notification",
+@Table(name = "notificacao",
     indexes = @Index(name = "idx_user_status_created", columnList = "user_id,status,created_at")
 )
 public class Notification {
