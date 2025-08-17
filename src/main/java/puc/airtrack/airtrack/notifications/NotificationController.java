@@ -27,7 +27,7 @@ public class NotificationController {
     @Transactional
     public void markRead(@PathVariable Long id, @AuthenticationPrincipal User user) {
         var n = repo.findById(id).orElseThrow();
-        if (!n.getUserId().equals(user.getId())) throw new SecurityException("Not owner");
+        if (!n.getUserId().equals((long) user.getId())) throw new SecurityException("Not owner");
         n.setStatus(NotificationStatus.READ);
     }
 
@@ -35,7 +35,12 @@ public class NotificationController {
     @Transactional
     public void dismiss(@PathVariable Long id, @AuthenticationPrincipal User user) {
         var n = repo.findById(id).orElseThrow();
-        if (!n.getUserId().equals(user.getId())) throw new SecurityException("Not owner");
+        if (!n.getUserId().equals((long) user.getId())) throw new SecurityException("Not owner");
         n.setStatus(NotificationStatus.DISMISSED);
+    }
+
+    @GetMapping("/unread/count")
+    public long countUnread(@AuthenticationPrincipal User user) {
+        return repo.countByUserIdAndStatus(Long.valueOf(user.getId()), NotificationStatus.ACTIVE);
     }
 }

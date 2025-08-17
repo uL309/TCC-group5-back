@@ -40,6 +40,8 @@ public class NotificationConsumer {
         var engineers = userService.findAllByRole(UserRole.ROLE_ENGENHEIRO);
         if (engineers.isEmpty()) return;
         List<Notification> notifs = new ArrayList<>();
+        String osNumero = e.data().getOrDefault("osNumero", e.entityId()).toString();
+        String motorNome = e.data().getOrDefault("motorNome", "").toString();
         for (var user : engineers) {
             boolean exists = repo.existsByUserIdAndEntityAndEntityIdAndTypeAndStatus(
                 (long) user.getId(), "OS", e.entityId(), NotificationType.OS_PENDING, NotificationStatus.ACTIVE);
@@ -49,8 +51,8 @@ public class NotificationConsumer {
                 n.setType(NotificationType.OS_PENDING);
                 n.setEntity("OS");
                 n.setEntityId(e.entityId());
-                n.setTitle("Nova OS pendente");
-                n.setBody("Uma ordem de serviço está pendente e aguarda um engenheiro.");
+                n.setTitle("OS pendente");
+                n.setBody(String.format("A OS <b>#%s</b> do motor <b>%s</b> está <b>pendente</b>.", osNumero, motorNome));
                 n.setEventId(e.eventId());
                 notifs.add(n);
             }
@@ -82,6 +84,7 @@ public class NotificationConsumer {
     private void notifySupervisorsOnMotorCreated(DomainEvent e) {
         var supers = userService.findAllByRole(UserRole.ROLE_SUPERVISOR);
         if (supers.isEmpty()) return;
+        String serie = e.data().getOrDefault("serie", "").toString();
         var notifs = supers.stream().map(user -> {
             var n = new Notification();
             n.setUserId((long) user.getId());
@@ -89,7 +92,7 @@ public class NotificationConsumer {
             n.setEntity("MOTOR");
             n.setEntityId(e.entityId());
             n.setTitle("Novo motor cadastrado");
-            n.setBody("Série: " + e.data().getOrDefault("serie", ""));
+            n.setBody(String.format("Motor cadastrado com série <b>%s</b>.", serie));
             n.setEventId(e.eventId());
             return n;
         }).toList();

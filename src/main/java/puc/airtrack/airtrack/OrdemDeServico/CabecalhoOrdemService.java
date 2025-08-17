@@ -172,6 +172,10 @@ public class CabecalhoOrdemService {
         String eventId = UUID.randomUUID().toString();
         User usuario = AuthUtil.getUsuarioLogado();
         String actorId = usuario != null ? String.valueOf(usuario.getId()) : null;
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("osNumero", entity.getId());
+        String motorSerie = entity.getNumSerieMotor() != null ? entity.getNumSerieMotor().getSerie_motor() : "";
+        data.put("motorNome", motorSerie);
         domainEventPublisher.publish(
             "os.pending",
             new DomainEvent(
@@ -181,7 +185,7 @@ public class CabecalhoOrdemService {
                 String.valueOf(entity.getId()),
                 actorId,
                 Instant.now(),
-                new HashMap<>()
+                data
             )
         );
     }

@@ -30,4 +30,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     boolean existsByUserIdAndEntityAndEntityIdAndType(Long userId, String entity, String entityId, NotificationType type);
 
     boolean existsByUserIdAndEntityAndEntityIdAndTypeAndStatus(Long userId, String entity, String entityId, NotificationType type, NotificationStatus status);
+
+    long countByUserIdAndStatus(Long userId, NotificationStatus status);
 }
