@@ -63,10 +63,10 @@ public class SecurityConfig {
                         .requestMatchers("/ccli", "/gcli", "/ucli", "/dcli").hasAnyRole("AUDITOR", "ADMIN")
 
                         // SUPERVISOR, ENGENHEIRO, or ADMIN
-                        .requestMatchers("/gmotores").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "ADMIN")
+//                        .requestMatchers("/gmotores").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "ADMIN")
 
                         // SUPERVISOR, AUDITOR, ENGENHEIRO, or ADMIN
-                        .requestMatchers("/gclis").hasAnyRole("SUPERVISOR", "AUDITOR", "ENGENHEIRO", "ADMIN")
+                        .requestMatchers("/gclis","/gmotores").hasAnyRole("SUPERVISOR", "AUDITOR", "ENGENHEIRO", "ADMIN")
 
                         // ORDENS - controle específico por endpoint
                         .requestMatchers("/ordem/get", "/ordem/list").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")

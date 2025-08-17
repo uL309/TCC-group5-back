@@ -1,8 +1,6 @@
 package puc.airtrack.airtrack.OrdemDeServico;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Setter;
 import puc.airtrack.airtrack.Cliente.Cliente;
@@ -36,10 +34,9 @@ public class CabecalhoOrdem {
     private String descricao;
     @Column(name = "Tempo_usado")
     private float tempoUsado;
+    @Enumerated(EnumType.ORDINAL)
     @Column(name = "status")
-    @Max(value = 2, message = "Status deve ser 0, 1 ou 2")
-    @Min(value = 0, message = "Status deve ser 0, 1 ou 2")
-    private int status;
+    private OrdemStatus status;
     @Column(name = "valor_hora")
     private Float valorHora;
 }
