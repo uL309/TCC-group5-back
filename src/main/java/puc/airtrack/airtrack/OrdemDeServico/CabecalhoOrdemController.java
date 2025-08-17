@@ -47,7 +47,7 @@ public class CabecalhoOrdemController {
             dto.setDataFechamento(entity.getDataFechamento());
             dto.setDescricao(entity.getDescricao());
             dto.setTempoUsado(entity.getTempoUsado());
-            dto.setStatus(entity.getStatus());
+            dto.setStatus(entity.getStatus().getStatus());
             dto.setValorHora(entity.getValorHora());
             if (entity.getCliente() != null) {
                 dto.setClienteId(entity.getCliente().getCpf());
@@ -69,7 +69,7 @@ public class CabecalhoOrdemController {
 
     @GetMapping("/list")
     public ResponseEntity<List<CabecalhoOrdemDTO>> getAllCabecalhos() {
-        List<CabecalhoOrdem> list = cabecalhoOrdemRepository.findAll();
+        List<CabecalhoOrdem> list = cabecalhoOrdemRepository.findAllByOrderByIdDesc();
         List<CabecalhoOrdemDTO> dtos = new ArrayList<>();
         for (CabecalhoOrdem entity : list) {
             CabecalhoOrdemDTO dto = new CabecalhoOrdemDTO();
@@ -78,7 +78,7 @@ public class CabecalhoOrdemController {
             dto.setDataFechamento(entity.getDataFechamento());
             dto.setDescricao(entity.getDescricao());
             dto.setTempoUsado(entity.getTempoUsado());
-            dto.setStatus(entity.getStatus());
+            dto.setStatus(entity.getStatus().getStatus());
             dto.setValorHora(entity.getValorHora());
             if (entity.getCliente() != null) {
                 dto.setClienteId(entity.getCliente().getCpf());

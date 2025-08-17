@@ -92,10 +92,7 @@ public class LinhaOrdemService {
 
         LinhaOrdem saved = linhaOrdemRepository.save(entity);
         CabecalhoOrdem cabecalho = saved.getOrdem();
-        if (cabecalho != null) {
-            cabecalho.setStatus(1);
-            cabecalhoOrdemRepository.save(cabecalho);
-        } else {
+        if (cabecalho == null) {
             throw new IllegalArgumentException("Ordem não encontrada para a Linha de Ordem");
         }
         return convertToDTO(saved);

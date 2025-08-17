@@ -39,7 +39,7 @@ public class CabecalhoOrdemDTO {
     private float tempoUsado;
 
     @JsonProperty("status")
-    private int status;
+    private Integer status;
 
     @JsonProperty("supervisor")
     private String supervisorId; // Only the id of Supervisor (User)
@@ -57,12 +57,15 @@ public class CabecalhoOrdemDTO {
 
     @JsonProperty("status_descricao")
     public String getStatusDescricao() {
-        return switch (status) {
-            case 0 -> "Pendente";
-            case 1 -> "Andamento";
-            case 2 -> "Concluída";
-            default -> "Desconhecido";
-        };
+        if (status == null) return "Desconhecido";
+        OrdemStatus ordemStatus = null;
+        for (OrdemStatus os : OrdemStatus.values()) {
+            if (os.getStatus() == status) {
+                ordemStatus = os;
+                break;
+            }
+        }
+        return ordemStatus != null ? ordemStatus.getStatusDescricao() : "Desconhecido";
     }
 
     private List<LinhaOrdemDTO> linhas;

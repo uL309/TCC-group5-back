@@ -10,8 +10,11 @@ import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import puc.airtrack.airtrack.Cliente.ClienteRepo;
+import puc.airtrack.airtrack.Login.User;
+import puc.airtrack.airtrack.Login.UserRole;
 import puc.airtrack.airtrack.Login.UserService;
 import puc.airtrack.airtrack.Motor.MotorRepository;
+import puc.airtrack.airtrack.services.AuthUtil;
 
 @Service
 public class CabecalhoOrdemService {
@@ -32,7 +35,8 @@ public class CabecalhoOrdemService {
             entity.setDataFechamento(dto.getDataFechamento());
             entity.setDescricao(dto.getDescricao());
             entity.setTempoUsado(dto.getTempoUsado());
-            entity.setStatus(dto.getStatus());
+            OrdemStatus status = OrdemStatus.values()[dto.getStatus()];
+            entity.setStatus(obterStatusCabecalho(Boolean.TRUE, status));
             entity.setValorHora(dto.getValorHora());
             if (dto.getClienteId() != null) {
                 entity.setCliente(clienteRepo.findByCpf(dto.getClienteId()).orElse(null));
@@ -58,6 +62,9 @@ public class CabecalhoOrdemService {
                 linha.setOrdemId(entity.getId());
                 linhaOrdemService.create(linha);
             }
+            // Atualiza o status do cabeçalho após criar as linhas, se necessário
+            entity.setStatus(obterStatusCabecalho(Boolean.FALSE, entity.getStatus()));
+            cabecalhoOrdemRepository.save(entity);
             URI location = URI.create("/ordem/get?id=" + entity.getId());
             return ResponseEntity.created(location).body("CabecalhoOrdem created successfully");
         }
@@ -75,7 +82,8 @@ public class CabecalhoOrdemService {
                 entity.setDataFechamento(dto.getDataFechamento());
                 entity.setDescricao(dto.getDescricao());
                 entity.setTempoUsado(dto.getTempoUsado());
-                entity.setStatus(dto.getStatus());
+                OrdemStatus status = OrdemStatus.values()[dto.getStatus()];
+                entity.setStatus(obterStatusCabecalho(Boolean.FALSE, status));
                 entity.setTempoUsado(dto.getTempoUsado());
                 entity.setValorHora(dto.getValorHora());
 
@@ -120,10 +128,25 @@ public class CabecalhoOrdemService {
         Optional<CabecalhoOrdem> opt = cabecalhoOrdemRepository.findById(cabecalhoId);
         if (opt.isPresent()) {
             CabecalhoOrdem entity = opt.get();
-            entity.setStatus(novoStatus);
+            OrdemStatus status = OrdemStatus.values()[novoStatus];
+            entity.setStatus(status);
             cabecalhoOrdemRepository.save(entity);
             return ResponseEntity.ok("Status atualizado com sucesso");
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cabeçalho não encontrado");
+    }
+
+
+    public OrdemStatus obterStatusCabecalho(boolean isNovoOs, OrdemStatus statusAtual) {
+        User usuario = AuthUtil.getUsuarioLogado();
+        UserRole userRole = usuario != null ? usuario.getRole() : null;
+
+        if (isNovoOs && userRole == UserRole.ROLE_SUPERVISOR) {
+            return OrdemStatus.PENDENTE;
+        }
+        if (userRole == UserRole.ROLE_ENGENHEIRO && statusAtual == OrdemStatus.PENDENTE) {
+            return OrdemStatus.ANDAMENTO;
+        }
+        return statusAtual;
     }
 }
