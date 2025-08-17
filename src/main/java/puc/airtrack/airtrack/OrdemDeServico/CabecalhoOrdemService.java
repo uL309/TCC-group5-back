@@ -2,6 +2,9 @@ package puc.airtrack.airtrack.OrdemDeServico;
 
 import java.net.URI;
 import java.util.Optional;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +18,8 @@ import puc.airtrack.airtrack.Login.UserRole;
 import puc.airtrack.airtrack.Login.UserService;
 import puc.airtrack.airtrack.Motor.MotorRepository;
 import puc.airtrack.airtrack.services.AuthUtil;
+import puc.airtrack.airtrack.notifications.DomainEventPublisher;
+import puc.airtrack.airtrack.notifications.DomainEvent;
 
 @Service
 public class CabecalhoOrdemService {
@@ -26,7 +31,10 @@ public class CabecalhoOrdemService {
     MotorRepository motorRepository;
     @Autowired
     UserService userService;
-    @Autowired LinhaOrdemService linhaOrdemService;
+    @Autowired
+    LinhaOrdemService linhaOrdemService;
+    @Autowired
+    DomainEventPublisher domainEventPublisher;
 
     public ResponseEntity<String> createCabecalho(CabecalhoOrdemDTO dto){
         if (dto != null) {
@@ -66,6 +74,22 @@ public class CabecalhoOrdemService {
             entity.setStatus(obterStatusCabecalho(Boolean.FALSE, entity.getStatus()));
             cabecalhoOrdemRepository.save(entity);
             URI location = URI.create("/ordem/get?id=" + entity.getId());
+
+            // Publica evento OS_CREATED
+            String eventId = UUID.randomUUID().toString();
+            String actorId = entity.getSupervisor() != null ? String.valueOf(entity.getSupervisor().getId()) : null;
+            domainEventPublisher.publish(
+                "os.created",
+                new DomainEvent(
+                    eventId,
+                    "OS_CREATED",
+                    "OS",
+                    String.valueOf(entity.getId()),
+                    actorId,
+                    Instant.now(),
+                    new HashMap<>()
+                )
+            );
             return ResponseEntity.created(location).body("CabecalhoOrdem created successfully");
         }
         return ResponseEntity.badRequest().body("Invalid data");
@@ -77,6 +101,7 @@ public class CabecalhoOrdemService {
             Optional<CabecalhoOrdem> opt = cabecalhoOrdemRepository.findById(dto.getId());
             if (opt.isPresent()) {
                 CabecalhoOrdem entity = opt.get();
+                OrdemStatus oldStatus = entity.getStatus();
 
                 entity.setDataAbertura(dto.getDataAbertura());
                 entity.setDataFechamento(dto.getDataFechamento());
@@ -117,6 +142,28 @@ public class CabecalhoOrdemService {
                     linhaOrdemService.create(linha);
                 }
 
+                // Publica evento se mudou para EM_ANDAMENTO
+                OrdemStatus newStatus = entity.getStatus();
+                if (oldStatus != OrdemStatus.ANDAMENTO && newStatus == OrdemStatus.ANDAMENTO) {
+                    String eventId = UUID.randomUUID().toString();
+                    User usuario = AuthUtil.getUsuarioLogado();
+                    String actorId = usuario != null ? String.valueOf(usuario.getId()) : null;
+                    HashMap<String, Object> data = new HashMap<>();
+                    data.put("old", oldStatus.name());
+                    data.put("new", newStatus.name());
+                    domainEventPublisher.publish(
+                        "os.status.changed",
+                        new DomainEvent(
+                            eventId,
+                            "OS_STATUS_CHANGED",
+                            "OS",
+                            String.valueOf(entity.getId()),
+                            actorId,
+                            Instant.now(),
+                            data
+                        )
+                    );
+                }
                 return ResponseEntity.ok("CabecalhoOrdem updated successfully");
             }
         }
@@ -128,9 +175,33 @@ public class CabecalhoOrdemService {
         Optional<CabecalhoOrdem> opt = cabecalhoOrdemRepository.findById(cabecalhoId);
         if (opt.isPresent()) {
             CabecalhoOrdem entity = opt.get();
+            OrdemStatus oldStatus = entity.getStatus();
             OrdemStatus status = OrdemStatus.values()[novoStatus];
             entity.setStatus(status);
             cabecalhoOrdemRepository.save(entity);
+
+            // Publica evento se mudou para EM_ANDAMENTO
+            OrdemStatus newStatus = entity.getStatus();
+            if (oldStatus != OrdemStatus.ANDAMENTO && newStatus == OrdemStatus.ANDAMENTO) {
+                String eventId = UUID.randomUUID().toString();
+                User usuario = AuthUtil.getUsuarioLogado();
+                String actorId = usuario != null ? String.valueOf(usuario.getId()) : null;
+                HashMap<String, Object> data = new HashMap<>();
+                data.put("old", oldStatus.name());
+                data.put("new", newStatus.name());
+                domainEventPublisher.publish(
+                    "os.status.changed",
+                    new DomainEvent(
+                        eventId,
+                        "OS_STATUS_CHANGED",
+                        "OS",
+                        String.valueOf(entity.getId()),
+                        actorId,
+                        Instant.now(),
+                        data
+                    )
+                );
+            }
             return ResponseEntity.ok("Status atualizado com sucesso");
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cabeçalho não encontrado");
