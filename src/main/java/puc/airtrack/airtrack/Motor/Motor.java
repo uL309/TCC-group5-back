@@ -18,6 +18,7 @@ public class Motor {
     private LocalDate data_cadastro;
     private Boolean status;
     private String serie_motor;
+    private int horas_operacao;
 
     public int getId() {
         return id;
@@ -57,6 +58,14 @@ public class Motor {
 
     public void setSerie_motor(String serie_motor) {
         this.serie_motor = serie_motor;
+    }
+
+    public int getHoras_operacao() {
+        return horas_operacao;
+    }
+
+    public void setHoras_operacao(int horas_operacao) {
+        this.horas_operacao = horas_operacao;
     }
 }
 
