@@ -176,18 +176,23 @@ public class CabecalhoOrdemService {
         data.put("osNumero", entity.getId());
         String motorSerie = entity.getNumSerieMotor() != null ? entity.getNumSerieMotor().getSerie_motor() : "";
         data.put("motorNome", motorSerie);
-        domainEventPublisher.publish(
-            "os.pending",
-            new DomainEvent(
-                eventId,
-                NotificationType.OS_PENDING,
-                "OS",
-                String.valueOf(entity.getId()),
-                actorId,
-                Instant.now(),
-                data
-            )
-        );
+        try {
+            domainEventPublisher.publish(
+                "os.pending",
+                new DomainEvent(
+                    eventId,
+                    NotificationType.OS_PENDING,
+                    "OS",
+                    String.valueOf(entity.getId()),
+                    actorId,
+                    Instant.now(),
+                    data
+                )
+            );
+        } catch (Exception ex) {
+            // Apenas loga e ignora se RabbitMQ estiver fora do ar
+            System.err.println("[WARN] Falha ao publicar evento de notificação: " + ex.getMessage());
+        }
     }
 
     /**
@@ -202,18 +207,23 @@ public class CabecalhoOrdemService {
             HashMap<String, Object> data = new HashMap<>();
             data.put("old", oldStatus.name());
             data.put("new", newStatus.name());
-            domainEventPublisher.publish(
-                "os.status.changed",
-                new DomainEvent(
-                    eventId,
-                    NotificationType.OS_STATUS_CHANGED,
-                    "OS",
-                    String.valueOf(entity.getId()),
-                    actorId,
-                    Instant.now(),
-                    data
-                )
-            );
+            try {
+                domainEventPublisher.publish(
+                    "os.status.changed",
+                    new DomainEvent(
+                        eventId,
+                        NotificationType.OS_STATUS_CHANGED,
+                        "OS",
+                        String.valueOf(entity.getId()),
+                        actorId,
+                        Instant.now(),
+                        data
+                    )
+                );
+            } catch (Exception ex) {
+                // Apenas loga e ignora se RabbitMQ estiver fora do ar
+                System.err.println("[WARN] Falha ao publicar evento de notificação: " + ex.getMessage());
+            }
         }
     }
 
