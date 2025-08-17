@@ -1,20 +1,46 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# RabbitMQ no Projeto
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+O RabbitMQ é utilizado neste projeto como broker de mensagens para comunicação assíncrona entre os módulos do sistema. Ele é responsável por:
+- Gerenciar a fila de eventos de domínio (ex: notificações de ordens de serviço pendentes, mudanças de status, etc).
+- Permitir que notificações sejam processadas de forma desacoplada e resiliente, melhorando a escalabilidade e a robustez do backend.
+- Garantir que eventos importantes do sistema sejam entregues para os consumidores (ex: serviço de notificações) mesmo que ocorram picos de uso ou falhas temporárias.
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+---
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+# Como rodar o RabbitMQ com Docker Compose
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+Para rodar o RabbitMQ localmente para desenvolvimento e testes, utilize o seguinte serviço no seu arquivo `docker-compose.yml` na raiz do projeto:
+
+```yaml
+version: '3.8'
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"   # Porta padrão do RabbitMQ
+      - "15672:15672" # Porta do painel de administração web
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+```
+
+## Passos para subir o RabbitMQ
+
+1. Certifique-se de ter o Docker e o Docker Compose instalados.
+2. Adicione o bloco acima ao seu `docker-compose.yml` (ou crie um novo arquivo se necessário).
+3. No terminal, na raiz do projeto, execute:
+
+```sh
+docker-compose up -d rabbitmq
+```
+
+4. O RabbitMQ estará disponível em `localhost:5672` (aplicação) e o painel web em `localhost:15672` (usuário: guest, senha: guest).
+
+5. Para parar o serviço:
+
+```sh
+docker-compose down rabbitmq
+```
+
+> **Observação:** O backend está preparado para ignorar falhas de conexão com o RabbitMQ, então a aplicação não irá crashar caso o serviço esteja fora do ar.
