@@ -48,7 +48,7 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/", "/register", "/reset-password").permitAll()
 
                         // ADMIN only
-                        .requestMatchers("/cre", "/ge", "/gel", "/upe", "/de").hasRole("ADMIN")
+                        .requestMatchers("/cre", "/ge", "/gel", "/upe", "/de", "/api/logs/**").hasRole("ADMIN")
 
                         // SUPERVISOR or ADMIN
                         .requestMatchers("/cforn", "/gforn", "/gforns", "/uforn", "/dforn",
