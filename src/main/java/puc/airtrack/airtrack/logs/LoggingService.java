@@ -51,16 +51,29 @@ public class LoggingService {
     }
     
     /**
-     * Converte um objeto para string JSON
+     * Converte um objeto para string JSON com limitação de tamanho
+     * Garante que o tamanho não exceda o limite do banco de dados
      */
     private String objectToJson(Object object) {
         if (object == null) {
             return null;
         }
         try {
-            return objectMapper.writeValueAsString(object);
+            // Limite mais conservador para garantir que não exceda o tamanho da coluna
+            final int MAX_LENGTH = 16000; // Valor seguro para VARCHAR(65535)
+            
+            String json = objectMapper.writeValueAsString(object);
+            
+            // Sempre verifica o tamanho e trunca se necessário
+            if (json != null && json.length() > MAX_LENGTH) {
+                return json.substring(0, MAX_LENGTH) + "... (truncado)";
+            }
+            return json;
         } catch (JsonProcessingException e) {
             return "Error converting to JSON: " + e.getMessage();
+        } catch (Exception e) {
+            // Captura quaisquer outros erros para evitar falha na geração de logs
+            return "Error processing object: " + e.getMessage();
         }
     }
     

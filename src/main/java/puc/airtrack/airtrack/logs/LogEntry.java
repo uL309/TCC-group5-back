@@ -8,37 +8,35 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
- * Entidade base para registro de logs no sistema
+ * Classe base para todas as entradas de log
  */
-@MappedSuperclass
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@MappedSuperclass
 public abstract class LogEntry {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false)
+    @Column(name = "timestamp")
     private LocalDateTime timestamp;
     
-    @Column(nullable = true)
+    @Column(name = "username")
     private String username;
     
-    @Column(nullable = false)
+    @Column(name = "controllerMethod")
     private String controllerMethod;
     
-    @Column(length = 4000)
+    @Column(name = "requestData", columnDefinition = "LONGTEXT")
     private String requestData;
     
-    @Column(length = 4000)
+    @Column(name = "responseData", columnDefinition = "LONGTEXT")
     private String responseData;
     
     @PrePersist
-    public void prePersist() {
-        if (timestamp == null) {
-            timestamp = LocalDateTime.now();
-        }
+    protected void onCreate() {
+        timestamp = LocalDateTime.now();
     }
 }
