@@ -48,7 +48,7 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/", "/register", "/reset-password").permitAll()
 
                         // ADMIN only
-                        .requestMatchers("/cre", "/ge", "/gel", "/upe", "/de").hasRole("ADMIN")
+                        .requestMatchers("/cre", "/ge", "/gel", "/upe", "/de", "/api/logs/**").hasRole("ADMIN")
 
                         // SUPERVISOR or ADMIN
                         .requestMatchers("/cforn", "/gforn", "/gforns", "/uforn", "/dforn",
@@ -72,6 +72,13 @@ public class SecurityConfig {
                         .requestMatchers("/ordem/get", "/ordem/list").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         .requestMatchers("/ordem/update", "/ordem/atualizar-status").hasAnyRole("ENGENHEIRO", "SUPERVISOR", "ADMIN")
                         .requestMatchers("/ordem/create").hasAnyRole("SUPERVISOR", "ADMIN")
+                        .requestMatchers("/ordem/**/anexos").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "ADMIN")
+                        
+                        // Azure Blob Storage - endpoints para arquivos
+                        .requestMatchers("/api/files/upload").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "ADMIN")
+                        .requestMatchers("/api/files/list").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
+                        .requestMatchers("/api/files/**").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "ADMIN")
+                        
                         // Authenticated
                         .requestMatchers("/first-access", "/notifications/**").authenticated()
                 )
