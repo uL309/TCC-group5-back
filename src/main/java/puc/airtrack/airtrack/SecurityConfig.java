@@ -53,7 +53,7 @@ public class SecurityConfig {
                         // SUPERVISOR or ADMIN
                         .requestMatchers("/cforn", "/gforn", "/gforns", "/uforn", "/dforn",
                                 "/linhaordem/get", "/linhaordem/list",
-                                "/cmotor", "/umotor", "/gmotor").hasAnyRole("SUPERVISOR", "ADMIN")
+                                "/cmotor", "/umotor", "/gmotor", "api/report/export").hasAnyRole("SUPERVISOR", "ADMIN")
 
                         // ENGENHEIRO or ADMIN
                         .requestMatchers("/cpeca", "/gpeca", "/gpecas", "/upeca", "/dpeca",
