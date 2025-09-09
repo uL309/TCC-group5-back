@@ -1,0 +1,14 @@
+{
+  "name": "reportserver",
+  "version": "1.0.0",
+  "description": "Servidor de relatórios para Airtrack Backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "openai": "^4.26.0",
+    "puppeteer": "^21.3.6"
+  }
+}
