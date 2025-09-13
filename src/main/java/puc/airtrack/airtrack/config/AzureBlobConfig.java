@@ -34,11 +34,20 @@ public class AzureBlobConfig {
      */
     @Bean
     public BlobContainerClient blobContainerClient(BlobServiceClient blobServiceClient) {
-        BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
-        // Cria o container se não existir
-        if (!containerClient.exists()) {
-            containerClient.create();
+        try {
+            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
+            // Cria o container se não existir
+            if (!containerClient.exists()) {
+                containerClient.create();
+                System.out.println("Container criado: " + containerName);
+            } else {
+                System.out.println("Container já existe: " + containerName);
+            }
+            return containerClient;
+        } catch (Exception e) {
+            System.err.println("Erro ao configurar o Azure Blob Storage: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
-        return containerClient;
     }
 }

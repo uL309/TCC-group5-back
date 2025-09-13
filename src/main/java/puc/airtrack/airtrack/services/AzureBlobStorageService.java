@@ -31,23 +31,32 @@ public class AzureBlobStorageService {
      * @return URL do arquivo no Azure Blob Storage
      */
     public String uploadFile(MultipartFile file, String prefix) throws IOException {
-        // Gerar um nome único para o arquivo
-        String fileName = (prefix != null && !prefix.isEmpty() ? prefix + "_" : "") 
-                + UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-        
-        // Obter referência do blob
-        BlobClient blobClient = containerClient.getBlobClient(fileName);
-        
-        // Configurar cabeçalhos HTTP (tipo de conteúdo)
-        BlobHttpHeaders headers = new BlobHttpHeaders()
-                .setContentType(file.getContentType());
-        
-        // Fazer upload do arquivo
-        blobClient.upload(file.getInputStream(), file.getSize(), true);
-        blobClient.setHttpHeaders(headers);
-        
-        // Retornar a URL do arquivo
-        return blobClient.getBlobUrl();
+        // Verificar se o arquivo está vazio
+        if (file == null || file.isEmpty()) {
+            throw new IOException("Arquivo vazio ou nulo");
+        }
+
+        try {
+            // Gerar um nome único para o arquivo
+            String fileName = (prefix != null && !prefix.isEmpty() ? prefix + "_" : "") 
+                    + UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            
+            // Obter referência do blob
+            BlobClient blobClient = containerClient.getBlobClient(fileName);
+            
+            // Configurar cabeçalhos HTTP (tipo de conteúdo)
+            BlobHttpHeaders headers = new BlobHttpHeaders()
+                    .setContentType(file.getContentType());
+            
+            // Fazer upload do arquivo
+            blobClient.upload(file.getInputStream(), file.getSize(), true);
+            blobClient.setHttpHeaders(headers);
+            
+            // Retornar a URL do arquivo
+            return blobClient.getBlobUrl();
+        } catch (Exception e) {
+            throw new IOException("Erro ao fazer upload para o Azure Blob Storage: " + e.getMessage(), e);
+        }
     }
     
     /**
