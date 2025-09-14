@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.azure.storage.blob.BlobClient;
+
 import puc.airtrack.airtrack.services.AzureBlobStorageService;
 
 @RestController
@@ -140,8 +142,13 @@ public class CabecalhoOrdemController {
             @PathVariable int cabecalhoId,
             @RequestParam("file") MultipartFile file) {
         
+        System.out.println("Iniciando upload de anexo para ordem: " + cabecalhoId);
+        System.out.println("Nome do arquivo: " + file.getOriginalFilename());
+        System.out.println("Tamanho do arquivo: " + file.getSize() + " bytes");
+        
         Optional<CabecalhoOrdem> optCabecalho = cabecalhoOrdemRepository.findById(cabecalhoId);
         if (optCabecalho.isEmpty()) {
+            System.out.println("Erro: Ordem de serviço não encontrada - ID: " + cabecalhoId);
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Ordem de serviço não encontrada");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
@@ -150,13 +157,18 @@ public class CabecalhoOrdemController {
         try {
             // Usa o ID da ordem como prefixo para organização dos arquivos
             String prefix = "ordem_" + cabecalhoId;
+            System.out.println("Iniciando upload para Azure Blob Storage com prefixo: " + prefix);
+            
             String fileUrl = azureBlobStorageService.uploadFile(file, prefix);
+            System.out.println("Upload concluído com sucesso. URL: " + fileUrl);
             
             Map<String, String> response = new HashMap<>();
             response.put("fileUrl", fileUrl);
             response.put("message", "Anexo adicionado com sucesso à ordem de serviço " + cabecalhoId);
             return ResponseEntity.ok(response);
         } catch (IOException e) {
+            System.err.println("Erro durante o upload: " + e.getMessage());
+            e.printStackTrace();
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Falha ao fazer upload do anexo: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
@@ -193,16 +205,18 @@ public class CabecalhoOrdemController {
     }
     
     /**
-     * Obtém o URL para download de um anexo específico
+     * Faz o download de um anexo específico de uma ordem de serviço
      * 
      * @param cabecalhoId ID da ordem de serviço
      * @param nomeArquivo Nome do arquivo a ser baixado
-     * @return URL para download do arquivo
+     * @return Arquivo para download
      */
     @GetMapping("/{cabecalhoId}/anexos/{nomeArquivo}")
     public ResponseEntity<?> downloadAnexo(
             @PathVariable int cabecalhoId,
             @PathVariable String nomeArquivo) {
+        
+        System.out.println("Iniciando download de anexo: " + nomeArquivo + " da ordem: " + cabecalhoId);
         
         Optional<CabecalhoOrdem> optCabecalho = cabecalhoOrdemRepository.findById(cabecalhoId);
         if (optCabecalho.isEmpty()) {
@@ -218,12 +232,83 @@ public class CabecalhoOrdemController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         }
         
-        // Retorna a URL para download direto
-        String downloadUrl = azureBlobStorageService.getFileUrl(nomeArquivo);
-        
-        Map<String, String> response = new HashMap<>();
-        response.put("downloadUrl", downloadUrl);
-        return ResponseEntity.ok(response);
+        try {
+            // Obtém o cliente de blob para o arquivo
+            BlobClient blobClient = azureBlobStorageService.getBlobClient(nomeArquivo);
+            
+            // Obtém as propriedades do blob para determinar o tipo de conteúdo
+            String contentType = blobClient.getProperties().getContentType();
+            if (contentType == null || contentType.isEmpty()) {
+                // Se não tiver tipo de conteúdo definido, tenta inferir pelo nome do arquivo
+                contentType = inferContentType(nomeArquivo);
+            }
+            
+            // Cria um array de bytes com o conteúdo do arquivo
+            byte[] content = blobClient.downloadContent().toBytes();
+            
+            // Configura a resposta HTTP
+            return ResponseEntity.ok()
+                    .contentType(org.springframework.http.MediaType.parseMediaType(contentType))
+                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, 
+                           "attachment; filename=\"" + extractOriginalFilename(nomeArquivo) + "\"")
+                    .body(content);
+            
+        } catch (Exception e) {
+            System.err.println("Erro ao fazer download do arquivo: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Erro ao processar o download: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+    
+    /**
+     * Extrai o nome original do arquivo do nome completo armazenado no Azure
+     * 
+     * @param fullFileName Nome completo do arquivo (com prefixo e UUID)
+     * @return Nome original do arquivo
+     */
+    private String extractOriginalFilename(String fullFileName) {
+        // Os nomes dos arquivos estão no formato: prefixo_UUID_nomeOriginal
+        // Vamos pegar tudo após o segundo underscore
+        int secondUnderscoreIndex = fullFileName.indexOf('_', fullFileName.indexOf('_') + 1);
+        if (secondUnderscoreIndex > 0 && secondUnderscoreIndex < fullFileName.length() - 1) {
+            return fullFileName.substring(secondUnderscoreIndex + 1);
+        }
+        return fullFileName; // Fallback para o nome completo
+    }
+    
+    /**
+     * Infere o tipo de conteúdo com base na extensão do arquivo
+     * 
+     * @param fileName Nome do arquivo
+     * @return Tipo de conteúdo MIME
+     */
+    private String inferContentType(String fileName) {
+        String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+        switch (extension) {
+            case "pdf":
+                return "application/pdf";
+            case "jpg":
+            case "jpeg":
+                return "image/jpeg";
+            case "png":
+                return "image/png";
+            case "gif":
+                return "image/gif";
+            case "doc":
+                return "application/msword";
+            case "docx":
+                return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            case "xls":
+                return "application/vnd.ms-excel";
+            case "xlsx":
+                return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            case "txt":
+                return "text/plain";
+            default:
+                return "application/octet-stream";
+        }
     }
     
     /**

@@ -72,11 +72,13 @@ public class SecurityConfig {
                         .requestMatchers("/ordem/get", "/ordem/list").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         .requestMatchers("/ordem/update", "/ordem/atualizar-status").hasAnyRole("ENGENHEIRO", "SUPERVISOR", "ADMIN")
                         .requestMatchers("/ordem/create").hasAnyRole("SUPERVISOR", "ADMIN")
-                        .requestMatchers("/ordem/**/anexos").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "ADMIN")
+                        .requestMatchers("/ordem/{orderId}/anexos").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
+                        .requestMatchers("/ordem/{orderId}/anexos/**").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         
                         // Azure Blob Storage - endpoints para arquivos
                         .requestMatchers("/api/files/upload").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "ADMIN")
                         .requestMatchers("/api/files/list").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
+                        .requestMatchers("/api/files/{fileName}").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         .requestMatchers("/api/files/**").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "ADMIN")
                         
                         // Authenticated

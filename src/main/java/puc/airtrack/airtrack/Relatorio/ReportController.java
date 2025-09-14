@@ -26,7 +26,7 @@ public class ReportController {
     public ResponseEntity<byte[]> exportReportAsPdf() {
         try {
             // Consulta os dados da ordem de serviço
-            String sql = "SELECT id, cliente, motor, data_abertura, data_fechamento, tempo_usado, valor_hora, (tempo_usado * valor_hora) AS valor_total, status FROM CabecalhoOrdem ORDER BY id DESC LIMIT 10";
+            String sql = "SELECT id, cliente, motor, data_abertura, data_fechamento, tempo_usado, valor_hora, (tempo_usado * valor_hora) AS valor_total, status FROM CabecalhoOrdem";
             List<Map<String, Object>> ordens = jdbcTemplate.queryForList(sql);
 
             // Converter os dados em JSON para enviar para o Node.js
