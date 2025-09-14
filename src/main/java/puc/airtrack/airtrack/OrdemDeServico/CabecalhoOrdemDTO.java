@@ -35,8 +35,14 @@ public class CabecalhoOrdemDTO {
     @JsonProperty("descricao")
     private String descricao;
 
+    @JsonProperty("tipo")
+    private String tipo;
+
     @JsonProperty("tempo_usado")
     private float tempoUsado;
+
+    @JsonProperty("tempo_estimado")
+    private float tempoEstimado;
 
     @JsonProperty("status")
     private Integer status;

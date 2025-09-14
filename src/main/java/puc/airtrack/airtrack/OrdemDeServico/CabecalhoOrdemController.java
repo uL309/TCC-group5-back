@@ -55,7 +55,9 @@ public class CabecalhoOrdemController {
             dto.setDataAbertura(entity.getDataAbertura());
             dto.setDataFechamento(entity.getDataFechamento());
             dto.setDescricao(entity.getDescricao());
+            dto.setTipo(entity.getTipo());
             dto.setTempoUsado(entity.getTempoUsado());
+            dto.setTempoEstimado(entity.getTempoEstimado());
             dto.setStatus(entity.getStatus().getStatus());
             dto.setValorHora(entity.getValorHora());
             if (entity.getCliente() != null) {
@@ -86,7 +88,9 @@ public class CabecalhoOrdemController {
             dto.setDataAbertura(entity.getDataAbertura());
             dto.setDataFechamento(entity.getDataFechamento());
             dto.setDescricao(entity.getDescricao());
+            dto.setTipo(entity.getTipo());
             dto.setTempoUsado(entity.getTempoUsado());
+            dto.setTempoEstimado(entity.getTempoEstimado());
             dto.setStatus(entity.getStatus().getStatus());
             dto.setValorHora(entity.getValorHora());
             if (entity.getCliente() != null) {

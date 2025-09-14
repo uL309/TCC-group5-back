@@ -1,9 +1,9 @@
 package puc.airtrack.airtrack.OrdemDeServico;
 
 import java.net.URI;
-import java.util.Optional;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +17,10 @@ import puc.airtrack.airtrack.Login.User;
 import puc.airtrack.airtrack.Login.UserRole;
 import puc.airtrack.airtrack.Login.UserService;
 import puc.airtrack.airtrack.Motor.MotorRepository;
+import puc.airtrack.airtrack.notifications.DomainEvent;
+import puc.airtrack.airtrack.notifications.DomainEventPublisher;
 import puc.airtrack.airtrack.notifications.NotificationType;
 import puc.airtrack.airtrack.services.AuthUtil;
-import puc.airtrack.airtrack.notifications.DomainEventPublisher;
-import puc.airtrack.airtrack.notifications.DomainEvent;
 
 @Service
 public class CabecalhoOrdemService {
@@ -43,7 +43,9 @@ public class CabecalhoOrdemService {
             entity.setDataAbertura(dto.getDataAbertura());
             entity.setDataFechamento(dto.getDataFechamento());
             entity.setDescricao(dto.getDescricao());
+            entity.setTipo(dto.getTipo());
             entity.setTempoUsado(dto.getTempoUsado());
+            entity.setTempoEstimado((int) dto.getTempoEstimado());
             OrdemStatus status = OrdemStatus.values()[dto.getStatus()];
             entity.setStatus(obterStatusCabecalho(Boolean.TRUE, status));
             entity.setValorHora(dto.getValorHora());
@@ -96,7 +98,9 @@ public class CabecalhoOrdemService {
                 entity.setDataAbertura(dto.getDataAbertura());
                 entity.setDataFechamento(dto.getDataFechamento());
                 entity.setDescricao(dto.getDescricao());
+                entity.setTipo(dto.getTipo());
                 entity.setTempoUsado(dto.getTempoUsado());
+                entity.setTempoEstimado((int) dto.getTempoEstimado());
                 OrdemStatus status = OrdemStatus.values()[dto.getStatus()];
                 entity.setStatus(obterStatusCabecalho(Boolean.FALSE, status));
                 entity.setTempoUsado(dto.getTempoUsado());
