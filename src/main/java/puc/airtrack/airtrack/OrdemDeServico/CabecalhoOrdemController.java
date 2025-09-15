@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.azure.storage.blob.BlobClient;
 
 import puc.airtrack.airtrack.services.AzureBlobStorageService;
+import puc.airtrack.airtrack.services.OrdemServicoPdfService;
 
 @RestController
 @RequestMapping("/ordem")
@@ -36,6 +37,8 @@ public class CabecalhoOrdemController {
     private CabecalhoOrdemService cabecalhoOrdemService;
     @Autowired
     private AzureBlobStorageService azureBlobStorageService;
+    @Autowired
+    private OrdemServicoPdfService ordemServicoPdfService;
 
     @PostMapping("/create")
     public ResponseEntity<String> createCabecalho(@RequestBody CabecalhoOrdemDTO dto) {
@@ -343,5 +346,45 @@ public class CabecalhoOrdemController {
         Map<String, String> response = new HashMap<>();
         response.put("message", "Arquivo excluído com sucesso");
         return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Gera um PDF com todos os detalhes da ordem de serviço
+     * 
+     * @param cabecalhoId ID da ordem de serviço
+     * @return Arquivo PDF para download
+     */
+    @GetMapping("/{cabecalhoId}/pdf")
+    public ResponseEntity<?> gerarPdfOrdemServico(@PathVariable int cabecalhoId) {
+        System.out.println("Iniciando geração de PDF para ordem: " + cabecalhoId);
+        
+        Optional<CabecalhoOrdem> optCabecalho = cabecalhoOrdemRepository.findById(cabecalhoId);
+        if (optCabecalho.isEmpty()) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Ordem de serviço não encontrada");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+        
+        try {
+            // Gerar o PDF usando o serviço
+            byte[] pdfBytes = ordemServicoPdfService.gerarPdfOrdemServico(cabecalhoId);
+            
+            // Nome do arquivo para download
+            String fileName = "ordem_servico_" + cabecalhoId + ".pdf";
+            
+            // Retornar o PDF como download
+            return ResponseEntity.ok()
+                    .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, 
+                           "attachment; filename=\"" + fileName + "\"")
+                    .body(pdfBytes);
+            
+        } catch (Exception e) {
+            System.err.println("Erro ao gerar PDF: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Erro ao gerar PDF da ordem de serviço: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
 }

@@ -74,6 +74,7 @@ public class SecurityConfig {
                         .requestMatchers("/ordem/create").hasAnyRole("SUPERVISOR", "ADMIN")
                         .requestMatchers("/ordem/{orderId}/anexos").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         .requestMatchers("/ordem/{orderId}/anexos/**").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
+                        .requestMatchers("/ordem/{orderId}/pdf").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         
                         // Azure Blob Storage - endpoints para arquivos
                         .requestMatchers("/api/files/upload").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "ADMIN")
