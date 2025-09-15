@@ -6,27 +6,21 @@ const puppeteer = require('puppeteer');
 
 // Função para formatar a análise da IA com quebras de parágrafo
 function formatAnaliseAI(text) {
-  // Substitui quebras de linha por tags de parágrafo HTML
-  const paragraphs = text.split(/\n\n+/); // Divide o texto em parágrafos (2 ou mais quebras de linha)
-  
-  // Processa headings/títulos (linhas que começam com # ou ##)
+  // Substitui **texto** por <strong>texto</strong>
+  text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+  const paragraphs = text.split(/\n\n+/);
   let formattedHtml = '';
-  
   paragraphs.forEach(paragraph => {
     paragraph = paragraph.trim();
-    if (!paragraph) return; // Ignora parágrafos vazios
-    
+    if (!paragraph) return;
     if (paragraph.startsWith('###')) {
-      // Heading nível 3
       formattedHtml += `<h3>${paragraph.replace(/^###\s*/, '')}</h3>`;
     } else if (paragraph.startsWith('####')) {
-      // Heading nível 4
       formattedHtml += `<h4>${paragraph.replace(/^####\s*/, '')}</h4>`;
     } else if (paragraph.startsWith('#')) {
-      // Heading nível 1
       formattedHtml += `<h2>${paragraph.replace(/^#\s*/, '')}</h2>`;
     } else if (paragraph.startsWith('-') || paragraph.startsWith('*')) {
-      // Lista de itens
       const items = paragraph.split(/\n(?=[-*])/);
       formattedHtml += '<ul>';
       items.forEach(item => {
@@ -34,11 +28,9 @@ function formatAnaliseAI(text) {
       });
       formattedHtml += '</ul>';
     } else {
-      // Parágrafo normal
       formattedHtml += `<p>${paragraph}</p>`;
     }
   });
-  
   return formattedHtml;
 }
 app.get('/generate-pdf', async (req, res) => {
@@ -59,7 +51,7 @@ app.get('/generate-pdf', async (req, res) => {
        model: "gpt-4o-mini",
       messages: [
          { role: "system", content: "Você é um supervisor do sistema. Crie análises com formatação clara usando títulos (###), subtítulos (####), parágrafos com quebras de linha duplas entre eles, e listas com marcadores quando apropriado. Organize o conteúdo em seções bem definidas." },
-        { role: "user", content: `Analise essa tabela com Ordens de Serviço (Quando aparecer o valor 0 no Status é Pendente, 1 é em andamento e 2 é concluida) e gere um resumo executivo sobre cada mês da data_abertura, bem formatado com títulos, subtítulos e parágrafos separados: ${JSON.stringify(dados)}` }
+        { role: "user", content: `Analise essa tabela com Ordens de Serviço (Quando aparecer o valor 0 no Status é Pendente, 1 é em andamento e 2 é concluida) e gere um resumo executivo sobre cada mês da data_abertura, apresentando: QUantidade de ordens que estão pendente, Em andamento e concluída, uma média do tempo usado (trazendo só o resultado), e listando as ordens de serviço que o tempo usado ficou maior que o estimado colocando o status da ordem ao lado, bem formatado com títulos, subtítulos e parágrafos separados: ${JSON.stringify(dados)}` }
        ]
      });
 
@@ -127,10 +119,11 @@ dados.forEach(row => {
     await browser.close();
 
     res.set({
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': 'attachment; filename="relatorio.pdf"',
-    });
-    res.send(pdf);
+  'Content-Type': 'application/pdf',
+  'Content-Disposition': 'attachment; filename="relatorio.pdf"',
+  });
+  res.end(pdf);
+
 
   } catch (err) {
     console.error(err);

@@ -19,6 +19,7 @@ public class Motor {
     private Boolean status;
     private String serie_motor;
     private int horas_operacao;
+    private String modelo;
 
     public int getId() {
         return id;
@@ -66,6 +67,14 @@ public class Motor {
 
     public void setHoras_operacao(int horas_operacao) {
         this.horas_operacao = horas_operacao;
+    }
+
+    public String getModelo() {
+        return modelo;
+    }
+
+    public void setModelo(String modelo) {
+        this.modelo = modelo;
     }
 }
 
