@@ -1,26 +1,27 @@
 const express = require('express');
 const { OpenAI } = require("openai");
 const app = express();
-const client = new OpenAI({ apiKey: "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" });
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY }); // use variáveis de ambiente
 const puppeteer = require('puppeteer');
 
 // Função para formatar a análise da IA com quebras de parágrafo
 function formatAnaliseAI(text) {
-  // Substitui **texto** por <strong>texto</strong>
+  // Negrito para <strong>
   text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
+  // Split por linhas
   const paragraphs = text.split(/\n\n+/);
   let formattedHtml = '';
   paragraphs.forEach(paragraph => {
     paragraph = paragraph.trim();
     if (!paragraph) return;
-    if (paragraph.startsWith('###')) {
-      formattedHtml += `<h3>${paragraph.replace(/^###\s*/, '')}</h3>`;
-    } else if (paragraph.startsWith('####')) {
-      formattedHtml += `<h4>${paragraph.replace(/^####\s*/, '')}</h4>`;
-    } else if (paragraph.startsWith('#')) {
+
+    if (paragraph.startsWith('## ')) {
+      formattedHtml += `<h2>${paragraph.replace(/^##\s*/, '')}</h2>`;
+    } else if (paragraph.startsWith('# ')) {
       formattedHtml += `<h2>${paragraph.replace(/^#\s*/, '')}</h2>`;
     } else if (paragraph.startsWith('-') || paragraph.startsWith('*')) {
+      // lista
       const items = paragraph.split(/\n(?=[-*])/);
       formattedHtml += '<ul>';
       items.forEach(item => {
@@ -33,6 +34,7 @@ function formatAnaliseAI(text) {
   });
   return formattedHtml;
 }
+
 app.get('/generate-pdf', async (req, res) => {
   try {
     const dataJson = req.query.data;
@@ -46,58 +48,43 @@ app.get('/generate-pdf', async (req, res) => {
       return res.status(400).send('JSON inválido');
     }
 
-    // Gerar análise com AI
-     const completion = await client.chat.completions.create({
-       model: "gpt-4o-mini",
+    // Instrução clara para IA gerar exatamente no formato desejado
+    const completion = await client.chat.completions.create({
+      model: "gpt-4o",
       messages: [
-         { role: "system", content: "Você é um supervisor do sistema. Crie análises com formatação clara usando títulos (###), subtítulos (####), parágrafos com quebras de linha duplas entre eles, e listas com marcadores quando apropriado. Organize o conteúdo em seções bem definidas." },
-        { role: "user", content: `Analise essa tabela com Ordens de Serviço (Quando aparecer o valor 0 no Status é Pendente, 1 é em andamento e 2 é concluida) e gere um resumo executivo sobre cada mês da data_abertura, apresentando: QUantidade de ordens que estão pendente, Em andamento e concluída, uma média do tempo usado (trazendo só o resultado), e listando as ordens de serviço que o tempo usado ficou maior que o estimado colocando o status da ordem ao lado, bem formatado com títulos, subtítulos e parágrafos separados: ${JSON.stringify(dados)}` }
-       ]
-     });
+        {
+          role: "system",
+          content: `Você é um supervisor do sistema. GERE o resumo executivo de ordens de serviço EXATAMENTE no formato abaixo, usando títulos "# Mês" e subtítulos, listas com "- ", parágrafos com quebras duplas:
+Resumo de dados da tabela de Ordem de Serviço
+Resumo Executivo de Ordens de Serviço por Mês
+Este relatório analisa as Ordens de Serviço com base nos dados fornecidos, destacando a
+quantidade e o status das ordens, a média de tempo utilizado e as ordens em que o tempo utilizado
+excedeu o estimado.
+Para cada mês, apresente:
+- Quantidade de Ordens (Pendente, Em Andamento, Concluída)
+- Média do Tempo Usado (apenas o resultado)
+- Ordens com Tempo Usado maior que o Estimado, com ID e status
+Finalize com 'Considerações Finais'.`
+        },
+        {
+          role: "user",
+          content: `Dados: ${JSON.stringify(dados)}`
+        }
+      ]
+    });
 
-     const analiseAI = completion.choices[0].message.content;
+    const analiseAI = completion.choices[0].message.content;
 
-
-    // Montar HTML para PDF
-    let tabelaOrdemHtml = `<table border="1" style="border-collapse: collapse; width: 100%;">`;
-    tabelaOrdemHtml += `<tr>
-      <th>ID</th>
-      <th>Cliente</th>
-      <th>Motor</th>
-      <th>Data Abertura</th>
-      <th>Data Fechamento</th>
-      <th>Tempo Usado</th>
-      <th>Valor Hora</th>
-      <th>Valor Total</th>
-      <th>Status</th>
-    </tr>`;
-dados.forEach(row => {
-  tabelaOrdemHtml += `<tr>
-    <td>${row.id}</td>
-    <td>${row.cliente}</td>
-    <td>${row.motor}</td>
-    <td>${row.data_abertura}</td>
-    <td>${row.data_fechamento}</td>
-    <td>${row.tempo_usado}</td>
-    <td>${row.valor_hora}</td>
-    <td>${row.valor_total}</td>
-    <td>${row.status}</td>
-  </tr>`;
-});
-    tabelaOrdemHtml += `</table>`;
-
+    // HTML do relatório
     const html = `
       <html>
         <head>
+          <meta charset="utf-8">
           <style>
-            body { font-family: Arial; padding: 20px; }
+            body { font-family: Arial, sans-serif; padding: 20px; }
             h1 { color: #0069FF; }
             h2 { color: #0069FF; margin-top: 20px; font-size: 22px; }
-            h3 { color: #333; margin-top: 16px; font-size: 18px; }
-            h4 { color: #444; margin-top: 14px; font-size: 16px; }
             p { margin: 10px 0; line-height: 1.5; }
-            table, th, td { border: 1px solid black; border-collapse: collapse; padding: 5px; }
-            th { background-color: #f2f2f2; }
             ul { margin: 10px 0; }
             li { margin-bottom: 5px; }
             .ai { margin-top: 30px; }
@@ -119,11 +106,10 @@ dados.forEach(row => {
     await browser.close();
 
     res.set({
-  'Content-Type': 'application/pdf',
-  'Content-Disposition': 'attachment; filename="relatorio.pdf"',
-  });
-  res.end(pdf);
-
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename="relatorio.pdf"',
+    });
+    res.end(pdf);
 
   } catch (err) {
     console.error(err);
@@ -131,4 +117,4 @@ dados.forEach(row => {
   }
 });
 
-app.listen(3001, () => console.log('Puppeteer server running on port 3001'));
+app.listen(3001, () => console.log('Servidor rodando na porta 3001'));
