@@ -3,8 +3,11 @@ package puc.airtrack.airtrack.Motor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
+import puc.airtrack.airtrack.tipoMotor.tipoMotor;
+import puc.airtrack.airtrack.tipoMotor.tipoMotorRepository;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +16,8 @@ public class MotorController {
 
     @Autowired
     private MotorRepository motorRepository;
+    @Autowired
+    private tipoMotorRepository tipoMotorRepository;
 
     @PostMapping("/cmotor")
     public ResponseEntity<String> cadastrar(@RequestBody Motor motor) {
@@ -25,9 +30,24 @@ public class MotorController {
     }
 
     @GetMapping("/gmotores")
-    public ResponseEntity<List<Motor>> listar() {
-        List<Motor> motores = motorRepository.findAll();
-        return ResponseEntity.ok(motores);
+    public ResponseEntity<List<MotorDTO>> listar() {
+        List<Motor> motoresEntity = motorRepository.findAll();
+        List<MotorDTO> motoresDTO = new ArrayList<>();
+        for (Motor motor : motoresEntity) {
+            tipoMotor tipoMotor = tipoMotorRepository.findByMarcaAndModelo(motor.getMarca(), motor.getModelo());
+            MotorDTO motorDTO = new MotorDTO();
+            motorDTO.setId(motor.getId());
+            motorDTO.setMarca(motor.getMarca());
+            motorDTO.setModelo(motor.getModelo());
+            motorDTO.setSerie_motor(motor.getSerie_motor());
+            motorDTO.setStatus(motor.getStatus());
+            motorDTO.setHoras_operacao(motor.getHoras_operacao());
+            motorDTO.setData_cadastro(motor.getData_cadastro());
+            motorDTO.setTbo(tipoMotor.getTbo());
+            motoresDTO.add(motorDTO);
+        }
+
+        return ResponseEntity.ok(motoresDTO);
     }
 
     @PutMapping("/umotor")

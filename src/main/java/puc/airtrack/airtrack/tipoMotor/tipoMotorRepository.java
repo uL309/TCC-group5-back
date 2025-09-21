@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface tipoMotorRepository extends JpaRepository<tipoMotor, Integer> {
     List<tipoMotor> findByMarca(String marca);
+    tipoMotor findByMarcaAndModelo(String marca, String modelo);
 }

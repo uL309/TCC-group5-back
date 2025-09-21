@@ -2,18 +2,17 @@ package puc.airtrack.airtrack.Motor;
 
 import java.time.LocalDate;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class MotorDTO {
     private int id;
     private String marca;
-    @JsonProperty("dataCadastro")
     private LocalDate data_cadastro;
     private Boolean status;
-    @JsonProperty("serieMotor")
+
     private String serie_motor;
     private int horas_operacao;
     private String modelo;
+
+    private int tbo;
 
     public int getId() {
         return id;
@@ -69,5 +68,13 @@ public class MotorDTO {
 
     public void setModelo(String modelo) {
         this.modelo = modelo;
+    }
+
+    public int getTbo() {
+        return tbo;
+    }
+
+    public void setTbo(int tbo) {
+        this.tbo = tbo;
     }
 }
