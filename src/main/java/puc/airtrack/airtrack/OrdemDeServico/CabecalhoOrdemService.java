@@ -124,22 +124,7 @@ public class CabecalhoOrdemService {
                             if (tipoMotor != null) {
                                 if (dto.getHorasOperacaoMotor() > tipoMotor.getTbo()) {
                                     // Publica evento para notificação de TBO excedido
-                                    HashMap<String, Object> data = new HashMap<>();
-                                    data.put("serie", motor.getSerie_motor());
-                                    data.put("marca", motor.getMarca());
-                                    data.put("modelo", motor.getModelo());
-                                    domainEventPublisher.publish(
-                                        "motor.tbo.expired",
-                                        new DomainEvent(
-                                            UUID.randomUUID().toString(),
-                                            NotificationType.MOTOR_TBO_EXPIRED,
-                                            "MOTOR",
-                                            String.valueOf(motor.getId()),
-                                            null,
-                                            Instant.now(),
-                                            data
-                                        )
-                                    );
+                                    publishMotorTboExpiredEvent(motor);
                                     // Ajusta o valor para o TBO
                                     dto.setHorasOperacaoMotor(tipoMotor.getTbo());
                                 }
@@ -275,6 +260,26 @@ public class CabecalhoOrdemService {
         }
     }
 
+    private void publishMotorTboExpiredEvent(Motor motor) {
+        String eventId = UUID.randomUUID().toString();
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("serie", motor.getSerie_motor());
+        data.put("marca", motor.getMarca());
+        data.put("modelo", motor.getModelo());
+        domainEventPublisher.publish(
+            "motor.tbo.expired",
+            new DomainEvent(
+                eventId,
+                NotificationType.MOTOR_TBO_EXPIRED,
+                "MOTOR",
+                String.valueOf(motor.getId()),
+                null,
+                Instant.now(),
+                data
+            )
+        );
+    }
+
 
     public OrdemStatus obterStatusCabecalho(boolean isNovoOs, OrdemStatus statusAtual) {
         User usuario = AuthUtil.getUsuarioLogado();
@@ -289,3 +294,4 @@ public class CabecalhoOrdemService {
         return statusAtual;
     }
 }
+
