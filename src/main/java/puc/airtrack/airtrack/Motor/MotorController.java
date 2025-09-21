@@ -3,8 +3,8 @@ package puc.airtrack.airtrack.Motor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
-import puc.airtrack.airtrack.tipoMotor.tipoMotor;
-import puc.airtrack.airtrack.tipoMotor.tipoMotorRepository;
+import puc.airtrack.airtrack.tipoMotor.TipoMotor;
+import puc.airtrack.airtrack.tipoMotor.TipoMotorRepository;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ public class MotorController {
     @Autowired
     private MotorRepository motorRepository;
     @Autowired
-    private tipoMotorRepository tipoMotorRepository;
+    private TipoMotorRepository tipoMotorRepository;
 
     @PostMapping("/cmotor")
     public ResponseEntity<String> cadastrar(@RequestBody Motor motor) {
@@ -34,7 +34,7 @@ public class MotorController {
         List<Motor> motoresEntity = motorRepository.findAll();
         List<MotorDTO> motoresDTO = new ArrayList<>();
         for (Motor motor : motoresEntity) {
-            tipoMotor tipoMotor = tipoMotorRepository.findByMarcaAndModelo(motor.getMarca(), motor.getModelo());
+            TipoMotor tipoMotor = tipoMotorRepository.findByMarcaAndModelo(motor.getMarca(), motor.getModelo());
             MotorDTO motorDTO = new MotorDTO();
             motorDTO.setId(motor.getId());
             motorDTO.setMarca(motor.getMarca());

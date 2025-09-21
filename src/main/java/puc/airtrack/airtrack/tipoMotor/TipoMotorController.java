@@ -11,18 +11,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-public class tipoMotorController {
+public class TipoMotorController {
     
     @Autowired
-    private tipoMotorRepository tipomotorRepository;
+    private TipoMotorRepository tipomotorRepository;
 
 
     @GetMapping("/gtipomotores")
-    public ResponseEntity<List<tipoMotorDTO>> getAllFornecedores() {
-        List<tipoMotor> tipomotores = tipomotorRepository.findAll();
-        List<tipoMotorDTO> tipomotorDTOs = new ArrayList<>();
-       for (tipoMotor tipomotor : tipomotores) {
-            tipoMotorDTO tipomotorDTO = new tipoMotorDTO();
+    public ResponseEntity<List<TipoMotorDTO>> getAllFornecedores() {
+        List<TipoMotor> tipomotores = tipomotorRepository.findAll();
+        List<TipoMotorDTO> tipomotorDTOs = new ArrayList<>();
+       for (TipoMotor tipomotor : tipomotores) {
+            TipoMotorDTO tipomotorDTO = new TipoMotorDTO();
             tipomotorDTO.setId(tipomotor.getId());
             tipomotorDTO.setMarca(tipomotor.getMarca());
             tipomotorDTO.setModelo(tipomotor.getModelo());
@@ -33,11 +33,11 @@ public class tipoMotorController {
     }
 
     @GetMapping("/gtipomotorm")
-    public ResponseEntity<List<tipoMotorDTO>> getFornecedorbyMarca(@RequestParam String marca) {
-        List<tipoMotor> tipomotores = tipomotorRepository.findByMarca(marca);
-        List<tipoMotorDTO> tipomotorDTOs = new ArrayList<>();
-        for (tipoMotor tipomotor : tipomotores) {
-            tipoMotorDTO tipomotorDTO = new tipoMotorDTO();
+    public ResponseEntity<List<TipoMotorDTO>> getFornecedorbyMarca(@RequestParam String marca) {
+        List<TipoMotor> tipomotores = tipomotorRepository.findByMarca(marca);
+        List<TipoMotorDTO> tipomotorDTOs = new ArrayList<>();
+        for (TipoMotor tipomotor : tipomotores) {
+            TipoMotorDTO tipomotorDTO = new TipoMotorDTO();
             tipomotorDTO.setId(tipomotor.getId());
             tipomotorDTO.setMarca(tipomotor.getMarca());
             tipomotorDTO.setModelo(tipomotor.getModelo());
