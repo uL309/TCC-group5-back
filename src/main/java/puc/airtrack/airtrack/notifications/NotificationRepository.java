@@ -22,6 +22,23 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     """)
     int expireActiveByOs(@Param("osId") String osId, @Param("now") Instant now);
 
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        update Notification n
+           set n.status = :status, n.expiresAt = :now
+         where n.entity = :entity
+           and n.entityId = :motorId
+           and n.type = :type
+           and n.status = 'ACTIVE'
+    """)
+    int updateStatusByEntityAndEntityIdAndType(
+        @Param("entity") String entity,
+        @Param("motorId") String motorId,
+        @Param("type") NotificationType type,
+        @Param("status") NotificationStatus status,
+        @Param("now") Instant now
+    );
+
     Optional<Notification> findByEventId(String eventId);
 
     Page<Notification> findByUserIdAndStatusInOrderByCreatedAtDesc(

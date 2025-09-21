@@ -128,6 +128,20 @@ public class CabecalhoOrdemService {
                                     // Ajusta o valor para o TBO
                                     dto.setHorasOperacaoMotor(tipoMotor.getTbo());
                                 }
+                                if (dto.getHorasOperacaoMotor() <= tipoMotor.getTbo()) {
+                                    domainEventPublisher.publish(
+                                        "motor.tbo.expired.clear",
+                                        new DomainEvent(
+                                            UUID.randomUUID().toString(),
+                                            NotificationType.MOTOR_TBO_EXPIRED_CLEAR,
+                                            "MOTOR",
+                                            String.valueOf(motor.getId()),
+                                            null,
+                                            Instant.now(),
+                                            new HashMap<>()
+                                        )
+                                    );
+                                }
                             }
                             entity.setNumSerieMotor(motor);
 

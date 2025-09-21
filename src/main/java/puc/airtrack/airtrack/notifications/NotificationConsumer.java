@@ -6,7 +6,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import puc.airtrack.airtrack.Login.UserService;
 import puc.airtrack.airtrack.Login.UserRole;
+import puc.airtrack.airtrack.Motor.MotorRepository;
 import puc.airtrack.airtrack.OrdemDeServico.OrdemStatus;
+import puc.airtrack.airtrack.tipoMotor.TipoMotorRepository;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -17,6 +19,8 @@ import java.util.List;
 public class NotificationConsumer {
     private final NotificationRepository repo;
     private final UserService userService;
+    private final MotorRepository motorRepository;
+    private final TipoMotorRepository tipoMotorRepository;
 
     @RabbitListener(queues = RabbitConfig.QUEUE)
     @Transactional
@@ -30,6 +34,7 @@ public class NotificationConsumer {
             case OS_STATUS_CHANGED -> expireOnOsStatusChanged(e);
             case MOTOR_CREATED -> notifySupervisorsOnMotorCreated(e);
             case MOTOR_TBO_EXPIRED -> notifySupervisorsAndAdminsOnMotorTboExpired(e);
+            case MOTOR_TBO_EXPIRED_CLEAR -> expireMotorTboExpiredNotifications(e.entityId());
             default -> { /* ignorar ou logar */ }
         }
     }
@@ -137,9 +142,22 @@ public class NotificationConsumer {
             n.setBody(body);
             n.setCreatedAt(Instant.now());
             notifs.add(n);
-        }
-        if (!notifs.isEmpty()) {
             repo.saveAll(notifs);
         }
     }
+
+    /**
+     * Expira notificações MOTOR_TBO_EXPIRED ativas para o motor informado.
+     */
+    private void expireMotorTboExpiredNotifications(String motorId) {
+        repo.updateStatusByEntityAndEntityIdAndType(
+                "MOTOR",
+                motorId,
+                NotificationType.MOTOR_TBO_EXPIRED,
+                NotificationStatus.EXPIRED,
+                Instant.now()
+        );
+    }
 }
+
+
