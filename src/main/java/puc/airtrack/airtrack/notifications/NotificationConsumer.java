@@ -6,7 +6,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import puc.airtrack.airtrack.Login.UserService;
 import puc.airtrack.airtrack.Login.UserRole;
+import puc.airtrack.airtrack.Motor.MotorRepository;
 import puc.airtrack.airtrack.OrdemDeServico.OrdemStatus;
+import puc.airtrack.airtrack.tipoMotor.TipoMotorRepository;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -17,6 +19,8 @@ import java.util.List;
 public class NotificationConsumer {
     private final NotificationRepository repo;
     private final UserService userService;
+    private final MotorRepository motorRepository;
+    private final TipoMotorRepository tipoMotorRepository;
 
     @RabbitListener(queues = RabbitConfig.QUEUE)
     @Transactional
@@ -29,6 +33,8 @@ public class NotificationConsumer {
             case OS_PENDING -> notifyEngineersOnOsPending(e);
             case OS_STATUS_CHANGED -> expireOnOsStatusChanged(e);
             case MOTOR_CREATED -> notifySupervisorsOnMotorCreated(e);
+            case MOTOR_TBO_EXPIRED -> notifySupervisorsAndAdminsOnMotorTboExpired(e);
+            case MOTOR_TBO_EXPIRED_CLEAR -> expireMotorTboExpiredNotifications(e.entityId());
             default -> { /* ignorar ou logar */ }
         }
     }
@@ -98,4 +104,60 @@ public class NotificationConsumer {
         }).toList();
         repo.saveAll(notifs);
     }
+
+    /**
+     * Notifica supervisores e admins quando o motor ultrapassa o TBO.
+     */
+    private void notifySupervisorsAndAdminsOnMotorTboExpired(DomainEvent e) {
+        var supervisores = userService.findAllByRole(UserRole.ROLE_SUPERVISOR);
+        var admins = userService.findAllByRole(UserRole.ROLE_ADMIN);
+        String serie = e.data().getOrDefault("serie", "").toString();
+        String marca = e.data().getOrDefault("marca", "").toString();
+        String modelo = e.data().getOrDefault("modelo", "").toString();
+        String motorId = e.entityId();
+        String title = "TBO excedido para motor";
+        String body = String.format(
+            "O motor de número de série %s, marca %s e modelo %s ultrapassou o limite de horas de operação (TBO). Recomenda-se inspeção e manutenção conforme normas de aviação.",
+            serie, marca, modelo
+        );
+        var notifs = new ArrayList<Notification>();
+        for (var user : supervisores) {
+            Notification n = new Notification();
+            n.setUserId((long) user.getId());
+            n.setType(NotificationType.MOTOR_TBO_EXPIRED);
+            n.setEntity("MOTOR");
+            n.setEntityId(motorId);
+            n.setTitle(title);
+            n.setBody(body);
+            n.setCreatedAt(Instant.now());
+            notifs.add(n);
+        }
+        for (var user : admins) {
+            Notification n = new Notification();
+            n.setUserId((long) user.getId());
+            n.setType(NotificationType.MOTOR_TBO_EXPIRED);
+            n.setEntity("MOTOR");
+            n.setEntityId(motorId);
+            n.setTitle(title);
+            n.setBody(body);
+            n.setCreatedAt(Instant.now());
+            notifs.add(n);
+            repo.saveAll(notifs);
+        }
+    }
+
+    /**
+     * Expira notificações MOTOR_TBO_EXPIRED ativas para o motor informado.
+     */
+    private void expireMotorTboExpiredNotifications(String motorId) {
+        repo.updateStatusByEntityAndEntityIdAndType(
+                "MOTOR",
+                motorId,
+                NotificationType.MOTOR_TBO_EXPIRED,
+                NotificationStatus.EXPIRED,
+                Instant.now()
+        );
+    }
 }
+
+

@@ -2,7 +2,7 @@ package puc.airtrack.airtrack.tipoMotor;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class tipoMotorDTO {
+public class TipoMotorDTO {
         @JsonProperty("id")
     private Integer id;
 

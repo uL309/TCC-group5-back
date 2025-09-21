@@ -10,7 +10,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "tipoMotor") // ou o nome da tabela no seu banco
-public class tipoMotor {
+public class TipoMotor {
         @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

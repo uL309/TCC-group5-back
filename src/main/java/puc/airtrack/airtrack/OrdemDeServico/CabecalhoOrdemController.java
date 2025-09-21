@@ -72,6 +72,7 @@ public class CabecalhoOrdemController {
             if (entity.getNumSerieMotor() != null) {
                 dto.setMotorId(String.valueOf(entity.getNumSerieMotor().getId()));
                 dto.setMotorNome(entity.getNumSerieMotor().getSerie_motor());
+                dto.setHorasOperacaoMotor(entity.getNumSerieMotor().getHoras_operacao());
             }
             if (entity.getSupervisor() != null) {
                 dto.setSupervisorId(String.valueOf(entity.getSupervisor().getId()));

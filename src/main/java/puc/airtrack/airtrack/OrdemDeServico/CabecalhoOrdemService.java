@@ -16,11 +16,14 @@ import puc.airtrack.airtrack.Cliente.ClienteRepo;
 import puc.airtrack.airtrack.Login.User;
 import puc.airtrack.airtrack.Login.UserRole;
 import puc.airtrack.airtrack.Login.UserService;
+import puc.airtrack.airtrack.Motor.Motor;
 import puc.airtrack.airtrack.Motor.MotorRepository;
 import puc.airtrack.airtrack.notifications.DomainEvent;
 import puc.airtrack.airtrack.notifications.DomainEventPublisher;
 import puc.airtrack.airtrack.notifications.NotificationType;
 import puc.airtrack.airtrack.services.AuthUtil;
+import puc.airtrack.airtrack.tipoMotor.TipoMotor;
+import puc.airtrack.airtrack.tipoMotor.TipoMotorRepository;
 
 @Service
 public class CabecalhoOrdemService {
@@ -36,6 +39,8 @@ public class CabecalhoOrdemService {
     LinhaOrdemService linhaOrdemService;
     @Autowired
     DomainEventPublisher domainEventPublisher;
+    @Autowired
+    TipoMotorRepository tipoMotorRepository;
 
     public ResponseEntity<String> createCabecalho(CabecalhoOrdemDTO dto){
         if (dto != null) {
@@ -113,7 +118,36 @@ public class CabecalhoOrdemService {
                 if (dto.getMotorId() != null) {
                     try {
                         int motorId = Integer.parseInt(dto.getMotorId());
-                        entity.setNumSerieMotor(motorRepository.findById(motorId).orElse(null));
+                        Motor motor = motorRepository.findById(motorId).orElse(null);
+                        if (motor != null) {
+                            TipoMotor tipoMotor = tipoMotorRepository.findByMarcaAndModelo(motor.getMarca(), motor.getModelo());
+                            if (tipoMotor != null) {
+                                motor.setHoras_operacao(dto.getHorasOperacaoMotor());
+                                motorRepository.save(motor);
+                                if (dto.getHorasOperacaoMotor() > tipoMotor.getTbo()) {
+                                    // Publica evento para notificação de TBO excedido
+                                    publishMotorTboExpiredEvent(motor);
+                                } else {
+                                    domainEventPublisher.publish(
+                                        "motor.tbo.expired.clear",
+                                        new DomainEvent(
+                                            UUID.randomUUID().toString(),
+                                            NotificationType.MOTOR_TBO_EXPIRED_CLEAR,
+                                            "MOTOR",
+                                            String.valueOf(motor.getId()),
+                                            null,
+                                            Instant.now(),
+                                            new HashMap<>()
+                                        )
+                                    );
+                                }
+                            }
+                            entity.setNumSerieMotor(motor);
+                        }
+
+
+
+
                     } catch (NumberFormatException e) {
                         entity.setNumSerieMotor(null);
                     }
@@ -238,6 +272,26 @@ public class CabecalhoOrdemService {
         }
     }
 
+    private void publishMotorTboExpiredEvent(Motor motor) {
+        String eventId = UUID.randomUUID().toString();
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("serie", motor.getSerie_motor());
+        data.put("marca", motor.getMarca());
+        data.put("modelo", motor.getModelo());
+        domainEventPublisher.publish(
+            "motor.tbo.expired",
+            new DomainEvent(
+                eventId,
+                NotificationType.MOTOR_TBO_EXPIRED,
+                "MOTOR",
+                String.valueOf(motor.getId()),
+                null,
+                Instant.now(),
+                data
+            )
+        );
+    }
+
 
     public OrdemStatus obterStatusCabecalho(boolean isNovoOs, OrdemStatus statusAtual) {
         User usuario = AuthUtil.getUsuarioLogado();
@@ -252,3 +306,4 @@ public class CabecalhoOrdemService {
         return statusAtual;
     }
 }
+

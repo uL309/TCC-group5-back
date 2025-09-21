@@ -67,6 +67,9 @@ public class CabecalhoOrdemDTO {
     @JsonProperty("engenheiro_atuante_nome")
     private String engenheiroAtuanteNome;
 
+    @JsonProperty("horas_operacao_motor")
+    private int horasOperacaoMotor;
+
     @JsonProperty("status_descricao")
     public String getStatusDescricao() {
         if (status == null) return "Desconhecido";
