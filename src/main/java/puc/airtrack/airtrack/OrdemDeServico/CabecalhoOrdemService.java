@@ -122,13 +122,12 @@ public class CabecalhoOrdemService {
                         if (motor != null) {
                             TipoMotor tipoMotor = tipoMotorRepository.findByMarcaAndModelo(motor.getMarca(), motor.getModelo());
                             if (tipoMotor != null) {
+                                motor.setHoras_operacao(dto.getHorasOperacaoMotor());
+                                motorRepository.save(motor);
                                 if (dto.getHorasOperacaoMotor() > tipoMotor.getTbo()) {
                                     // Publica evento para notificação de TBO excedido
                                     publishMotorTboExpiredEvent(motor);
-                                    // Ajusta o valor para o TBO
-                                    dto.setHorasOperacaoMotor(tipoMotor.getTbo());
-                                }
-                                if (dto.getHorasOperacaoMotor() <= tipoMotor.getTbo()) {
+                                } else {
                                     domainEventPublisher.publish(
                                         "motor.tbo.expired.clear",
                                         new DomainEvent(
@@ -144,7 +143,6 @@ public class CabecalhoOrdemService {
                                 }
                             }
                             entity.setNumSerieMotor(motor);
-
                         }
 
 
