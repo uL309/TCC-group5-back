@@ -35,6 +35,9 @@ public class CabecalhoOrdem {
     @ManyToOne
     @JoinColumn(name = "Supervisor", referencedColumnName = "id", foreignKey = @ForeignKey(name = "user"))
     private User supervisor;
+    @ManyToOne
+    @JoinColumn(name = "EngenheiroAtuante", referencedColumnName = "id", foreignKey = @ForeignKey(name = "engenheiro_atuante"))
+    private User engenheiroAtuante;
     @Column(name = "data_abertura")
     @NotBlank(message = "Data de abertura não pode ser vazia")
     private String dataAbertura;

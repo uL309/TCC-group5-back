@@ -50,6 +50,9 @@ public class CabecalhoOrdemDTO {
     @JsonProperty("supervisor")
     private String supervisorId; // Only the id of Supervisor (User)
 
+    @JsonProperty("engenheiro_atuante")
+    private String engenheiroAtuanteId; // Only the id of Engenheiro Atuante (User)
+
     @JsonProperty("supervisor_nome")
     private String supervisorNome;
 
@@ -60,6 +63,9 @@ public class CabecalhoOrdemDTO {
     public float getValorTotal() {
         return tempoUsado * valorHora;
     }
+
+    @JsonProperty("engenheiro_atuante_nome")
+    private String engenheiroAtuanteNome;
 
     @JsonProperty("status_descricao")
     public String getStatusDescricao() {

@@ -128,6 +128,13 @@ public class CabecalhoOrdemService {
                     }
                 }
 
+                User usuario = AuthUtil.getUsuarioLogado();
+                UserRole userRole = usuario != null ? usuario.getRole() : null;
+
+                if (userRole == UserRole.ROLE_ENGENHEIRO) {
+                    entity.setEngenheiroAtuante(usuario);
+                }
+
                 linhaOrdemService.deleteAllByOrdemId(entity.getId());
                 cabecalhoOrdemRepository.save(entity);
 

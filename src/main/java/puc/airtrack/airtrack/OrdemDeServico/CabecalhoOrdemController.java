@@ -77,6 +77,12 @@ public class CabecalhoOrdemController {
                 dto.setSupervisorId(String.valueOf(entity.getSupervisor().getId()));
                 dto.setSupervisorNome(entity.getSupervisor().getName());
             }
+
+            if (entity.getEngenheiroAtuante() != null) {
+                dto.setEngenheiroAtuanteId(String.valueOf(entity.getEngenheiroAtuante().getId()));
+                dto.setEngenheiroAtuanteNome(entity.getEngenheiroAtuante().getName());
+            }
+
             dto.setLinhas(linhaOrdemService.findByCabecalhoId(id));
             return ResponseEntity.ok(dto);
         }
