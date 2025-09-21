@@ -68,7 +68,7 @@ public class CabecalhoOrdemDTO {
     private String engenheiroAtuanteNome;
 
     @JsonProperty("horas_operacao_motor")
-    private Float horasOperacaoMotor;
+    private int horasOperacaoMotor;
 
     @JsonProperty("status_descricao")
     public String getStatusDescricao() {
