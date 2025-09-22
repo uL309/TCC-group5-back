@@ -17,6 +17,7 @@ public class Motor {
     private String marca;
     private LocalDate data_cadastro;
     private Boolean status;
+    @jakarta.persistence.Column(unique = true)
     private String serie_motor;
     private int horas_operacao;
     private String modelo;
