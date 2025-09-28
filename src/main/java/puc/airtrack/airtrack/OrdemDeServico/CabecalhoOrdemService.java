@@ -57,14 +57,7 @@ public class CabecalhoOrdemService {
             if (dto.getClienteId() != null) {
                 entity.setCliente(clienteRepo.findByCpf(dto.getClienteId()).orElse(null));
             }
-            if (dto.getMotorId() != null) {
-                try {
-                    int motorId = Integer.parseInt(dto.getMotorId());
-                    entity.setNumSerieMotor(motorRepository.findById(motorId).orElse(null));
-                } catch (NumberFormatException e) {
-                    entity.setNumSerieMotor(null);
-                }
-            }
+            checkAndNotifyMotorTbo(dto, entity);
             if (dto.getSupervisorId() != null) {
                 try {
                     int supervisorId = Integer.parseInt(dto.getSupervisorId());
@@ -115,43 +108,7 @@ public class CabecalhoOrdemService {
                     entity.setCliente(clienteRepo.findByCpf(dto.getClienteId()).orElse(null));
                 }
 
-                if (dto.getMotorId() != null) {
-                    try {
-                        int motorId = Integer.parseInt(dto.getMotorId());
-                        Motor motor = motorRepository.findById(motorId).orElse(null);
-                        if (motor != null) {
-                            TipoMotor tipoMotor = tipoMotorRepository.findByMarcaAndModelo(motor.getMarca(), motor.getModelo());
-                            if (tipoMotor != null) {
-                                motor.setHoras_operacao(dto.getHorasOperacaoMotor());
-                                motorRepository.save(motor);
-                                if (dto.getHorasOperacaoMotor() > tipoMotor.getTbo()) {
-                                    // Publica evento para notificação de TBO excedido
-                                    publishMotorTboExpiredEvent(motor);
-                                } else {
-                                    domainEventPublisher.publish(
-                                        "motor.tbo.expired.clear",
-                                        new DomainEvent(
-                                            UUID.randomUUID().toString(),
-                                            NotificationType.MOTOR_TBO_EXPIRED_CLEAR,
-                                            "MOTOR",
-                                            String.valueOf(motor.getId()),
-                                            null,
-                                            Instant.now(),
-                                            new HashMap<>()
-                                        )
-                                    );
-                                }
-                            }
-                            entity.setNumSerieMotor(motor);
-                        }
-
-
-
-
-                    } catch (NumberFormatException e) {
-                        entity.setNumSerieMotor(null);
-                    }
-                }
+                checkAndNotifyMotorTbo(dto, entity);
 
                 if (dto.getSupervisorId() != null) {
                     try {
@@ -292,6 +249,40 @@ public class CabecalhoOrdemService {
         );
     }
 
+    private void checkAndNotifyMotorTbo(CabecalhoOrdemDTO dto, CabecalhoOrdem entity) {
+        if (dto.getMotorId() != null) {
+            try {
+                int motorId = Integer.parseInt(dto.getMotorId());
+                Motor motor = motorRepository.findById(motorId).orElse(null);
+                if (motor != null) {
+                    TipoMotor tipoMotor = tipoMotorRepository.findByMarcaAndModelo(motor.getMarca(), motor.getModelo());
+                    if (tipoMotor != null && dto.getHorasOperacaoMotor() > 0) {
+                        motor.setHoras_operacao(dto.getHorasOperacaoMotor());
+                        motorRepository.save(motor);
+                        if (dto.getHorasOperacaoMotor() > tipoMotor.getTbo()) {
+                            publishMotorTboExpiredEvent(motor);
+                        } else {
+                            domainEventPublisher.publish(
+                                "motor.tbo.expired.clear",
+                                new DomainEvent(
+                                    UUID.randomUUID().toString(),
+                                    NotificationType.MOTOR_TBO_EXPIRED_CLEAR,
+                                    "MOTOR",
+                                    String.valueOf(motor.getId()),
+                                    null,
+                                    Instant.now(),
+                                    new HashMap<>()
+                                )
+                            );
+                        }
+                    }
+                    entity.setNumSerieMotor(motor);
+                }
+            } catch (NumberFormatException e) {
+                entity.setNumSerieMotor(null);
+            }
+        }
+    }
 
     public OrdemStatus obterStatusCabecalho(boolean isNovoOs, OrdemStatus statusAtual) {
         User usuario = AuthUtil.getUsuarioLogado();
@@ -306,4 +297,3 @@ public class CabecalhoOrdemService {
         return statusAtual;
     }
 }
-
