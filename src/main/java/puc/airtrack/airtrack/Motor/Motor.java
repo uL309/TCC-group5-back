@@ -7,6 +7,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import puc.airtrack.airtrack.Cliente.Cliente;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
 
 @Entity
 @Table(name = "Motor") // ou o nome da tabela no seu banco
@@ -21,6 +24,9 @@ public class Motor {
     private String serie_motor;
     private int horas_operacao;
     private String modelo;
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "cliente", referencedColumnName = "id", nullable = true)
+    private Cliente cliente;
 
     public int getId() {
         return id;
@@ -77,6 +83,12 @@ public class Motor {
     public void setModelo(String modelo) {
         this.modelo = modelo;
     }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
 }
-
-

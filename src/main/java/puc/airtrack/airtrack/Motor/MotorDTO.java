@@ -14,9 +14,20 @@ public class MotorDTO {
 
     private int tbo;
 
-    public int getId() {
-        return id;
+    private String cliente_cpf;
+    private String cliente_nome;
+
+    public String getCliente_nome() {
+        return cliente_nome;
     }
+
+    public void setCliente_nome(String cliente_nome) {
+        this.cliente_nome = cliente_nome;
+    }
+
+    public int getId(){ return id; }
+
+
 
     public void setId(int id) {
         this.id = id;
@@ -74,7 +85,17 @@ public class MotorDTO {
         return tbo;
     }
 
+    public String getCliente_cpf() {
+        return cliente_cpf;
+    }
+
+    public void setCliente_cpf(String cliente_cpf) {
+        this.cliente_cpf = cliente_cpf;
+    }
+
     public void setTbo(int tbo) {
         this.tbo = tbo;
     }
+
 }
+

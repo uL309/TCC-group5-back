@@ -45,6 +45,10 @@ public class MotorController {
             motorDTO.setData_cadastro(motor.getData_cadastro());
             motorDTO.setTbo(tipoMotor.getTbo());
             motoresDTO.add(motorDTO);
+            if (motor.getCliente() != null) {
+                motorDTO.setCliente_nome(motor.getCliente().getName());
+                motorDTO.setCliente_cpf(motor.getCliente().getCpf());
+            }
         }
 
         return ResponseEntity.ok(motoresDTO);
