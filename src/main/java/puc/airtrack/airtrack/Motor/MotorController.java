@@ -1,15 +1,24 @@
 package puc.airtrack.airtrack.Motor;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity;
-import puc.airtrack.airtrack.tipoMotor.TipoMotor;
-import puc.airtrack.airtrack.tipoMotor.TipoMotorRepository;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import puc.airtrack.airtrack.Cliente.Cliente;
+import puc.airtrack.airtrack.Cliente.ClienteRepo;
+import puc.airtrack.airtrack.tipoMotor.TipoMotor;
+import puc.airtrack.airtrack.tipoMotor.TipoMotorRepository;
 
 @RestController
 public class MotorController {
@@ -19,16 +28,33 @@ public class MotorController {
     @Autowired
     private TipoMotorRepository tipoMotorRepository;
 
-    @PostMapping("/cmotor")
-    public ResponseEntity<String> cadastrar(@RequestBody Motor motor) {
-        if (motor == null || motor.getSerie_motor() == null || motor.getSerie_motor().isEmpty()) {
-            return ResponseEntity.badRequest().body("Dados inválidos para cadastro do motor.");
-        }
-        motorRepository.save(motor);
-        URI location = URI.create("/gmotor?param=" + motor.getId());
-        return ResponseEntity.created(location).body("Motor cadastrado com sucesso!");
-    }
+    @Autowired
+    private ClienteRepo clienteRepository;
+     @PostMapping("/cmotor")
+    public ResponseEntity<String> createMotor(@RequestBody MotorDTO dto) {
+        if (dto != null) {
+            Motor motor = new Motor();
+            URI location;
 
+            motor.setMarca(dto.getMarca());
+            motor.setModelo(dto.getModelo());
+            motor.setSerie_motor(dto.getSerie_motor());
+            motor.setData_cadastro(dto.getData_cadastro());
+            motor.setStatus(dto.getStatus());
+            motor.setHoras_operacao(dto.getHoras_operacao());
+
+            // Busca o cliente pelo ID e seta no motor
+            if (dto.getCliente_cpf().isEmpty()) {
+                Optional<Cliente> cliente = clienteRepository.findByCpf(dto.getCliente_cpf());
+                cliente.ifPresent(motor::setCliente);
+            }
+
+            motorRepository.save(motor);
+            location = URI.create("/gmotor?param=" + motor.getId());
+            return ResponseEntity.created(location).body("Motor cadastrado com sucesso!");
+        }
+        return ResponseEntity.badRequest().body("Dados inválidos para cadastro do motor.");
+    }
     @GetMapping("/gmotores")
     public ResponseEntity<List<MotorDTO>> listar() {
         List<Motor> motoresEntity = motorRepository.findAll();
@@ -55,15 +81,32 @@ public class MotorController {
     }
 
     @PutMapping("/umotor")
-    public ResponseEntity<String> atualizar(@RequestBody Motor motor) {
-        Optional<Motor> existingMotor = motorRepository.findById(motor.getId());
-        if (existingMotor.isPresent()) {
+public ResponseEntity<String> updateMotor(@RequestBody MotorDTO dto) {
+    if (dto != null) {
+        Optional<Motor> optionalMotor = motorRepository.findById(dto.getId());
+        if (optionalMotor.isPresent()) {
+            Motor motor = optionalMotor.get();
+            motor.setMarca(dto.getMarca());
+            motor.setModelo(dto.getModelo());
+            motor.setSerie_motor(dto.getSerie_motor());
+            motor.setData_cadastro(dto.getData_cadastro());
+            motor.setStatus(dto.getStatus());
+            motor.setHoras_operacao(dto.getHoras_operacao());
+
+            // Atualiza o cliente se informado
+            if (dto.getCliente_cpf() != null && !dto.getCliente_cpf().isEmpty()) {
+                Optional<Cliente> cliente = clienteRepository.findByCpf(dto.getCliente_cpf());
+                cliente.ifPresent(motor::setCliente);
+            } else {
+                motor.setCliente(null);
+            }
+
             motorRepository.save(motor);
             return ResponseEntity.ok("Motor atualizado com sucesso!");
-        } else {
-            return ResponseEntity.status(404).body("Motor não encontrado!");
         }
     }
+    return ResponseEntity.badRequest().body("Dados inválidos ou motor não encontrado!");
+}
 
     @GetMapping("/gmotor")
     public ResponseEntity<Motor> buscarPorId(@RequestParam("param") Integer id) {
