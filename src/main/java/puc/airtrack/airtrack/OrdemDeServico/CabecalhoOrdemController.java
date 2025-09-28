@@ -117,6 +117,9 @@ public class CabecalhoOrdemController {
                 dto.setSupervisorId(String.valueOf(entity.getSupervisor().getId()));
                 dto.setSupervisorNome(entity.getSupervisor().getName());
             }
+            if (entity.getEngenheiroAtuante() != null) {
+                dto.setEngenheiroAtuanteNome(entity.getEngenheiroAtuante().getName());
+            }
             System.out.println("Adding CabecalhoOrdemDTO: " + dto);
             dtos.add(dto);
         }
