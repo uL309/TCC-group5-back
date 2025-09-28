@@ -53,7 +53,7 @@ public class SecurityConfig {
                         // SUPERVISOR or ADMIN
                         .requestMatchers("/cforn", "/gforn", "/gforns", "/uforn", "/dforn",
                                 "/linhaordem/get", "/linhaordem/list",
-                                "/cmotor", "/umotor", "/gmotor","/gtipomotores", "/gtipomotorm", "api/report/export").hasAnyRole("SUPERVISOR", "ADMIN")
+                                "/cmotor", "/umotor", "/gmotor","/gtipomotores", "/gtipomotorm", "/api/report/export").hasAnyRole("SUPERVISOR", "ADMIN")
 
                         // ENGENHEIRO or ADMIN
                         .requestMatchers("/cpeca", "/gpeca", "/gpecas", "/upeca", "/dpeca",
@@ -81,6 +81,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/files/list").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         .requestMatchers("/api/files/{fileName}").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         .requestMatchers("/api/files/**").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "ADMIN")
+                        
+                        // Documentos - temporariamente permitindo ADMIN para todos os endpoints para testar
+                        .requestMatchers("/api/documentos/**").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         
                         // Authenticated
                         .requestMatchers("/first-access", "/notifications/**").authenticated()
