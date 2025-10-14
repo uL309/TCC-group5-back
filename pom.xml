@@ -79,6 +79,16 @@
     <artifactId>openhtmltopdf-pdfbox</artifactId>
     <version>1.0.10</version>
 </dependency>
+<dependency>
+    <groupId>com.fasterxml.jackson.datatype</groupId>
+    <artifactId>jackson-datatype-jsr310</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>5.9.3</version>
+    <scope>test</scope>
+</dependency>
 		<dependency>
     <groupId>com.itextpdf</groupId>
     <artifactId>itextpdf</artifactId>
@@ -218,6 +228,25 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+      <groupId>org.jacoco</groupId>
+      <artifactId>jacoco-maven-plugin</artifactId>
+      <version>0.8.11</version>
+      <executions>
+        <execution>
+          <goals>
+            <goal>prepare-agent</goal>
+          </goals>
+        </execution>
+        <execution>
+          <id>report</id>
+          <phase>test</phase>
+          <goals>
+            <goal>report</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
 		</plugins>
 	</build>
 

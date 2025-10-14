@@ -44,7 +44,7 @@ public class MotorController {
             motor.setHoras_operacao(dto.getHoras_operacao());
 
             // Busca o cliente pelo ID e seta no motor
-            if (dto.getCliente_cpf().isEmpty()) {
+            if (dto.getCliente_cpf() != null && !dto.getCliente_cpf().isEmpty()) {
                 Optional<Cliente> cliente = clienteRepository.findByCpf(dto.getCliente_cpf());
                 cliente.ifPresent(motor::setCliente);
             }
@@ -69,12 +69,17 @@ public class MotorController {
             motorDTO.setStatus(motor.getStatus());
             motorDTO.setHoras_operacao(motor.getHoras_operacao());
             motorDTO.setData_cadastro(motor.getData_cadastro());
-            motorDTO.setTbo(tipoMotor.getTbo());
-            motoresDTO.add(motorDTO);
+            // Corrija aqui:
+            if (tipoMotor != null) {
+                motorDTO.setTbo(tipoMotor.getTbo());
+            } else {
+                motorDTO.setTbo(0); // ou outro valor padrão
+            }
             if (motor.getCliente() != null) {
                 motorDTO.setCliente_nome(motor.getCliente().getName());
                 motorDTO.setCliente_cpf(motor.getCliente().getCpf());
             }
+            motoresDTO.add(motorDTO);
         }
 
         return ResponseEntity.ok(motoresDTO);
