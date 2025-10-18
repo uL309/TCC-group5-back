@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack;
+package puc.airtrack.airtrack.Controllers;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -18,6 +18,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import puc.airtrack.airtrack.Repositorio;
+import puc.airtrack.airtrack.SecurityFilter;
+import puc.airtrack.airtrack.TokenService;
 import puc.airtrack.airtrack.Login.User;
 import puc.airtrack.airtrack.Login.UserDTO;
 import puc.airtrack.airtrack.Login.UserRole;

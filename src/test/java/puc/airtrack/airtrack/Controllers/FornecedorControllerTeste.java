@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack;
+package puc.airtrack.airtrack.Controllers;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -19,6 +20,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import puc.airtrack.airtrack.SecurityFilter;
+import puc.airtrack.airtrack.TokenService;
 import puc.airtrack.airtrack.Fornecedor.Fornecedor;
 import puc.airtrack.airtrack.Fornecedor.FornecedorController;
 import puc.airtrack.airtrack.Fornecedor.FornecedorDTO;
@@ -136,6 +139,132 @@ void testBuscarPorId_FornecedorNaoEncontrado() throws Exception {
 
         mockMvc.perform(delete("/dforn").param("id", "1"))
     .andExpect(status().isOk());
+    }
+    
+    @Test
+    void testCreateFornecedorAlreadyExists() throws Exception {
+        FornecedorDTO dto = new FornecedorDTO();
+        dto.setId("1");
+        dto.setName("NomeExistente");
+
+        Fornecedor existing = new Fornecedor();
+        existing.setId("1");
+
+        when(fornecedorRepository.findById("1")).thenReturn(Optional.of(existing));
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.findAndRegisterModules();
+        mockMvc.perform(post("/cforn")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testCreateFornecedor_CheckLocationHeader() throws Exception {
+        FornecedorDTO dto = new FornecedorDTO();
+        dto.setId("1");
+        dto.setName("NovoNome");
+        dto.setEmail("e@mail");
+        dto.setCategoria("Cat");
+        dto.setContato("contato");
+        dto.setStatus(true);
+
+        when(fornecedorRepository.findById("1")).thenReturn(Optional.empty());
+        when(fornecedorRepository.save(any(Fornecedor.class))).thenAnswer(i -> {
+            Fornecedor f = i.getArgument(0);
+            f.setId("1");
+            return f;
+        });
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.findAndRegisterModules();
+        mockMvc.perform(post("/cforn")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(dto)))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", "/gforn?param=1"));
+    }
+
+    @Test
+    void testUpdateFornecedor_NotFound() throws Exception {
+        FornecedorDTO dto = new FornecedorDTO();
+        dto.setId("99");
+        dto.setName("Novo");
+
+        when(fornecedorRepository.findById("99")).thenReturn(Optional.empty());
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.findAndRegisterModules();
+        mockMvc.perform(put("/uforn")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(dto)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testUpdateFornecedor_ChangesFields() throws Exception {
+        FornecedorDTO dto = new FornecedorDTO();
+        dto.setId("1");
+        dto.setName("NomeNovo");
+        dto.setEmail("novo@mail");
+        dto.setCategoria("NovaCat");
+        dto.setContato("99999");
+        dto.setStatus(false);
+
+        Fornecedor existing = new Fornecedor();
+        existing.setId("1");
+        existing.setName("Velho");
+        existing.setEmail("old@mail");
+        existing.setCategoria("VelhaCat");
+        existing.setContato("11111");
+        existing.setStatus(true);
+
+        when(fornecedorRepository.findById("1")).thenReturn(Optional.of(existing));
+        when(fornecedorRepository.save(any(Fornecedor.class))).thenAnswer(i -> i.getArgument(0));
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.findAndRegisterModules();
+        mockMvc.perform(put("/uforn")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(dto)))
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<Fornecedor> cap = ArgumentCaptor.forClass(Fornecedor.class);
+        verify(fornecedorRepository).save(cap.capture());
+        Fornecedor saved = cap.getValue();
+        assert saved.getName().equals("NomeNovo");
+        assert saved.getEmail().equals("novo@mail");
+        assert saved.getCategoria().equals("NovaCat");
+        assert saved.getContato().equals("99999");
+        assert saved.getStatus().equals(false);
+    }
+
+    @Test
+    void testGetFornecedor_NotFound() throws Exception {
+        when(fornecedorRepository.findById("404")).thenReturn(Optional.empty());
+        mockMvc.perform(get("/gforn").param("id", "404"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testGetFornecedorByCategory() throws Exception {
+        Fornecedor f = new Fornecedor();
+        f.setId("1");
+        f.setName("N");
+        f.setCategoria("CatA");
+        when(fornecedorRepository.findByCategoria("CatA")).thenReturn(Arrays.asList(f));
+
+        mockMvc.perform(get("/gfornc").param("category", "CatA"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].categoria").value("CatA"));
+    }
+
+    @Test
+    void testDeleteFornecedor_NotFound() throws Exception {
+        when(fornecedorRepository.findById("X")).thenReturn(Optional.empty());
+        mockMvc.perform(delete("/dforn").param("id", "X"))
+            .andExpect(status().isNotFound());
     }
     
     // Registra o módulo do JavaTime para o ObjectMapper
