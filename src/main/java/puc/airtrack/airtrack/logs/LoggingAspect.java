@@ -12,6 +12,7 @@ import puc.airtrack.airtrack.Fornecedor.FornecedorController;
 import puc.airtrack.airtrack.Fornecedor.FornecedorDTO;
 import puc.airtrack.airtrack.Motor.Motor;
 import puc.airtrack.airtrack.Motor.MotorController;
+import puc.airtrack.airtrack.Motor.MotorDTO;
 import puc.airtrack.airtrack.OrdemDeServico.CabecalhoOrdem;
 import puc.airtrack.airtrack.OrdemDeServico.CabecalhoOrdemController;
 import puc.airtrack.airtrack.OrdemDeServico.LinhaOrdemController;
@@ -185,6 +186,10 @@ public class LoggingAspect {
             motorId = (String) args[0];
         } else if (result instanceof Motor) {
             motorId = ((Motor) result).getSerie_motor();
+        } else if (args.length > 0 && args[0] instanceof MotorDTO) {
+            // Para operações de update que recebem MotorDTO
+            MotorDTO motorDTO = (MotorDTO) args[0];
+            motorId = motorDTO.getSerie_motor();
         }
         
         loggingService.logMotorOperation(

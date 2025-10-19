@@ -15,9 +15,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import jakarta.validation.Valid;
 import puc.airtrack.airtrack.TokenService;
 import puc.airtrack.airtrack.services.PasswordResetService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 
 @Controller
+@Tag(name = "Autenticação", description = "Endpoints de autenticação, registro e gerenciamento de senhas")
 public class LoginController {
 
     @Autowired
@@ -32,8 +40,78 @@ public class LoginController {
     @Autowired
     private PasswordResetService passwordResetService;
 
+    @Operation(
+        summary = "Realizar login",
+        description = "Autentica um usuário e retorna um token JWT válido por 24 horas. Use este token no header Authorization para acessar endpoints protegidos."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Login realizado com sucesso - Token JWT retornado",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ResponseDTO.class),
+                examples = @ExampleObject(
+                    name = "Login bem-sucedido",
+                    value = """
+                        {
+                          "name": "João Silva",
+                          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhaXJ0cmFjayIsInN1YiI6ImFkbWluQGFpcnRyYWNrLmNvbSIsImV4cCI6MTcwOTY3MDAwMH0.abc123xyz"
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Credenciais inválidas",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "\"Unauthorized\""
+                )
+            )
+        )
+    })
     @PostMapping("/login")
-    public ResponseEntity<ResponseDTO> postLogin(@RequestBody LoginDTO entity) {
+    public ResponseEntity<ResponseDTO> postLogin(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Credenciais de acesso",
+            required = true,
+            content = @Content(
+                schema = @Schema(implementation = LoginDTO.class),
+                examples = {
+                    @ExampleObject(
+                        name = "Admin",
+                        value = """
+                            {
+                              "username": "admin@airtrack.com",
+                              "password": "admin123"
+                            }
+                            """
+                    ),
+                    @ExampleObject(
+                        name = "Supervisor",
+                        value = """
+                            {
+                              "username": "supervisor@airtrack.com",
+                              "password": "super123"
+                            }
+                            """
+                    ),
+                    @ExampleObject(
+                        name = "Engenheiro",
+                        value = """
+                            {
+                              "username": "engenheiro@airtrack.com",
+                              "password": "eng123"
+                            }
+                            """
+                    )
+                }
+            )
+        )
+        @RequestBody LoginDTO entity) {
         
         var usernamePassword = new UsernamePasswordAuthenticationToken(entity.getUsername(), entity.getPassword());
         var auth = this.authenticationManager.authenticate(usernamePassword);

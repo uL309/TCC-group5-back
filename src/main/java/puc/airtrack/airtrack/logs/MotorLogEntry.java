@@ -21,7 +21,7 @@ public class MotorLogEntry extends LogEntry {
     
     public MotorLogEntry(String username, String controllerMethod, String requestData, 
                         String responseData, String motorId, String operationType) {
-        super(null, null, username, controllerMethod, requestData, responseData);
+        super(username, controllerMethod, requestData, responseData);
         this.motorId = motorId;
         this.operationType = operationType;
     }

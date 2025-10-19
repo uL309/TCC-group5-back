@@ -21,7 +21,7 @@ public class FornecedorLogEntry extends LogEntry {
     
     public FornecedorLogEntry(String username, String controllerMethod, String requestData, 
                              String responseData, String fornecedorId, String operationType) {
-        super(null, null, username, controllerMethod, requestData, responseData);
+        super(username, controllerMethod, requestData, responseData);
         this.fornecedorId = fornecedorId;
         this.operationType = operationType;
     }

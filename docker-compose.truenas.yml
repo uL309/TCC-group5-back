@@ -1,7 +1,10 @@
+# Docker Compose for TrueNAS Scale Deployment
+# Optimized for TrueNAS Scale Apps and persistent storage
+
 version: '3.8'
 
 services:
-  # MySQL Database
+  # MySQL Database with persistent storage
   mysql-db:
     image: mysql:8.0
     container_name: airtrack-mysql
@@ -14,9 +17,12 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
-      - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql:ro
+      # TrueNAS persistent storage path
+      - /mnt/tank/apps/airtrack/mysql-data:/var/lib/mysql
+      - /mnt/tank/apps/airtrack/mysql-init/dump.sql:/docker-entrypoint-initdb.d/dump.sql:ro
     command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - airtrack-net
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
@@ -34,7 +40,10 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      # TrueNAS persistent storage
+      - /mnt/tank/apps/airtrack/rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - airtrack-net
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       interval: 30s
@@ -43,6 +52,7 @@ services:
 
   # Java Spring Boot Backend
   backend:
+    image: airtrack/backend:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -51,7 +61,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-truenas}
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/${MYSQL_DATABASE:-airtrack_db}?maxAllowedPacket=67108864&serverTimezone=America/Sao_Paulo
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-airtrack}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-airtrackpass}
@@ -62,11 +72,21 @@ services:
       AZURE_STORAGE_ACCOUNT_NAME: ${AZURE_STORAGE_ACCOUNT_NAME}
       AZURE_STORAGE_ACCOUNT_KEY: ${AZURE_STORAGE_ACCOUNT_KEY}
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=80.0 -XX:+UseG1GC"
+      # TrueNAS specific
+      SERVER_ADDRESS: 0.0.0.0
+      TRUENAS_HOST: ${TRUENAS_HOST:-truenas.local}
+    volumes:
+      # Application logs persistent storage
+      - /mnt/tank/apps/airtrack/backend-logs:/app/logs
+      # Upload/file storage
+      - /mnt/tank/apps/airtrack/uploads:/app/uploads
     depends_on:
       mysql-db:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    networks:
+      - airtrack-net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s
@@ -76,6 +96,7 @@ services:
 
   # Report Server Microservice
   report-server:
+    image: airtrack/reportserver:latest
     build:
       context: ./ReportServer
       dockerfile: Dockerfile
@@ -87,9 +108,18 @@ services:
       NODE_ENV: ${NODE_ENV:-production}
       BACKEND_URL: http://backend:8080
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      # TrueNAS specific
+      TRUENAS_HOST: ${TRUENAS_HOST:-truenas.local}
+    volumes:
+      # Report generation temp files
+      - /mnt/tank/apps/airtrack/reports-temp:/app/temp
+      # Generated reports storage
+      - /mnt/tank/apps/airtrack/reports-output:/app/reports
     depends_on:
       backend:
         condition: service_healthy
+    networks:
+      - airtrack-net
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
       interval: 30s
@@ -99,6 +129,7 @@ services:
 
   # Angular Frontend
   frontend:
+    image: airtrack/frontend:latest
     build:
       context: ../air-track-front
       dockerfile: Dockerfile
@@ -107,13 +138,19 @@ services:
     ports:
       - "4200:4200"
     environment:
-      API_URL: http://backend:8080
-      REPORT_SERVER_URL: http://report-server:3000
+      API_URL: http://${TRUENAS_HOST:-truenas.local}:8080
+      REPORT_SERVER_URL: http://${TRUENAS_HOST:-truenas.local}:3000
+      TRUENAS_HOST: ${TRUENAS_HOST:-truenas.local}
+    volumes:
+      # Nginx logs
+      - /mnt/tank/apps/airtrack/nginx-logs:/var/log/nginx
     depends_on:
       backend:
         condition: service_healthy
       report-server:
         condition: service_healthy
+    networks:
+      - airtrack-net
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4200/health"]
       interval: 30s
@@ -121,12 +158,52 @@ services:
       retries: 3
       start_period: 30s
 
+  # Backup service for TrueNAS
+  backup:
+    image: alpine:latest
+    container_name: airtrack-backup
+    restart: "no"  # Run on-demand
+    environment:
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+    volumes:
+      - /mnt/tank/apps/airtrack:/data
+      - /mnt/tank/backups/airtrack:/backup
+    command: |
+      sh -c "
+        echo 'Creating backup...'
+        DATE=\$$(date +%Y%m%d_%H%M%S)
+        tar -czf /backup/airtrack_backup_\$$DATE.tar.gz -C /data .
+        echo 'Backup created: airtrack_backup_\$$DATE.tar.gz'
+        
+        # Clean old backups
+        find /backup -name 'airtrack_backup_*.tar.gz' -type f -mtime +\$$BACKUP_RETENTION_DAYS -delete
+        echo 'Old backups cleaned up'
+      "
+    networks:
+      - airtrack-net
+    profiles:
+      - backup
+
 volumes:
-  mysql_data:
+  # Named volumes for easier management in TrueNAS
+  mysql-data:
     driver: local
-  rabbitmq_data:
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/tank/apps/airtrack/mysql-data
+
+  rabbitmq-data:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/tank/apps/airtrack/rabbitmq-data
 
 networks:
-  default:
+  airtrack-net:
+    driver: bridge
     name: airtrack-network
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

@@ -15,12 +15,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import puc.airtrack.airtrack.Cliente.Cliente;
 import puc.airtrack.airtrack.Cliente.ClienteRepo;
 import puc.airtrack.airtrack.tipoMotor.TipoMotor;
 import puc.airtrack.airtrack.tipoMotor.TipoMotorRepository;
 
 @RestController
+@Tag(name = "Motor", description = "Gerenciamento de motores de aeronaves - Cadastro, atualização, consulta e exclusão lógica de motores")
 public class MotorController {
 
     @Autowired
@@ -30,8 +39,59 @@ public class MotorController {
 
     @Autowired
     private ClienteRepo clienteRepository;
-     @PostMapping("/cmotor")
-    public ResponseEntity<String> createMotor(@RequestBody MotorDTO dto) {
+    
+    @Operation(
+        summary = "Criar novo motor",
+        description = "Registra um novo motor no sistema com informações completas incluindo série, marca, modelo e vinculação com cliente"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Motor criado com sucesso",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "\"Motor cadastrado com sucesso!\""
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Dados inválidos ou série do motor já existe",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "\"Erro: Motor já cadastrado ou dados inválidos!\""
+                )
+            )
+        )
+    })
+    @PostMapping("/cmotor")
+    public ResponseEntity<String> createMotor(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Dados do motor a ser criado",
+            required = true,
+            content = @Content(
+                schema = @Schema(implementation = MotorDTO.class),
+                examples = @ExampleObject(
+                    name = "Exemplo Motor Pratt & Whitney",
+                    value = """
+                        {
+                          "marca": "Pratt & Whitney",
+                          "modelo": "PT6A-60A",
+                          "serie_motor": "PCE-123456",
+                          "data_cadastro": "2025-01-15",
+                          "status": true,
+                          "horas_operacao": 250,
+                          "tbo": 3600,
+                          "cliente_cpf": "123.456.789-00",
+                          "cliente_nome": "Aviação Executiva Ltda"
+                        }
+                        """
+                )
+            )
+        )
+        @RequestBody MotorDTO dto) {
         if (dto != null) {
             Motor motor = new Motor();
             URI location;
@@ -85,8 +145,59 @@ public class MotorController {
         return ResponseEntity.ok(motoresDTO);
     }
 
+    @Operation(
+        summary = "Atualizar motor existente",
+        description = "Atualiza as informações de um motor já cadastrado no sistema, incluindo horas de operação, status e vinculação com cliente"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Motor atualizado com sucesso",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "\"Motor atualizado com sucesso!\""
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Dados inválidos ou motor não encontrado",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "\"Dados inválidos ou motor não encontrado!\""
+                )
+            )
+        )
+    })
     @PutMapping("/umotor")
-public ResponseEntity<String> updateMotor(@RequestBody MotorDTO dto) {
+    public ResponseEntity<String> updateMotor(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Dados atualizados do motor (incluir ID)",
+            required = true,
+            content = @Content(
+                schema = @Schema(implementation = MotorDTO.class),
+                examples = @ExampleObject(
+                    name = "Atualização de Horas de Operação",
+                    value = """
+                        {
+                          "id": 1,
+                          "marca": "Pratt & Whitney",
+                          "modelo": "PT6A-60A",
+                          "serie_motor": "PCE-123456",
+                          "data_cadastro": "2025-01-15",
+                          "status": true,
+                          "horas_operacao": 850,
+                          "tbo": 3600,
+                          "cliente_cpf": "123.456.789-00",
+                          "cliente_nome": "Aviação Executiva Ltda"
+                        }
+                        """
+                )
+            )
+        )
+        @RequestBody MotorDTO dto) {
     if (dto != null) {
         Optional<Motor> optionalMotor = motorRepository.findById(dto.getId());
         if (optionalMotor.isPresent()) {
@@ -113,16 +224,63 @@ public ResponseEntity<String> updateMotor(@RequestBody MotorDTO dto) {
     return ResponseEntity.badRequest().body("Dados inválidos ou motor não encontrado!");
 }
 
+    @Operation(
+        summary = "Buscar motor por ID",
+        description = "Retorna os dados completos de um motor específico através do seu ID"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Motor encontrado",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = Motor.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Motor não encontrado"
+        )
+    })
     @GetMapping("/gmotor")
-    public ResponseEntity<Motor> buscarPorId(@RequestParam("param") Integer id) {
+    public ResponseEntity<Motor> buscarPorId(
+        @Parameter(description = "ID do motor", example = "1", required = true)
+        @RequestParam("param") Integer id) {
         Optional<Motor> motor = motorRepository.findById(id);
         return motor.map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(404).body(null));
     }
 
-
+    @Operation(
+        summary = "Deletar motor (exclusão lógica)",
+        description = "Realiza a exclusão lógica do motor, marcando seu status como inativo sem remover do banco de dados"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Motor deletado com sucesso",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "\"Motor deletado com sucesso!\""
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Motor não encontrado",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "\"Motor não encontrado!\""
+                )
+            )
+        )
+    })
     @DeleteMapping("/dmotor")
-    public ResponseEntity<String> deletar(@RequestParam("param") Integer id) {
+    public ResponseEntity<String> deletar(
+        @Parameter(description = "ID do motor a ser deletado", example = "1", required = true)
+        @RequestParam("param") Integer id) {
         Optional<Motor> existingMotor = motorRepository.findById(id);
         if (existingMotor.isPresent()) {
             existingMotor.get().setStatus(false);

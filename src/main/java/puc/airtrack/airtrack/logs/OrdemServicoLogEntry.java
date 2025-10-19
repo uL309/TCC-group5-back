@@ -30,7 +30,7 @@ public class OrdemServicoLogEntry extends LogEntry {
     
     public OrdemServicoLogEntry(String username, String controllerMethod, String requestData, 
                                String responseData, Integer ordemId, String operationType) {
-        super(null, null, username, controllerMethod, requestData, responseData);
+        super(username, controllerMethod, requestData, responseData);
         this.ordemId = ordemId;
         this.operationType = operationType;
     }

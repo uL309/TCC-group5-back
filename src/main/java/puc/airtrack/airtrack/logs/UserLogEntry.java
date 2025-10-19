@@ -21,7 +21,7 @@ public class UserLogEntry extends LogEntry {
     
     public UserLogEntry(String username, String controllerMethod, String requestData, 
                        String responseData, String targetUserId, String operationType) {
-        super(null, null, username, controllerMethod, requestData, responseData);
+        super(username, controllerMethod, requestData, responseData);
         this.targetUserId = targetUserId;
         this.operationType = operationType;
     }

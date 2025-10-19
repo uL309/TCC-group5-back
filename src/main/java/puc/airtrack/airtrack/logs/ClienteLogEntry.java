@@ -21,7 +21,7 @@ public class ClienteLogEntry extends LogEntry {
     
     public ClienteLogEntry(String username, String controllerMethod, String requestData, 
                           String responseData, String clienteId, String operationType) {
-        super(null, null, username, controllerMethod, requestData, responseData);
+        super(username, controllerMethod, requestData, responseData);
         this.clienteId = clienteId;
         this.operationType = operationType;
     }

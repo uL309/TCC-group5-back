@@ -2,19 +2,39 @@ package puc.airtrack.airtrack.Motor;
 
 import java.time.LocalDate;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Objeto de transferência de dados para Motor de Aeronave")
 public class MotorDTO {
+    
+    @Schema(description = "ID único do motor (gerado automaticamente)", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private int id;
+    
+    @Schema(description = "Marca do fabricante do motor", example = "Pratt & Whitney", required = true)
     private String marca;
+    
+    @Schema(description = "Data de cadastro do motor no sistema", example = "2025-01-15", required = true)
     private LocalDate data_cadastro;
+    
+    @Schema(description = "Status operacional do motor (true = ativo, false = inativo)", example = "true", required = true)
     private Boolean status;
 
+    @Schema(description = "Número de série único do motor", example = "PCE-123456", required = true)
     private String serie_motor;
+    
+    @Schema(description = "Total de horas de operação acumuladas", example = "850", required = true)
     private int horas_operacao;
+    
+    @Schema(description = "Modelo específico do motor", example = "PT6A-60A", required = true)
     private String modelo;
 
+    @Schema(description = "Time Between Overhaul (TBO) - Horas até próxima revisão geral", example = "3600", required = true)
     private int tbo;
 
+    @Schema(description = "CPF do cliente proprietário do motor", example = "123.456.789-00")
     private String cliente_cpf;
+    
+    @Schema(description = "Nome do cliente proprietário", example = "Aviação Executiva Ltda")
     private String cliente_nome;
 
     public String getCliente_nome() {

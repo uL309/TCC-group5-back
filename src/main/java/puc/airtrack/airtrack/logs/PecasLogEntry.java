@@ -21,7 +21,7 @@ public class PecasLogEntry extends LogEntry {
     
     public PecasLogEntry(String username, String controllerMethod, String requestData, 
                         String responseData, String pecaId, String operationType) {
-        super(null, null, username, controllerMethod, requestData, responseData);
+        super(username, controllerMethod, requestData, responseData);
         this.pecaId = pecaId;
         this.operationType = operationType;
     }

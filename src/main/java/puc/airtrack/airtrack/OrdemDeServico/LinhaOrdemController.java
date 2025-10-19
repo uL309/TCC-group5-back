@@ -5,6 +5,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +23,8 @@ import puc.airtrack.airtrack.Login.UserService;
 
 @RestController
 @RequestMapping("/linhaordem")
+@Tag(name = "Linha de Ordem", description = "Gerenciamento de itens/peças utilizadas em ordens de serviço")
+@SecurityRequirement(name = "bearerAuth")
 public class LinhaOrdemController {
     @Autowired
     private LinhaOrdemRepository linhaOrdemRepository;
@@ -26,6 +37,35 @@ public class LinhaOrdemController {
     @Autowired
     private LinhaOrdemService linhaOrdemService;
 
+    @Operation(
+        summary = "Adicionar item à ordem",
+        description = "Adiciona uma peça/serviço a uma ordem de serviço específica, com quantidade e tempo gasto.",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Dados do item da ordem",
+            required = true,
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = LinhaOrdemDTO.class),
+                examples = @ExampleObject(
+                    name = "Filtro substituído",
+                    value = """
+                    {
+                      "ordemId": 1,
+                      "pecaId": 1,
+                      "quantidade": 1,
+                      "tempoGasto": 2.5,
+                      "engenheiroId": "3"
+                    }
+                    """
+                )
+            )
+        )
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Item adicionado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado")
+    })
     @PostMapping("/create")
     public ResponseEntity<String> createLinhaOrdem(@RequestBody LinhaOrdemDTO dto) {
         try {

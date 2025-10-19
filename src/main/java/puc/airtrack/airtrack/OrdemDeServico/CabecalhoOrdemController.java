@@ -23,11 +23,22 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.azure.storage.blob.BlobClient;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import puc.airtrack.airtrack.services.AzureBlobStorageService;
 import puc.airtrack.airtrack.services.OrdemServicoPdfService;
 
 @RestController
 @RequestMapping("/ordem")
+@Tag(name = "Ordem de Serviço", description = "Gerenciamento completo de ordens de serviço de manutenção - criação, consulta, atualização e controle de status")
+@SecurityRequirement(name = "bearerAuth")
 public class CabecalhoOrdemController {
     @Autowired
     private CabecalhoOrdemRepository cabecalhoOrdemRepository;
@@ -40,16 +51,69 @@ public class CabecalhoOrdemController {
     @Autowired
     private OrdemServicoPdfService ordemServicoPdfService;
 
+    @Operation(
+        summary = "Criar ordem de serviço",
+        description = "Cria uma nova ordem de serviço de manutenção para um motor. A OS pode ser preventiva, corretiva ou overhaul.",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Dados da ordem de serviço",
+            required = true,
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = CabecalhoOrdemDTO.class),
+                examples = @ExampleObject(
+                    name = "OS Preventiva",
+                    value = """
+                    {
+                      "dataAbertura": "2025-10-19",
+                      "descricao": "Revisão programada de 500 horas",
+                      "tipo": "PREVENTIVA",
+                      "tempoEstimado": 120.0,
+                      "status": "PENDENTE",
+                      "valorHora": 150.00,
+                      "clienteId": "123.456.789-00",
+                      "motorId": "1",
+                      "supervisorId": "2",
+                      "engenheiroAtuanteId": "3"
+                    }
+                    """
+                )
+            )
+        )
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Ordem criada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado"),
+        @ApiResponse(responseCode = "500", description = "Erro interno")
+    })
     @PostMapping("/create")
     public ResponseEntity<String> createCabecalho(@RequestBody CabecalhoOrdemDTO dto) {
         return cabecalhoOrdemService.createCabecalho(dto);
     }
 
+    @Operation(
+        summary = "Atualizar ordem de serviço",
+        description = "Atualiza os dados de uma ordem de serviço existente. Permite alterar status, tempo usado, engenheiro responsável, etc."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Ordem atualizada com sucesso"),
+        @ApiResponse(responseCode = "404", description = "Ordem não encontrada"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado")
+    })
     @PutMapping("/update")
     public ResponseEntity<String> updateCabecalho(@RequestBody CabecalhoOrdemDTO dto) {
         return cabecalhoOrdemService.updateCabecalho(dto);
     }
 
+    @Operation(
+        summary = "Buscar ordem de serviço por ID",
+        description = "Retorna todos os dados de uma ordem de serviço específica, incluindo linhas (peças utilizadas)."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Ordem encontrada"),
+        @ApiResponse(responseCode = "404", description = "Ordem não encontrada"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado")
+    })
     @GetMapping("/get")
     public ResponseEntity<CabecalhoOrdemDTO> getCabecalho(@RequestParam int id) {
         Optional<CabecalhoOrdem> opt = cabecalhoOrdemRepository.findById(id);

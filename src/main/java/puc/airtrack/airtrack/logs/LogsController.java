@@ -9,6 +9,13 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.time.LocalDateTime;
 
 /**
@@ -16,6 +23,8 @@ import java.time.LocalDateTime;
  */
 @RestController
 @RequestMapping("/api/logs")
+@Tag(name = "Logs de Auditoria", description = "Consulta de logs de auditoria do sistema - rastreamento completo de operações por módulo")
+@SecurityRequirement(name = "bearerAuth")
 public class LogsController {
 
     @Autowired
@@ -42,6 +51,14 @@ public class LogsController {
     /**
      * Obter logs do módulo Cliente
      */
+    @Operation(
+        summary = "Consultar logs de clientes",
+        description = "Retorna logs de auditoria das operações realizadas no módulo de clientes. Suporta filtros por cliente, usuário, tipo de operação e período."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Logs retornados com sucesso"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado")
+    })
     @GetMapping("/clientes")
     public ResponseEntity<Page<ClienteLogEntry>> getClienteLogs(
             @RequestParam(required = false) String clienteId,

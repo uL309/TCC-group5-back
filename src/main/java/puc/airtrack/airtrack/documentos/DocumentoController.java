@@ -3,6 +3,9 @@ package puc.airtrack.airtrack.documentos;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
@@ -28,7 +31,8 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/documentos")
 @RequiredArgsConstructor
-@Tag(name = "Documentos", description = "APIs para gerenciamento de manuais e documentos")
+@Tag(name = "Documentos", description = "Gerenciamento de manuais e documentos técnicos - Upload para Azure Blob Storage")
+@SecurityRequirement(name = "bearerAuth")
 public class DocumentoController {
 
     private final DocumentoService documentoService;

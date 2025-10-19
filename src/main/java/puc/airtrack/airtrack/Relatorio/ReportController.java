@@ -15,13 +15,30 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 @RestController
 @RequestMapping("/api/report")
+@Tag(name = "Relatórios", description = "Geração de relatórios PDF com dados do sistema")
+@SecurityRequirement(name = "bearerAuth")
 public class ReportController {
 
     @Autowired
     private JdbcTemplate jdbcTemplate; // Para consultar o banco
 
+    @Operation(
+        summary = "Exportar relatório em PDF",
+        description = "Gera um relatório em PDF com todas as ordens de serviço usando serviço Node.js externo para renderização."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "PDF gerado com sucesso"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado"),
+        @ApiResponse(responseCode = "500", description = "Erro ao gerar PDF")
+    })
     @GetMapping("/export")
     public ResponseEntity<byte[]> exportReportAsPdf() {
         try {

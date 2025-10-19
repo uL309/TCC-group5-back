@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
  */
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @MappedSuperclass
 public abstract class LogEntry {
     
@@ -34,6 +33,14 @@ public abstract class LogEntry {
     
     @Column(name = "responseData", columnDefinition = "LONGTEXT")
     private String responseData;
+    
+    // Constructor for creating new log entries (ID and timestamp will be set by JPA)
+    public LogEntry(String username, String controllerMethod, String requestData, String responseData) {
+        this.username = username;
+        this.controllerMethod = controllerMethod;
+        this.requestData = requestData;
+        this.responseData = responseData;
+    }
     
     @PrePersist
     protected void onCreate() {
