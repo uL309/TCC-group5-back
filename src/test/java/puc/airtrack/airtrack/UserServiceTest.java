@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Services;
+package puc.airtrack.airtrack;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -13,13 +13,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import puc.airtrack.airtrack.Repositorio;
 import puc.airtrack.airtrack.Login.User;
 import puc.airtrack.airtrack.Login.UserRole;
 import puc.airtrack.airtrack.Login.UserService;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTeste {
+public class UserServiceTest {
 
     @Mock
     private Repositorio repositorio;

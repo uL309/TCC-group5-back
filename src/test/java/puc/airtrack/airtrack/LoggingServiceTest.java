@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Services;
+package puc.airtrack.airtrack;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -40,7 +40,7 @@ import puc.airtrack.airtrack.logs.UserLogEntry;
 import puc.airtrack.airtrack.logs.UserLogRepository;
 
 @ExtendWith(MockitoExtension.class)
-public class LoggingServiceTeste {
+public class LoggingServiceTest {
 
     @InjectMocks
     private LoggingService loggingService;

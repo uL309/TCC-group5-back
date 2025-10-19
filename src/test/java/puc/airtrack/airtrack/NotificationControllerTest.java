@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Controllers;
+package puc.airtrack.airtrack;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -8,6 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 import java.util.Optional;
+
+import puc.airtrack.airtrack.notifications.Notification;
+import puc.airtrack.airtrack.notifications.NotificationStatus;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,9 +25,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
-import puc.airtrack.airtrack.SecurityFilter;
 import puc.airtrack.airtrack.Login.User;
-import puc.airtrack.airtrack.notifications.Notification;
 import puc.airtrack.airtrack.notifications.NotificationController;
 import puc.airtrack.airtrack.notifications.NotificationRepository;
 import puc.airtrack.airtrack.notifications.NotificationStatus;
@@ -32,7 +33,7 @@ import puc.airtrack.airtrack.notifications.NotificationStatus;
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = NotificationController.class)
 @AutoConfigureMockMvc(addFilters = false)
-public class NotificationControllerTeste {
+public class NotificationControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

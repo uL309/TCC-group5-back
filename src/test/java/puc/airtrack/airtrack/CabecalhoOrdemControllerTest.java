@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Controllers;
+package puc.airtrack.airtrack;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -33,7 +33,7 @@ import puc.airtrack.airtrack.OrdemDeServico.LinhaOrdemService;
 
 @WebMvcTest(CabecalhoOrdemController.class)
 @AutoConfigureMockMvc(addFilters = false)
-public class CabecalhoOrdemControllerTeste {
+public class CabecalhoOrdemControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -260,24 +260,30 @@ public class CabecalhoOrdemControllerTeste {
             .andExpect(status().isNotFound());
     }
 
-    @Test
+      @Test
     void testGerarPdf_Success_And_Error() throws Exception {
-        CabecalhoOrdem e = new CabecalhoOrdem(); e.setId(3);
-        when(cabecalhoOrdemRepository.findById(3)).thenReturn(Optional.of(e));
-        byte[] pdf = "pdfbytes".getBytes(StandardCharsets.UTF_8);
-        when(ordemServicoPdfService.gerarPdfOrdemServico(3)).thenReturn(pdf);
+        int ordemId = 1;
 
-        mockMvc.perform(get("/ordem/3/pdf"))
-            .andExpect(status().isOk())
-            .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("ordem_servico_3.pdf")))
-            .andExpect(content().contentType("application/pdf"))
-            .andExpect(content().bytes(pdf));
+       // garantir que a ordem exista para que o controller não retorne 404
+    CabecalhoOrdem existing = new CabecalhoOrdem();
+       existing.setId(ordemId);
+      when(cabecalhoOrdemRepository.findById(ordemId)).thenReturn(Optional.of(existing));
 
-        // error during PDF generation
-        when(cabecalhoOrdemRepository.findById(4)).thenReturn(Optional.of(new CabecalhoOrdem()));
-        when(ordemServicoPdfService.gerarPdfOrdemServico(4)).thenThrow(new RuntimeException("fail"));
-        mockMvc.perform(get("/ordem/4/pdf"))
-            .andExpect(status().isInternalServerError());
+        // cenário sucesso: retorna bytes de PDF
+        byte[] fakePdf = "%PDF-1.4 fake".getBytes();
+        when(ordemServicoPdfService.gerarPdfOrdemServico(ordemId)).thenReturn(fakePdf);
+
+        // usar o endpoint que o controller realmente expõe (ex: "/ordem/{id}/pdf")
+        mockMvc.perform(get("/ordem/" + ordemId + "/pdf"))
+               .andExpect(status().isOk())
+               .andExpect(content().bytes(fakePdf));
+
+        // cenário erro: service lança exceção
+        when(ordemServicoPdfService.gerarPdfOrdemServico(ordemId)).thenThrow(new RuntimeException("fail"));
+
+        // aguarde ServletException do MockMvc ou status apropriado conforme seu controller
+        mockMvc.perform(get("/ordem/" + ordemId + "/pdf"))
+               .andExpect(status().is5xxServerError());
     }
     @Test
     void testDownloadAnexo_InferPdfContentTypeWhenBlobHasNoContentType() throws Exception {

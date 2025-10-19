@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Controllers;
+package puc.airtrack.airtrack;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -20,8 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import puc.airtrack.airtrack.SecurityFilter;
-import puc.airtrack.airtrack.TokenService;
 import puc.airtrack.airtrack.Fornecedor.Fornecedor;
 import puc.airtrack.airtrack.Fornecedor.FornecedorController;
 import puc.airtrack.airtrack.Fornecedor.FornecedorDTO;
@@ -29,7 +27,7 @@ import puc.airtrack.airtrack.Fornecedor.FornecedorRepo;
 
 @WebMvcTest(FornecedorController.class)
 @AutoConfigureMockMvc(addFilters = false)
-public class FornecedorControllerTeste {
+public class FornecedorControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -273,3 +271,4 @@ void testBuscarPorId_FornecedorNaoEncontrado() throws Exception {
         mapper.findAndRegisterModules(); // Isso registra o módulo do JavaTime
     }
 }
+

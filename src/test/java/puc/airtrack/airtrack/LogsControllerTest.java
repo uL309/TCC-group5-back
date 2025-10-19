@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Controllers;
+package puc.airtrack.airtrack;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -40,7 +40,7 @@ import puc.airtrack.airtrack.logs.UserLogRepository;
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(LogsController.class)
 @AutoConfigureMockMvc(addFilters = false)
-public class LogsControllerTeste {
+public class LogsControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -263,3 +263,4 @@ public class LogsControllerTeste {
         verify(clienteLogRepository).findByTimestampBetween(any(LocalDateTime.class), any(LocalDateTime.class), any());
     }
 }
+

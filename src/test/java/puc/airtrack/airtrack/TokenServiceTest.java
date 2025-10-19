@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Services;
+package puc.airtrack.airtrack;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -8,11 +8,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 
-import puc.airtrack.airtrack.TokenService;
 import puc.airtrack.airtrack.Login.User;
 import puc.airtrack.airtrack.Login.UserRole;
 
-public class TokenServiceTeste {
+public class TokenServiceTest {
 
     private TokenService service;
 

@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Services;
+package puc.airtrack.airtrack;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -32,7 +32,7 @@ import puc.airtrack.airtrack.services.AzureBlobStorageService;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class DocumentoServiceTeste {
+public class DocumentoServiceTest {
 
     @InjectMocks
     private DocumentoService service;

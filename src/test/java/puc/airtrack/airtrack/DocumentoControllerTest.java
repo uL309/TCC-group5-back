@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Controllers;
+package puc.airtrack.airtrack;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -28,7 +28,7 @@ import puc.airtrack.airtrack.documentos.TipoDocumento;
 
 @WebMvcTest(DocumentoController.class)
 @AutoConfigureMockMvc(addFilters = false)
-public class DocumentoControllerTeste {
+public class DocumentoControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

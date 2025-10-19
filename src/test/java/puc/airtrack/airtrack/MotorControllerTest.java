@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Controllers;
+package puc.airtrack.airtrack;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -20,8 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import puc.airtrack.airtrack.SecurityFilter;
-import puc.airtrack.airtrack.TokenService;
 import puc.airtrack.airtrack.Cliente.ClienteRepo;
 import puc.airtrack.airtrack.Motor.Motor;
 import puc.airtrack.airtrack.Motor.MotorController;
@@ -162,3 +160,4 @@ void testBuscarPorId_MotorNaoEncontrado() throws Exception {
         mapper.findAndRegisterModules(); // Isso registra o módulo do JavaTime
     }
 }
+

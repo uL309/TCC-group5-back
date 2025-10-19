@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Controllers;
+package puc.airtrack.airtrack;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -19,8 +19,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import puc.airtrack.airtrack.SecurityFilter;
-import puc.airtrack.airtrack.TokenService;
 import puc.airtrack.airtrack.Cliente.Cliente;
 import puc.airtrack.airtrack.Cliente.ClienteController;
 import puc.airtrack.airtrack.Cliente.ClienteDTO;
@@ -28,7 +26,7 @@ import puc.airtrack.airtrack.Cliente.ClienteRepo;
 
 @WebMvcTest(controllers = ClienteController.class)
 @AutoConfigureMockMvc(addFilters = false)
-public class ClienteControllerTeste {
+public class ClienteControllerTest {
     
     @Autowired
     private MockMvc mockMvc;
@@ -150,3 +148,4 @@ void testDeleteCliente() throws Exception {
         mapper.findAndRegisterModules(); // Isso registra o módulo do JavaTime
     }
 }
+

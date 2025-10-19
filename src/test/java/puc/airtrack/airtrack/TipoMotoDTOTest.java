@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.DTOs;
+package puc.airtrack.airtrack;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import puc.airtrack.airtrack.tipoMotor.TipoMotorDTO;
 
-public class TipoMotoDTOTeste {
+public class TipoMotoDTOTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
 

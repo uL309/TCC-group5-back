@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Services;
+package puc.airtrack.airtrack;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -22,7 +22,7 @@ import puc.airtrack.airtrack.OrdemDeServico.LinhaOrdemService;
 import puc.airtrack.airtrack.services.OrdemServicoPdfService;
 
 @ExtendWith(MockitoExtension.class)
-public class OrdemServicoPdfServiceTeste {
+public class OrdemServicoPdfServiceTest {
 
     @InjectMocks
     private OrdemServicoPdfService service;

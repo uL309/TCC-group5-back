@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Controllers;
+package puc.airtrack.airtrack;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -19,7 +19,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import puc.airtrack.airtrack.TokenService;
 import puc.airtrack.airtrack.Login.FirstAccessRequest;
 import puc.airtrack.airtrack.Login.LoginController;
 import puc.airtrack.airtrack.Login.LoginDTO;
@@ -30,7 +29,7 @@ import puc.airtrack.airtrack.services.PasswordResetService;
 
 @WebMvcTest(LoginController.class)
 @AutoConfigureMockMvc(addFilters = false)
-public class LoginControllerTeste {
+public class LoginControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -154,3 +153,4 @@ public class LoginControllerTeste {
         verify(userService).save(argThat(saved -> saved.getFirstAccess() != null && saved.getFirstAccess().equals(Boolean.FALSE)));
     }
 }
+

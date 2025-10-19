@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Aspects;
+package puc.airtrack.airtrack;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -29,7 +29,7 @@ import puc.airtrack.airtrack.logs.LoggingAspect;
 import puc.airtrack.airtrack.logs.LoggingService;
 
 @ExtendWith(MockitoExtension.class)
-public class LoggingAspectTeste {
+public class LoggingAspectTest {
 
     @InjectMocks
     private LoggingAspect aspect;

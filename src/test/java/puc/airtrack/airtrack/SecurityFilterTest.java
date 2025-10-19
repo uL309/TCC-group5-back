@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Filters;
+package puc.airtrack.airtrack;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -18,11 +18,9 @@ import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
 import jakarta.servlet.FilterChain;
-import puc.airtrack.airtrack.SecurityFilter;
-import puc.airtrack.airtrack.TokenService;
 
 @ExtendWith(MockitoExtension.class)
-public class SecurityFilterTeste {
+public class SecurityFilterTest {
 
     @InjectMocks
     private SecurityFilter securityFilter;

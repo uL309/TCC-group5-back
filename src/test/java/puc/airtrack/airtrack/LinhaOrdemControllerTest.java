@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Controllers;
+package puc.airtrack.airtrack;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -28,7 +28,7 @@ import puc.airtrack.airtrack.Pecas.PecasRepository;
 
 @WebMvcTest(LinhaOrdemController.class)
 @AutoConfigureMockMvc(addFilters = false)
-public class LinhaOrdemControllerTeste {
+public class LinhaOrdemControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

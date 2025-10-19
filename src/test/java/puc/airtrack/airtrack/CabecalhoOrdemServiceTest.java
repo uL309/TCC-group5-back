@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Services;
+package puc.airtrack.airtrack;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -37,7 +37,7 @@ import puc.airtrack.airtrack.tipoMotor.TipoMotor;
 import puc.airtrack.airtrack.tipoMotor.TipoMotorRepository;
 
 @ExtendWith(MockitoExtension.class)
-public class CabecalhoOrdemServiceTeste {
+public class CabecalhoOrdemServiceTest {
 
     @InjectMocks
     private CabecalhoOrdemService service;

@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Controllers;
+package puc.airtrack.airtrack;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -30,7 +30,7 @@ import puc.airtrack.airtrack.services.AzureBlobStorageService;
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = FileStorageController.class)
 @AutoConfigureMockMvc(addFilters = false)
-public class FileStorageControllerTeste {
+public class FileStorageControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

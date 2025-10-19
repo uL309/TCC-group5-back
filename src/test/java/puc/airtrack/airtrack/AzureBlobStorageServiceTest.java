@@ -1,4 +1,4 @@
-package puc.airtrack.airtrack.Services;
+package puc.airtrack.airtrack;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -27,7 +27,7 @@ import com.azure.storage.blob.models.BlobItem;
 import puc.airtrack.airtrack.services.AzureBlobStorageService;
 
 @ExtendWith(MockitoExtension.class)
-public class AzureBlobStorageServiceTeste {
+public class AzureBlobStorageServiceTest {
 
     @Mock
     private BlobContainerClient containerClient;
