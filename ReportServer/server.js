@@ -4,6 +4,21 @@ const app = express();
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY }); // use variáveis de ambiente
 const puppeteer = require('puppeteer');
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).send('healthy');
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    service: 'Report Server',
+    version: '1.0.0',
+    port: 3001
+  });
+});
+
 // Função para formatar a análise da IA com quebras de parágrafo
 function formatAnaliseAI(text) {
   // Negrito para <strong>

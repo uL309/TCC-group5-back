@@ -19,7 +19,7 @@ import puc.airtrack.airtrack.Login.UserService;
 import puc.airtrack.airtrack.Motor.Motor;
 import puc.airtrack.airtrack.Motor.MotorRepository;
 import puc.airtrack.airtrack.notifications.DomainEvent;
-import puc.airtrack.airtrack.notifications.DomainEventPublisher;
+import puc.airtrack.airtrack.notifications.NotificationPublisher;
 import puc.airtrack.airtrack.notifications.NotificationType;
 import puc.airtrack.airtrack.services.AuthUtil;
 import puc.airtrack.airtrack.tipoMotor.TipoMotor;
@@ -37,8 +37,8 @@ public class CabecalhoOrdemService {
     UserService userService;
     @Autowired
     LinhaOrdemService linhaOrdemService;
-    @Autowired
-    DomainEventPublisher domainEventPublisher;
+    @Autowired(required = false)
+    NotificationPublisher notificationPublisher;
     @Autowired
     TipoMotorRepository tipoMotorRepository;
 
@@ -179,18 +179,20 @@ public class CabecalhoOrdemService {
         String motorSerie = entity.getNumSerieMotor() != null ? entity.getNumSerieMotor().getSerie_motor() : "";
         data.put("motorNome", motorSerie);
         try {
-            domainEventPublisher.publish(
-                "os.pending",
-                new DomainEvent(
-                    eventId,
-                    NotificationType.OS_PENDING,
-                    "OS",
-                    String.valueOf(entity.getId()),
-                    actorId,
-                    Instant.now(),
-                    data
-                )
-            );
+            if (notificationPublisher != null) {
+                notificationPublisher.publish(
+                    "os.pending",
+                    new DomainEvent(
+                        eventId,
+                        NotificationType.OS_PENDING,
+                        "OS",
+                        String.valueOf(entity.getId()),
+                        actorId,
+                        Instant.now(),
+                        data
+                    )
+                );
+            }
         } catch (Exception ex) {
             // Apenas loga e ignora se RabbitMQ estiver fora do ar
             System.err.println("[WARN] Falha ao publicar evento de notificação: " + ex.getMessage());
@@ -210,18 +212,20 @@ public class CabecalhoOrdemService {
             data.put("old", oldStatus.name());
             data.put("new", newStatus.name());
             try {
-                domainEventPublisher.publish(
-                    "os.status.changed",
-                    new DomainEvent(
-                        eventId,
-                        NotificationType.OS_STATUS_CHANGED,
-                        "OS",
-                        String.valueOf(entity.getId()),
-                        actorId,
-                        Instant.now(),
-                        data
-                    )
-                );
+                if (notificationPublisher != null) {
+                    notificationPublisher.publish(
+                        "os.status.changed",
+                        new DomainEvent(
+                            eventId,
+                            NotificationType.OS_STATUS_CHANGED,
+                            "OS",
+                            String.valueOf(entity.getId()),
+                            actorId,
+                            Instant.now(),
+                            data
+                        )
+                    );
+                }
             } catch (Exception ex) {
                 // Apenas loga e ignora se RabbitMQ estiver fora do ar
                 System.err.println("[WARN] Falha ao publicar evento de notificação: " + ex.getMessage());
@@ -230,12 +234,14 @@ public class CabecalhoOrdemService {
     }
 
     private void publishMotorTboExpiredEvent(Motor motor) {
+        if (notificationPublisher == null) return;
+        
         String eventId = UUID.randomUUID().toString();
         HashMap<String, Object> data = new HashMap<>();
         data.put("serie", motor.getSerie_motor());
         data.put("marca", motor.getMarca());
         data.put("modelo", motor.getModelo());
-        domainEventPublisher.publish(
+        notificationPublisher.publish(
             "motor.tbo.expired",
             new DomainEvent(
                 eventId,
@@ -261,8 +267,8 @@ public class CabecalhoOrdemService {
                         motorRepository.save(motor);
                         if (dto.getHorasOperacaoMotor() > tipoMotor.getTbo()) {
                             publishMotorTboExpiredEvent(motor);
-                        } else {
-                            domainEventPublisher.publish(
+                        } else if (notificationPublisher != null) {
+                            notificationPublisher.publish(
                                 "motor.tbo.expired.clear",
                                 new DomainEvent(
                                     UUID.randomUUID().toString(),

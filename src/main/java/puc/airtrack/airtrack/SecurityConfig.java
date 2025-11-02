@@ -13,9 +13,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -52,8 +54,14 @@ public class SecurityConfig {
                                 "/api-docs/**"
                         ).permitAll()
 
-                        // Endpoints públicos
+                        // Endpoints públicos - incluindo OPTIONS para preflight
                         .requestMatchers("/login", "/", "/register", "/reset-password").permitAll()
+                        
+                        // Health Check endpoints - públicos para Azure Container Apps probes
+                        .requestMatchers("/health", "/ready", "/live").permitAll()
+                        
+                        // Spring Actuator health endpoints - públicos para Azure probes
+                        .requestMatchers("/actuator/health/**", "/actuator/info").permitAll()
 
                         // ADMIN only
                         .requestMatchers("/cre", "/ge", "/gel", "/upe", "/de", "/api/logs/**").hasRole("ADMIN")
@@ -96,6 +104,8 @@ public class SecurityConfig {
                         // Authenticated
                         .requestMatchers("/first-access", "/notifications/**").authenticated()
                 )
+                // CorsFilter PRIMEIRO - antes de qualquer outro filtro
+                .addFilterBefore(corsFilter(), SecurityContextHolderFilter.class)
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -105,14 +115,28 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:4200"));
+        
+        // Sempre usa patterns para máxima flexibilidade
+        // Permite localhost (dev) e todos os subdomínios do Azure Container Apps (prod)
+        config.setAllowedOriginPatterns(List.of(
+            "http://localhost:4200",
+            "http://localhost:*",
+            "https://*.azurecontainerapps.io"
+        ));
+        
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
+        config.setMaxAge(3600L); // Cache preflight por 1 hora
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
+    }
+    
+    @Bean
+    public CorsFilter corsFilter() {
+        return new CorsFilter(corsConfigurationSource());
     }
 
     @Bean

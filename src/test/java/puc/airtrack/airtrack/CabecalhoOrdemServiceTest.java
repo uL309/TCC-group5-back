@@ -31,7 +31,7 @@ import puc.airtrack.airtrack.OrdemDeServico.LinhaOrdemDTO;
 import puc.airtrack.airtrack.OrdemDeServico.LinhaOrdemService;
 import puc.airtrack.airtrack.OrdemDeServico.OrdemStatus;
 import puc.airtrack.airtrack.notifications.DomainEvent;
-import puc.airtrack.airtrack.notifications.DomainEventPublisher;
+import puc.airtrack.airtrack.notifications.NotificationPublisher;
 import puc.airtrack.airtrack.services.AuthUtil;
 import puc.airtrack.airtrack.tipoMotor.TipoMotor;
 import puc.airtrack.airtrack.tipoMotor.TipoMotorRepository;
@@ -53,7 +53,7 @@ public class CabecalhoOrdemServiceTest {
     @Mock
     private LinhaOrdemService linhaOrdemService;
     @Mock
-    private DomainEventPublisher domainEventPublisher;
+    private NotificationPublisher notificationPublisher;
     @Mock
     private TipoMotorRepository tipoMotorRepository;
 
@@ -166,7 +166,7 @@ public class CabecalhoOrdemServiceTest {
         assertEquals(200, resp.getStatusCodeValue());
 
         // publica status changed
-        verify(domainEventPublisher).publish(eq("os.status.changed"), any(DomainEvent.class));
+        verify(notificationPublisher).publish(eq("os.status.changed"), any(DomainEvent.class));
     }
 
     @Test
@@ -181,7 +181,7 @@ public class CabecalhoOrdemServiceTest {
         ResponseEntity<String> resp = service.atualizarStatusCabecalho(10, novoStatus);
         assertEquals(200, resp.getStatusCodeValue());
         // should have published either pending or status changed; in this case old != PENDENTE and new == PENDENTE -> pending
-        verify(domainEventPublisher).publish(eq("os.pending"), any(DomainEvent.class));
+        verify(notificationPublisher).publish(eq("os.pending"), any(DomainEvent.class));
     }
 
     @Test
@@ -239,8 +239,8 @@ public class CabecalhoOrdemServiceTest {
         assertEquals(201, resp.getStatusCodeValue());
         // motorRepository.save should not be called because tipoMotor == null
         verify(motorRepository, never()).save(any(Motor.class));
-        // domainEventPublisher should not be called with motor.tbo.expired
-        verify(domainEventPublisher, never()).publish(eq("motor.tbo.expired"), any(DomainEvent.class));
+        // notificationPublisher should not be called with motor.tbo.expired
+        verify(notificationPublisher, never()).publish(eq("motor.tbo.expired"), any(DomainEvent.class));
     }
 
     @Test
@@ -272,8 +272,8 @@ public class CabecalhoOrdemServiceTest {
 
         service.createCabecalho(dto);
 
-        // domainEventPublisher should publish motor.tbo.expired.clear
-        verify(domainEventPublisher).publish(eq("motor.tbo.expired.clear"), any(DomainEvent.class));
+        // notificationPublisher should publish motor.tbo.expired.clear
+        verify(notificationPublisher).publish(eq("motor.tbo.expired.clear"), any(DomainEvent.class));
         // motorRepository.save should have been called to update hours
         verify(motorRepository).save(any(Motor.class));
     }
@@ -307,7 +307,7 @@ public class CabecalhoOrdemServiceTest {
         service.createCabecalho(dto);
 
         // motor.tbo.expired should be published
-        verify(domainEventPublisher).publish(eq("motor.tbo.expired"), any(DomainEvent.class));
+        verify(notificationPublisher).publish(eq("motor.tbo.expired"), any(DomainEvent.class));
         verify(motorRepository).save(any(Motor.class));
     }
 
@@ -346,7 +346,7 @@ public class CabecalhoOrdemServiceTest {
             return e;
         });
 
-        doThrow(new RuntimeException("rabbit down")).when(domainEventPublisher).publish(eq("os.pending"), any(DomainEvent.class));
+        doThrow(new RuntimeException("rabbit down")).when(notificationPublisher).publish(eq("os.pending"), any(DomainEvent.class));
 
         CabecalhoOrdemDTO dto = new CabecalhoOrdemDTO();
         dto.setLinhas(new java.util.ArrayList<>());
@@ -356,7 +356,7 @@ public class CabecalhoOrdemServiceTest {
         ResponseEntity<String> resp = service.createCabecalho(dto);
         assertEquals(201, resp.getStatusCodeValue());
         // publisher foi chamado mas exceção foi capturada (não propagada)
-        verify(domainEventPublisher).publish(eq("os.pending"), any(DomainEvent.class));
+        verify(notificationPublisher).publish(eq("os.pending"), any(DomainEvent.class));
     }
 
     @Test
@@ -382,7 +382,7 @@ public class CabecalhoOrdemServiceTest {
         service.createCabecalho(dto);
 
         verify(motorRepository, never()).save(any(Motor.class));
-        verify(domainEventPublisher, never()).publish(eq("motor.tbo.expired"), any(DomainEvent.class));
-        verify(domainEventPublisher, never()).publish(eq("motor.tbo.expired.clear"), any(DomainEvent.class));
+        verify(notificationPublisher, never()).publish(eq("motor.tbo.expired"), any(DomainEvent.class));
+        verify(notificationPublisher, never()).publish(eq("motor.tbo.expired.clear"), any(DomainEvent.class));
     }
 }

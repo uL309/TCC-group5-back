@@ -1,51 +1,55 @@
 # Multi-stage build for Java Spring Boot application
-FROM maven:3.9.9-eclipse-temurin-21-alpine AS build
+# ==========================================
+# Stage 1: Build
+# ==========================================
+FROM maven:3.9-eclipse-temurin-21-alpine AS build
 
-# Set the working directory
 WORKDIR /app
 
-# Copy Maven files for dependency caching
+# Copy pom.xml and download dependencies (cached layer)
 COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+# Copy source code
 COPY src ./src
 
-# Build the application
-RUN mvn clean package -DskipTests
+# Build application (skip tests for faster build)
+RUN mvn clean package -DskipTests -B
 
-# Production stage with optimized JRE
-FROM eclipse-temurin:21-jre-alpine AS production
+# ==========================================
+# Stage 2: Production
+# ==========================================
+FROM eclipse-temurin:21-jre-alpine
 
-# Install tzdata for timezone support
-RUN apt-get update && apt-get install -y tzdata && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+
+# Install tzdata for timezone support (Alpine uses apk, not apt-get!)
+RUN apk add --no-cache tzdata
 
 # Set timezone to Brazil
 ENV TZ=America/Sao_Paulo
 
-# Create a non-root user for security
-RUN groupadd -r airtrack && useradd -r -g airtrack airtrack
+# Create non-root user
+RUN addgroup -S spring && adduser -S spring -G spring
 
-# Set the working directory
-WORKDIR /app
-
-# Copy the built JAR from build stage
+# Copy JAR from build stage
 COPY --from=build /app/target/*.jar app.jar
 
-# Change ownership to non-root user
-RUN chown -R airtrack:airtrack /app
-USER airtrack
+# Change ownership
+RUN chown -R spring:spring /app
+
+# Switch to non-root user
+USER spring
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
 
 # Expose port
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+# JVM optimization for containers
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0"
 
-# JVM optimization for containers with Java 21
-ENTRYPOINT ["java", \
-    "-XX:+UseContainerSupport", \
-    "-XX:MaxRAMPercentage=80.0", \
-    "-XX:+UseG1GC", \
-    "-XX:+UseStringDeduplication", \
-    "-XX:+OptimizeStringConcat", \
-    "-Djava.security.egd=file:/dev/./urandom", \
-    "-jar", "app.jar"]
+# Run application
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar app.jar"]
