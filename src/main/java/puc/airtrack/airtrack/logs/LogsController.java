@@ -129,7 +129,7 @@ public class LogsController {
     /**
      * Obter logs do módulo Ordem de Serviço
      */
-    @GetMapping("/ordens")
+    @GetMapping("/ordens-servico")
     public ResponseEntity<Page<OrdemServicoLogEntry>> getOrdemServicoLogs(
             @RequestParam(required = false) Integer ordemId,
             @RequestParam(required = false) String username,

@@ -63,8 +63,11 @@ public class SecurityConfig {
                         // Spring Actuator health endpoints - públicos para Azure probes
                         .requestMatchers("/actuator/health/**", "/actuator/info").permitAll()
 
-                        // ADMIN only
-                        .requestMatchers("/cre", "/ge", "/gel", "/upe", "/de", "/api/logs/**").hasRole("ADMIN")
+                        // ADMIN only - LOGS (deve vir ANTES de regras mais genéricas de /api/**)
+                        .requestMatchers("/api/logs/**").hasRole("ADMIN")
+                        
+                        // ADMIN only - User management
+                        .requestMatchers("/cre", "/ge", "/gel", "/upe", "/de").hasRole("ADMIN")
 
                         // SUPERVISOR or ADMIN
                         .requestMatchers("/cforn", "/gforn", "/gforns", "/uforn", "/dforn",
