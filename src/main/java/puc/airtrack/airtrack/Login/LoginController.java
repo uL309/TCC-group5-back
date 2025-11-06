@@ -7,6 +7,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -158,5 +161,59 @@ public class LoginController {
         user.setFirstAccess(Boolean.FALSE);
         userService.save(user);
         return ResponseEntity.ok("Password updated successfully");
+    }
+
+    @Operation(
+        summary = "Trocar role (apenas ADMIN)",
+        description = "Permite que um ADMIN gere um novo token com uma role diferente para visualizar a interface como outra role. Se targetRole for null, retorna o token original do ADMIN."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Token gerado com sucesso",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ResponseDTO.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Apenas ADMIN pode usar este endpoint",
+            content = @Content(mediaType = "application/json")
+        )
+    })
+    @PostMapping("/switch-role")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResponseDTO> switchRole(@RequestParam(required = false) String targetRole) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        
+        User user = userService.findByUsername(username);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        // Se targetRole for null ou ADMIN, retorna token original
+        if (targetRole == null || targetRole.equals("ROLE_ADMIN")) {
+            var token = tokenService.generateToken(user);
+            return ResponseEntity.ok().body(new ResponseDTO(user.getName(), token));
+        }
+
+        // Valida se a role target é válida
+        UserRole overrideRole;
+        try {
+            overrideRole = UserRole.valueOf(targetRole);
+            // Não permite usar ADMIN como override
+            if (overrideRole == UserRole.ROLE_ADMIN) {
+                var token = tokenService.generateToken(user);
+                return ResponseEntity.ok().body(new ResponseDTO(user.getName(), token));
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Gera token com role override
+        var token = tokenService.generateTokenWithRoleOverride(user, overrideRole);
+        return ResponseEntity.ok().body(new ResponseDTO(user.getName(), token));
     }
 }
