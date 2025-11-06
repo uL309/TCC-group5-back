@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -21,6 +22,7 @@ import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final SecurityFilter securityFilter;
@@ -66,8 +68,8 @@ public class SecurityConfig {
                         // ADMIN only - LOGS (deve vir ANTES de regras mais genéricas de /api/**)
                         .requestMatchers("/api/logs/**").hasRole("ADMIN")
                         
-                        // ADMIN only - User management
-                        .requestMatchers("/cre", "/ge", "/gel", "/upe", "/de").hasRole("ADMIN")
+                        // ADMIN only - User management and role switching
+                        .requestMatchers("/cre", "/ge", "/gel", "/upe", "/de", "/switch-role").hasRole("ADMIN")
 
                         // SUPERVISOR or ADMIN
                         .requestMatchers("/cforn", "/gforn", "/gforns", "/uforn", "/dforn",

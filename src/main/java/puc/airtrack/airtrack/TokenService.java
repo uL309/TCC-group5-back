@@ -14,6 +14,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
 import puc.airtrack.airtrack.Login.User;
+import puc.airtrack.airtrack.Login.UserRole;
 
 @Service
 public class TokenService {
@@ -29,6 +30,7 @@ public class TokenService {
                     .withIssuer("login-auth-Backend")
                     .withSubject(user.getUsername())
                     .withClaim("role", user.getRole().toString())
+                    .withClaim("originalRole", user.getRole().toString()) // Role original do usuário
                     .withClaim("firstAccess", user.getFirstAccess())
                     .withClaim("cpf", user.getCpf())
                     .withClaim("id", user.getId())
@@ -62,6 +64,32 @@ public class TokenService {
                     .verify(token);
         } catch (JWTVerificationException exception) {
             return null;
+        }
+    }
+
+    /**
+     * Gera um token com role override (apenas para ADMIN)
+     * @param user Usuário original
+     * @param overrideRole Role para usar no token (deve ser diferente de ADMIN)
+     * @return Token JWT com role override, mantendo originalRole como ADMIN
+     */
+    public String generateTokenWithRoleOverride(User user, UserRole overrideRole) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(secret);
+
+            String token = JWT.create()
+                    .withIssuer("login-auth-Backend")
+                    .withSubject(user.getUsername())
+                    .withClaim("role", overrideRole.toString()) // Role atual (override)
+                    .withClaim("originalRole", user.getRole().toString()) // Mantém a role original (ADMIN)
+                    .withClaim("firstAccess", user.getFirstAccess())
+                    .withClaim("cpf", user.getCpf())
+                    .withClaim("id", user.getId())
+                    .withExpiresAt(this.generateExpirationDate())
+                    .sign(algorithm);
+            return token;
+        } catch (JWTCreationException exception){
+            throw new RuntimeException("Error while generating token with role override");
         }
     }
 
