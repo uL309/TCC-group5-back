@@ -93,6 +93,8 @@ public class SecurityConfig {
                         .requestMatchers("/ordem/get", "/ordem/list").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         .requestMatchers("/ordem/update", "/ordem/atualizar-status").hasAnyRole("ENGENHEIRO", "SUPERVISOR", "ADMIN")
                         .requestMatchers("/ordem/create").hasAnyRole("SUPERVISOR", "ADMIN")
+                        // Endpoints específicos do engenheiro
+                        .requestMatchers("/ordem/engenheiro/minhas-os", "/ordem/engenheiro/stats").hasAnyRole("ENGENHEIRO", "ADMIN")
                         .requestMatchers("/ordem/{orderId}/anexos").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         .requestMatchers("/ordem/{orderId}/anexos/**").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         .requestMatchers("/ordem/{orderId}/pdf").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")

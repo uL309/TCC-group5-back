@@ -34,6 +34,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import puc.airtrack.airtrack.services.AzureBlobStorageService;
 import puc.airtrack.airtrack.services.OrdemServicoPdfService;
+import puc.airtrack.airtrack.services.AuthUtil;
+import puc.airtrack.airtrack.Login.User;
+import java.time.LocalDate;
+import java.time.temporal.WeekFields;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/ordem")
@@ -118,37 +123,7 @@ public class CabecalhoOrdemController {
     public ResponseEntity<CabecalhoOrdemDTO> getCabecalho(@RequestParam int id) {
         Optional<CabecalhoOrdem> opt = cabecalhoOrdemRepository.findById(id);
         if (opt.isPresent()) {
-            CabecalhoOrdem entity = opt.get();
-            CabecalhoOrdemDTO dto = new CabecalhoOrdemDTO();
-            dto.setId(entity.getId());
-            dto.setDataAbertura(entity.getDataAbertura());
-            dto.setDataFechamento(entity.getDataFechamento());
-            dto.setDescricao(entity.getDescricao());
-            dto.setTipo(entity.getTipo());
-            dto.setTempoUsado(entity.getTempoUsado());
-            dto.setTempoEstimado(entity.getTempoEstimado());
-            dto.setStatus(entity.getStatus().getStatus());
-            dto.setValorHora(entity.getValorHora());
-            if (entity.getCliente() != null) {
-                dto.setClienteId(entity.getCliente().getCpf());
-                dto.setClienteNome(entity.getCliente().getName());
-            }
-            if (entity.getNumSerieMotor() != null) {
-                dto.setMotorId(String.valueOf(entity.getNumSerieMotor().getId()));
-                dto.setMotorNome(entity.getNumSerieMotor().getSerie_motor());
-                dto.setHorasOperacaoMotor(entity.getNumSerieMotor().getHoras_operacao());
-            }
-            if (entity.getSupervisor() != null) {
-                dto.setSupervisorId(String.valueOf(entity.getSupervisor().getId()));
-                dto.setSupervisorNome(entity.getSupervisor().getName());
-            }
-
-            if (entity.getEngenheiroAtuante() != null) {
-                dto.setEngenheiroAtuanteId(String.valueOf(entity.getEngenheiroAtuante().getId()));
-                dto.setEngenheiroAtuanteNome(entity.getEngenheiroAtuante().getName());
-            }
-
-            dto.setLinhas(linhaOrdemService.findByCabecalhoId(id));
+            CabecalhoOrdemDTO dto = convertToDTO(opt.get());
             return ResponseEntity.ok(dto);
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
@@ -159,35 +134,148 @@ public class CabecalhoOrdemController {
         List<CabecalhoOrdem> list = cabecalhoOrdemRepository.findAllByOrderByIdDesc();
         List<CabecalhoOrdemDTO> dtos = new ArrayList<>();
         for (CabecalhoOrdem entity : list) {
-            CabecalhoOrdemDTO dto = new CabecalhoOrdemDTO();
-            dto.setId(entity.getId());
-            dto.setDataAbertura(entity.getDataAbertura());
-            dto.setDataFechamento(entity.getDataFechamento());
-            dto.setDescricao(entity.getDescricao());
-            dto.setTipo(entity.getTipo());
-            dto.setTempoUsado(entity.getTempoUsado());
-            dto.setTempoEstimado(entity.getTempoEstimado());
-            dto.setStatus(entity.getStatus().getStatus());
-            dto.setValorHora(entity.getValorHora());
-            if (entity.getCliente() != null) {
-                dto.setClienteId(entity.getCliente().getCpf());
-                dto.setClienteNome(entity.getCliente().getName());
-            }
-            if (entity.getNumSerieMotor() != null) {
-                dto.setMotorId(String.valueOf(entity.getNumSerieMotor().getId()));
-                dto.setMotorNome(entity.getNumSerieMotor().getSerie_motor());
-            }
-            if (entity.getSupervisor() != null) {
-                dto.setSupervisorId(String.valueOf(entity.getSupervisor().getId()));
-                dto.setSupervisorNome(entity.getSupervisor().getName());
-            }
-            if (entity.getEngenheiroAtuante() != null) {
-                dto.setEngenheiroAtuanteNome(entity.getEngenheiroAtuante().getName());
-            }
+            CabecalhoOrdemDTO dto = convertToDTO(entity);
             System.out.println("Adding CabecalhoOrdemDTO: " + dto);
             dtos.add(dto);
         }
         return ResponseEntity.ok(dtos);
+    }
+
+    @Operation(
+        summary = "Buscar ordens de serviço do engenheiro logado",
+        description = "Retorna todas as ordens de serviço atribuídas ao engenheiro logado."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Ordens encontradas"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado"),
+        @ApiResponse(responseCode = "403", description = "Acesso negado - apenas engenheiros podem acessar")
+    })
+    @GetMapping("/engenheiro/minhas-os")
+    public ResponseEntity<List<CabecalhoOrdemDTO>> getMinhasOrdens() {
+        User usuario = AuthUtil.getUsuarioLogado();
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
+        
+        // A verificação de autorização já foi feita pelo SecurityConfig
+        // Se chegou aqui, o usuário tem permissão (ROLE_ENGENHEIRO ou ROLE_ADMIN)
+        // Quando ADMIN está em modo override, pode não ter OS atribuídas, mas pode acessar o endpoint
+        List<CabecalhoOrdem> list = cabecalhoOrdemRepository.findByEngenheiroAtuanteOrderByIdDesc(usuario);
+        List<CabecalhoOrdemDTO> dtos = new ArrayList<>();
+        for (CabecalhoOrdem entity : list) {
+            CabecalhoOrdemDTO dto = convertToDTO(entity);
+            dtos.add(dto);
+        }
+        return ResponseEntity.ok(dtos);
+    }
+
+    @Operation(
+        summary = "Buscar estatísticas do engenheiro logado",
+        description = "Retorna estatísticas de trabalho do engenheiro logado, incluindo total de OS, tempo trabalhado, etc."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Estatísticas encontradas"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado"),
+        @ApiResponse(responseCode = "403", description = "Acesso negado - apenas engenheiros podem acessar")
+    })
+    @GetMapping("/engenheiro/stats")
+    public ResponseEntity<EngenheiroStatsDTO> getEstatisticas() {
+        User usuario = AuthUtil.getUsuarioLogado();
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
+        
+        // A verificação de autorização já foi feita pelo SecurityConfig
+        // Se chegou aqui, o usuário tem permissão (ROLE_ENGENHEIRO ou ROLE_ADMIN)
+        // Quando ADMIN está em modo override, pode não ter OS atribuídas, mas pode acessar o endpoint
+        List<CabecalhoOrdem> todasOs = cabecalhoOrdemRepository.findByEngenheiroAtuanteOrderByIdDesc(usuario);
+        List<CabecalhoOrdem> osAndamento = cabecalhoOrdemRepository.findByEngenheiroAtuanteAndStatusOrderByIdDesc(
+            usuario, puc.airtrack.airtrack.OrdemDeServico.OrdemStatus.ANDAMENTO);
+        List<CabecalhoOrdem> osPendentes = cabecalhoOrdemRepository.findByEngenheiroAtuanteAndStatusOrderByIdDesc(
+            usuario, puc.airtrack.airtrack.OrdemDeServico.OrdemStatus.PENDENTE);
+        List<CabecalhoOrdem> osConcluidas = cabecalhoOrdemRepository.findByEngenheiroAtuanteAndStatusOrderByIdDesc(
+            usuario, puc.airtrack.airtrack.OrdemDeServico.OrdemStatus.CONCLUIDA);
+        
+        EngenheiroStatsDTO stats = new EngenheiroStatsDTO();
+        stats.setTotalOs(todasOs.size());
+        stats.setOsEmAndamento(osAndamento.size());
+        stats.setOsPendentes(osPendentes.size());
+        stats.setOsConcluidas(osConcluidas.size());
+        
+        // Calcular tempo total trabalhado
+        float tempoTotal = 0;
+        for (CabecalhoOrdem os : todasOs) {
+            tempoTotal += os.getTempoUsado();
+        }
+        stats.setTempoTotalTrabalhado(tempoTotal);
+        
+        // Calcular tempo trabalhado esta semana
+        LocalDate now = LocalDate.now();
+        WeekFields weekFields = WeekFields.of(Locale.getDefault());
+        int currentWeek = now.get(weekFields.weekOfWeekBasedYear());
+        int currentYear = now.get(weekFields.weekBasedYear());
+        
+        float tempoEstaSemana = 0;
+        int completadasEsteMes = 0;
+        LocalDate primeiroDiaMes = now.withDayOfMonth(1);
+        
+        for (CabecalhoOrdem os : todasOs) {
+            if (os.getDataAbertura() != null && !os.getDataAbertura().isEmpty()) {
+                try {
+                    LocalDate dataAbertura = LocalDate.parse(os.getDataAbertura());
+                    int semanaOs = dataAbertura.get(weekFields.weekOfWeekBasedYear());
+                    int anoOs = dataAbertura.get(weekFields.weekBasedYear());
+                    
+                    if (semanaOs == currentWeek && anoOs == currentYear) {
+                        tempoEstaSemana += os.getTempoUsado();
+                    }
+                    
+                    if (os.getStatus() == puc.airtrack.airtrack.OrdemDeServico.OrdemStatus.CONCLUIDA 
+                        && dataAbertura.isAfter(primeiroDiaMes.minusDays(1))) {
+                        completadasEsteMes++;
+                    }
+                } catch (Exception e) {
+                    // Ignora erros de parsing de data
+                }
+            }
+        }
+        
+        stats.setTempoTotalEstaSemana(tempoEstaSemana);
+        stats.setOsCompletadasEsteMes(completadasEsteMes);
+        
+        return ResponseEntity.ok(stats);
+    }
+
+    private CabecalhoOrdemDTO convertToDTO(CabecalhoOrdem entity) {
+        CabecalhoOrdemDTO dto = new CabecalhoOrdemDTO();
+        dto.setId(entity.getId());
+        dto.setDataAbertura(entity.getDataAbertura());
+        dto.setDataFechamento(entity.getDataFechamento());
+        dto.setDescricao(entity.getDescricao());
+        dto.setTipo(entity.getTipo());
+        dto.setTempoUsado(entity.getTempoUsado());
+        dto.setTempoEstimado(entity.getTempoEstimado());
+        dto.setStatus(entity.getStatus().getStatus());
+        dto.setValorHora(entity.getValorHora());
+        if (entity.getCliente() != null) {
+            dto.setClienteId(entity.getCliente().getCpf());
+            dto.setClienteNome(entity.getCliente().getName());
+        }
+        if (entity.getNumSerieMotor() != null) {
+            dto.setMotorId(String.valueOf(entity.getNumSerieMotor().getId()));
+            dto.setMotorNome(entity.getNumSerieMotor().getSerie_motor());
+            dto.setHorasOperacaoMotor(entity.getNumSerieMotor().getHoras_operacao());
+        }
+        if (entity.getSupervisor() != null) {
+            dto.setSupervisorId(String.valueOf(entity.getSupervisor().getId()));
+            dto.setSupervisorNome(entity.getSupervisor().getName());
+        }
+        if (entity.getEngenheiroAtuante() != null) {
+            dto.setEngenheiroAtuanteId(String.valueOf(entity.getEngenheiroAtuante().getId()));
+            dto.setEngenheiroAtuanteNome(entity.getEngenheiroAtuante().getName());
+        }
+        dto.setLinhas(linhaOrdemService.findByCabecalhoId(entity.getId()));
+        return dto;
     }
 
     @DeleteMapping("/delete")
