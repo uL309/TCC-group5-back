@@ -68,13 +68,25 @@ public class SecurityConfig {
                         // ADMIN only - LOGS (deve vir ANTES de regras mais genéricas de /api/**)
                         .requestMatchers("/api/logs/**").hasRole("ADMIN")
                         
+                        // Documentos - SUPERVISOR, ENGENHEIRO, AUDITOR ou ADMIN (deve vir ANTES de /api/**)
+                        .requestMatchers("/api/documentos/**").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
+                        
+                        // Azure Blob Storage - endpoints para arquivos (deve vir ANTES de /api/**)
+                        .requestMatchers("/api/files/upload").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "ADMIN")
+                        .requestMatchers("/api/files/list").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
+                        .requestMatchers("/api/files/{fileName}").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
+                        .requestMatchers("/api/files/**").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "ADMIN")
+                        
+                        // Report API
+                        .requestMatchers("/api/report/export").hasAnyRole("SUPERVISOR", "ADMIN")
+                        
                         // ADMIN only - User management and role switching
                         .requestMatchers("/cre", "/ge", "/gel", "/upe", "/de", "/switch-role").hasRole("ADMIN")
 
                         // SUPERVISOR or ADMIN
                         .requestMatchers("/cforn", "/gforn", "/gforns", "/uforn", "/dforn",
                                 "/linhaordem/get", "/linhaordem/list",
-                                "/cmotor", "/umotor", "/gmotor","/gtipomotores", "/gtipomotorm", "/api/report/export").hasAnyRole("SUPERVISOR", "ADMIN")
+                                "/cmotor", "/umotor", "/gmotor","/gtipomotores", "/gtipomotorm").hasAnyRole("SUPERVISOR", "ADMIN")
 
                         // ENGENHEIRO or ADMIN
                         .requestMatchers("/cpeca", "/gpeca", "/gpecas", "/upeca", "/dpeca",
@@ -97,16 +109,7 @@ public class SecurityConfig {
                         .requestMatchers("/ordem/{orderId}/anexos/**").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         .requestMatchers("/ordem/{orderId}/pdf").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         
-                        // Azure Blob Storage - endpoints para arquivos
-                        .requestMatchers("/api/files/upload").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "ADMIN")
-                        .requestMatchers("/api/files/list").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
-                        .requestMatchers("/api/files/{fileName}").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
-                        .requestMatchers("/api/files/**").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "ADMIN")
-                        
-                        // Documentos - temporariamente permitindo ADMIN para todos os endpoints para testar
-                        .requestMatchers("/api/documentos/**").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
-                        
-                        // Authenticated
+                        // Authenticated - endpoints que exigem apenas autenticação
                         .requestMatchers("/first-access", "/notifications/**").authenticated()
                 )
                 // CorsFilter PRIMEIRO - antes de qualquer outro filtro

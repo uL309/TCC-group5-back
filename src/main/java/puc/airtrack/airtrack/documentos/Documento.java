@@ -16,9 +16,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-@Table(name = "Documento", uniqueConstraints = {
-    @UniqueConstraint(columnNames = "tipo", name = "UK_documento_tipo")
-})
+@Table(name = "Documento")
 public class Documento {
 
     @Id
@@ -26,7 +24,7 @@ public class Documento {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false, unique = true)
+    @Column(name = "tipo", nullable = false)
     @NotNull(message = "Tipo do documento é obrigatório")
     private TipoDocumento tipo;
 

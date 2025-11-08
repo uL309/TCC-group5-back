@@ -250,21 +250,26 @@ public class DocumentoController {
             @PathVariable TipoDocumento tipo) {
         
         try {
+            log.info("📋 Buscando histórico para tipo: {}", tipo);
             List<Documento> historico = documentoService.listarHistoricoDocumento(tipo);
+            log.info("✅ Encontrados {} documentos no histórico", historico.size());
+            
+            List<DocumentoResponseDTO> historicoDTO = historico.stream()
+                .map(DocumentoResponseDTO::new)
+                .toList();
             
             Map<String, Object> response = new HashMap<>();
             response.put("tipo", tipo.getDescricao());
-            response.put("historico", historico.stream()
-                .map(DocumentoResponseDTO::new)
-                .toList());
+            response.put("historico", historicoDTO);
             response.put("total", historico.size());
             
+            log.info("📤 Retornando resposta: tipo={}, total={}", tipo.getDescricao(), historico.size());
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
-            log.error("Erro ao listar histórico do documento tipo {}: {}", tipo, e.getMessage());
+            log.error("❌ Erro ao listar histórico do documento tipo {}: {}", tipo, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("erro", "Erro interno do servidor"));
+                .body(Map.of("erro", "Erro interno do servidor: " + e.getMessage()));
         }
     }
 
@@ -275,6 +280,7 @@ public class DocumentoController {
     @Operation(summary = "Histórico do Manual da Organização de Manutenção (MOM)", 
                description = "Retorna o histórico de versões do Manual da Organização de Manutenção")
     public ResponseEntity<?> listarHistoricoMOM() {
+        log.info("📋 Endpoint /mom/historico chamado");
         return listarHistoricoDocumento(TipoDocumento.MANUAL_ORGANIZACAO_MANUTENCAO);
     }
 
@@ -285,6 +291,7 @@ public class DocumentoController {
     @Operation(summary = "Histórico do Manual de Controle da Qualidade (MCQ)", 
                description = "Retorna o histórico de versões do Manual de Controle da Qualidade")
     public ResponseEntity<?> listarHistoricoMCQ() {
+        log.info("📋 Endpoint /mcq/historico chamado");
         return listarHistoricoDocumento(TipoDocumento.MANUAL_CONTROLE_QUALIDADE);
     }
 
