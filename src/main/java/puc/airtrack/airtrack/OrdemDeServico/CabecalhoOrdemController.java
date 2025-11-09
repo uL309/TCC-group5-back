@@ -35,9 +35,15 @@ import puc.airtrack.airtrack.services.AzureBlobStorageService;
 import puc.airtrack.airtrack.services.OrdemServicoPdfService;
 import puc.airtrack.airtrack.services.AuthUtil;
 import puc.airtrack.airtrack.Login.User;
+import puc.airtrack.airtrack.Motor.Motor;
+import puc.airtrack.airtrack.Motor.MotorRepository;
+import puc.airtrack.airtrack.tipoMotor.TipoMotor;
+import puc.airtrack.airtrack.tipoMotor.TipoMotorRepository;
+import puc.airtrack.airtrack.Fornecedor.FornecedorRepo;
 import java.time.LocalDate;
 import java.time.temporal.WeekFields;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/ordem")
@@ -54,6 +60,12 @@ public class CabecalhoOrdemController {
     private AzureBlobStorageService azureBlobStorageService;
     @Autowired
     private OrdemServicoPdfService ordemServicoPdfService;
+    @Autowired
+    private MotorRepository motorRepository;
+    @Autowired
+    private TipoMotorRepository tipoMotorRepository;
+    @Autowired
+    private FornecedorRepo fornecedorRepo;
 
     @Operation(
         summary = "Criar ordem de serviço",
@@ -334,6 +346,194 @@ public class CabecalhoOrdemController {
         stats.setOsConcluidasEstaSemana(concluidasEstaSemana);
         
         return ResponseEntity.ok(stats);
+    }
+
+    @Operation(
+        summary = "Buscar estatísticas para supervisor",
+        description = "Retorna estatísticas gerais do sistema para supervisão, incluindo motores, TBO, OS e fornecedores."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Estatísticas encontradas"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado"),
+        @ApiResponse(responseCode = "403", description = "Acesso negado - apenas supervisores podem acessar")
+    })
+    @GetMapping("/supervisor/stats")
+    public ResponseEntity<SupervisorStatsDTO> getEstatisticasSupervisor() {
+        // Buscar todos os motores
+        List<Motor> todosMotores = motorRepository.findAll();
+        
+        // Calcular motores com TBO próximo (>= 80%) e expirado (> 100%)
+        int motoresTboProximo = 0;
+        int motoresTboExpirado = 0;
+        
+        for (Motor motor : todosMotores) {
+            if (motor.getStatus() != null && motor.getStatus()) { // Apenas motores ativos
+                TipoMotor tipoMotor = tipoMotorRepository.findByMarcaAndModelo(motor.getMarca(), motor.getModelo());
+                if (tipoMotor != null && tipoMotor.getTbo() > 0) {
+                    float percentual = (float) motor.getHoras_operacao() / tipoMotor.getTbo() * 100;
+                    if (percentual >= 100) {
+                        motoresTboExpirado++;
+                    } else if (percentual >= 80) {
+                        motoresTboProximo++;
+                    }
+                }
+            }
+        }
+        
+        // Buscar OS
+        List<CabecalhoOrdem> osPendentes = cabecalhoOrdemRepository
+            .findByStatusOrderByIdDesc(OrdemStatus.PENDENTE);
+        List<CabecalhoOrdem> osAndamento = cabecalhoOrdemRepository
+            .findByStatusOrderByIdDesc(OrdemStatus.ANDAMENTO);
+        
+        // Calcular OS concluídas este mês
+        LocalDate now = LocalDate.now();
+        LocalDate primeiroDiaMes = now.withDayOfMonth(1);
+        int osConcluidasMes = 0;
+        
+        List<CabecalhoOrdem> osConcluidas = cabecalhoOrdemRepository
+            .findByStatusOrderByIdDesc(OrdemStatus.CONCLUIDA);
+        
+        for (CabecalhoOrdem os : osConcluidas) {
+            if (os.getDataFechamento() != null && !os.getDataFechamento().isEmpty()) {
+                try {
+                    LocalDate dataFechamento = LocalDate.parse(os.getDataFechamento());
+                    if (dataFechamento.isAfter(primeiroDiaMes.minusDays(1))) {
+                        osConcluidasMes++;
+                    }
+                } catch (Exception e) {
+                    // Ignora erros de parsing
+                }
+            }
+        }
+        
+        // Buscar fornecedores
+        int totalFornecedores = fornecedorRepo.findAll().size();
+        
+        // Filtrar apenas motores ativos
+        long totalMotoresAtivos = todosMotores.stream()
+            .filter(m -> m.getStatus() != null && m.getStatus())
+            .count();
+        
+        SupervisorStatsDTO stats = new SupervisorStatsDTO();
+        stats.setTotalMotores((int) totalMotoresAtivos);
+        stats.setMotoresTboProximo(motoresTboProximo);
+        stats.setMotoresTboExpirado(motoresTboExpirado);
+        stats.setOsPendentes(osPendentes.size());
+        stats.setOsEmAndamento(osAndamento.size());
+        stats.setOsConcluidasMes(osConcluidasMes);
+        stats.setTotalFornecedores(totalFornecedores);
+        
+        return ResponseEntity.ok(stats);
+    }
+
+    @Operation(
+        summary = "Buscar motores em alerta (TBO próximo ou expirado)",
+        description = "Retorna motores que estão próximos do TBO (>= 80%) ou com TBO expirado (> 100%), ordenados por urgência."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Motores encontrados"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado"),
+        @ApiResponse(responseCode = "403", description = "Acesso negado - apenas supervisores podem acessar")
+    })
+    @GetMapping("/supervisor/motores-alerta")
+    public ResponseEntity<List<MotorAlertaDTO>> getMotoresAlerta(
+            @RequestParam(defaultValue = "5") int limit) {
+        List<Motor> todosMotores = motorRepository.findAll();
+        List<MotorAlertaDTO> motoresAlerta = new ArrayList<>();
+        
+        for (Motor motor : todosMotores) {
+            if (motor.getStatus() != null && motor.getStatus()) { // Apenas motores ativos
+                TipoMotor tipoMotor = tipoMotorRepository.findByMarcaAndModelo(motor.getMarca(), motor.getModelo());
+                if (tipoMotor != null && tipoMotor.getTbo() > 0) {
+                    float percentual = (float) motor.getHoras_operacao() / tipoMotor.getTbo() * 100;
+                    
+                    // Incluir apenas motores com TBO >= 80%
+                    if (percentual >= 80) {
+                        MotorAlertaDTO dto = new MotorAlertaDTO();
+                        dto.setId(motor.getId());
+                        dto.setSerieMotor(motor.getSerie_motor());
+                        dto.setMarca(motor.getMarca());
+                        dto.setModelo(motor.getModelo());
+                        dto.setHorasOperacao(motor.getHoras_operacao());
+                        dto.setTbo(tipoMotor.getTbo());
+                        dto.setPercentualTbo(percentual);
+                        
+                        if (percentual >= 100) {
+                            dto.setStatusAlerta("EXPIRADO");
+                        } else {
+                            dto.setStatusAlerta("PROXIMO");
+                        }
+                        
+                        if (motor.getCliente() != null) {
+                            dto.setClienteNome(motor.getCliente().getName());
+                        }
+                        
+                        motoresAlerta.add(dto);
+                    }
+                }
+            }
+        }
+        
+        // Ordenar: expirados primeiro, depois por percentual descendente
+        motoresAlerta.sort((a, b) -> {
+            if (a.getStatusAlerta().equals("EXPIRADO") && !b.getStatusAlerta().equals("EXPIRADO")) {
+                return -1;
+            }
+            if (!a.getStatusAlerta().equals("EXPIRADO") && b.getStatusAlerta().equals("EXPIRADO")) {
+                return 1;
+            }
+            return Float.compare(b.getPercentualTbo(), a.getPercentualTbo());
+        });
+        
+        // Limitar quantidade
+        List<MotorAlertaDTO> limitedList = motoresAlerta.stream()
+            .limit(limit)
+            .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(limitedList);
+    }
+
+    @Operation(
+        summary = "Buscar OS pendentes para supervisão",
+        description = "Retorna as últimas ordens de serviço pendentes ordenadas por data de abertura (mais antigas primeiro)."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Ordens encontradas"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado"),
+        @ApiResponse(responseCode = "403", description = "Acesso negado - apenas supervisores podem acessar")
+    })
+    @GetMapping("/supervisor/os-pendentes")
+    public ResponseEntity<List<CabecalhoOrdemDTO>> getOsPendentes(
+            @RequestParam(defaultValue = "5") int limit) {
+        List<CabecalhoOrdem> list = cabecalhoOrdemRepository
+            .findByStatusOrderByIdDesc(OrdemStatus.PENDENTE);
+        
+        // Ordenar por data de abertura (mais antigas primeiro)
+        list.sort((a, b) -> {
+            if (a.getDataAbertura() == null && b.getDataAbertura() == null) return 0;
+            if (a.getDataAbertura() == null) return 1;
+            if (b.getDataAbertura() == null) return -1;
+            try {
+                LocalDate dataA = LocalDate.parse(a.getDataAbertura());
+                LocalDate dataB = LocalDate.parse(b.getDataAbertura());
+                return dataA.compareTo(dataB);
+            } catch (Exception e) {
+                return 0;
+            }
+        });
+        
+        // Limitar quantidade
+        List<CabecalhoOrdem> limitedList = list.stream()
+            .limit(limit)
+            .collect(Collectors.toList());
+        
+        List<CabecalhoOrdemDTO> dtos = new ArrayList<>();
+        for (CabecalhoOrdem entity : limitedList) {
+            CabecalhoOrdemDTO dto = convertToDTO(entity);
+            dtos.add(dto);
+        }
+        return ResponseEntity.ok(dtos);
     }
 
     private CabecalhoOrdemDTO convertToDTO(CabecalhoOrdem entity) {
