@@ -234,6 +234,7 @@ public class CabecalhoOrdemController {
         LocalDate primeiroDiaMes = now.withDayOfMonth(1);
         
         for (CabecalhoOrdem os : todasOs) {
+            // Calcular tempo trabalhado esta semana (baseado na data de abertura)
             if (os.getDataAbertura() != null && !os.getDataAbertura().isEmpty()) {
                 try {
                     LocalDate dataAbertura = LocalDate.parse(os.getDataAbertura());
@@ -243,13 +244,22 @@ public class CabecalhoOrdemController {
                     if (semanaOs == currentWeek && anoOs == currentYear) {
                         tempoEstaSemana += os.getTempoUsado();
                     }
-                    
-                    if (os.getStatus() == puc.airtrack.airtrack.OrdemDeServico.OrdemStatus.CONCLUIDA 
-                        && dataAbertura.isAfter(primeiroDiaMes.minusDays(1))) {
-                        completadasEsteMes++;
-                    }
                 } catch (Exception e) {
                     // Ignora erros de parsing de data
+                }
+            }
+            
+            // Calcular OS completadas este mês (baseado na data de fechamento)
+            if (os.getStatus() == puc.airtrack.airtrack.OrdemDeServico.OrdemStatus.CONCLUIDA) {
+                if (os.getDataFechamento() != null && !os.getDataFechamento().isEmpty()) {
+                    try {
+                        LocalDate dataFechamento = LocalDate.parse(os.getDataFechamento());
+                        if (dataFechamento.isAfter(primeiroDiaMes.minusDays(1))) {
+                            completadasEsteMes++;
+                        }
+                    } catch (Exception e) {
+                        // Ignora erros de parsing de data
+                    }
                 }
             }
         }
