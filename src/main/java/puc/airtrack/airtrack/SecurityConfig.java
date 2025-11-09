@@ -81,7 +81,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/report/export").hasAnyRole("SUPERVISOR", "ADMIN")
                         
                         // ADMIN only - User management and role switching
-                        .requestMatchers("/cre", "/ge", "/gel", "/upe", "/de", "/switch-role").hasRole("ADMIN")
+                        .requestMatchers("/cre", "/ge", "/gel", "/upe", "/de", "/switch-role", "/admin/users/stats").hasRole("ADMIN")
 
                         // SUPERVISOR or ADMIN
                         .requestMatchers("/cforn", "/gforn", "/gforns", "/uforn", "/dforn",
@@ -105,6 +105,14 @@ public class SecurityConfig {
                         .requestMatchers("/ordem/get", "/ordem/list").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         .requestMatchers("/ordem/update", "/ordem/atualizar-status").hasAnyRole("ENGENHEIRO", "SUPERVISOR", "ADMIN")
                         .requestMatchers("/ordem/create").hasAnyRole("SUPERVISOR", "ADMIN")
+                        // Endpoints específicos do engenheiro
+                        .requestMatchers("/ordem/engenheiro/minhas-os", "/ordem/engenheiro/stats").hasAnyRole("ENGENHEIRO", "ADMIN")
+                        // Endpoints específicos do auditor
+                        .requestMatchers("/ordem/auditor/os-concluidas", "/ordem/auditor/stats", "/ordem/auditor/alertas-conformidade", "/ordem/auditor/riscos").hasAnyRole("AUDITOR", "ADMIN")
+                        // Endpoints específicos do supervisor
+                        .requestMatchers("/ordem/supervisor/stats", "/ordem/supervisor/motores-alerta", "/ordem/supervisor/os-pendentes").hasAnyRole("SUPERVISOR", "ADMIN")
+                        // Endpoints específicos do admin
+                        .requestMatchers("/ordem/admin/stats").hasRole("ADMIN")
                         .requestMatchers("/ordem/{orderId}/anexos").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         .requestMatchers("/ordem/{orderId}/anexos/**").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         .requestMatchers("/ordem/{orderId}/pdf").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")

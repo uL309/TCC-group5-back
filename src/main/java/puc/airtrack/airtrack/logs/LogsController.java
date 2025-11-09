@@ -10,13 +10,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Controller para acesso aos logs do sistema
@@ -264,5 +265,96 @@ public class LogsController {
         }
         
         return ResponseEntity.ok(logs);
+    }
+
+    /**
+     * Obter logs recentes de todos os módulos
+     */
+    @Operation(
+        summary = "Consultar logs recentes do sistema",
+        description = "Retorna os logs mais recentes de todos os módulos do sistema, ordenados por timestamp (mais recentes primeiro)."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Logs retornados com sucesso"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado")
+    })
+    @GetMapping("/recentes")
+    public ResponseEntity<List<LogEntryDTO>> getLogsRecentes(
+            @RequestParam(defaultValue = "10") int limit) {
+        
+        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "timestamp"));
+        
+        List<LogEntryDTO> logsRecentes = new ArrayList<>();
+        
+        // Buscar logs de cada módulo
+        Page<ClienteLogEntry> clienteLogs = clienteLogRepository.findAll(pageable);
+        Page<FornecedorLogEntry> fornecedorLogs = fornecedorLogRepository.findAll(pageable);
+        Page<OrdemServicoLogEntry> ordemLogs = ordemServicoLogRepository.findAll(pageable);
+        Page<PecasLogEntry> pecasLogs = pecasLogRepository.findAll(pageable);
+        Page<MotorLogEntry> motorLogs = motorLogRepository.findAll(pageable);
+        Page<UserLogEntry> userLogs = userLogRepository.findAll(pageable);
+        
+        // Converter para DTOs
+        clienteLogs.getContent().forEach(log -> {
+            LogEntryDTO dto = new LogEntryDTO();
+            dto.setTimestamp(log.getTimestamp());
+            dto.setUsername(log.getUsername());
+            dto.setControllerMethod(log.getControllerMethod());
+            dto.setModule("Cliente");
+            logsRecentes.add(dto);
+        });
+        
+        fornecedorLogs.getContent().forEach(log -> {
+            LogEntryDTO dto = new LogEntryDTO();
+            dto.setTimestamp(log.getTimestamp());
+            dto.setUsername(log.getUsername());
+            dto.setControllerMethod(log.getControllerMethod());
+            dto.setModule("Fornecedor");
+            logsRecentes.add(dto);
+        });
+        
+        ordemLogs.getContent().forEach(log -> {
+            LogEntryDTO dto = new LogEntryDTO();
+            dto.setTimestamp(log.getTimestamp());
+            dto.setUsername(log.getUsername());
+            dto.setControllerMethod(log.getControllerMethod());
+            dto.setModule("Ordem de Serviço");
+            logsRecentes.add(dto);
+        });
+        
+        pecasLogs.getContent().forEach(log -> {
+            LogEntryDTO dto = new LogEntryDTO();
+            dto.setTimestamp(log.getTimestamp());
+            dto.setUsername(log.getUsername());
+            dto.setControllerMethod(log.getControllerMethod());
+            dto.setModule("Peças");
+            logsRecentes.add(dto);
+        });
+        
+        motorLogs.getContent().forEach(log -> {
+            LogEntryDTO dto = new LogEntryDTO();
+            dto.setTimestamp(log.getTimestamp());
+            dto.setUsername(log.getUsername());
+            dto.setControllerMethod(log.getControllerMethod());
+            dto.setModule("Motor");
+            logsRecentes.add(dto);
+        });
+        
+        userLogs.getContent().forEach(log -> {
+            LogEntryDTO dto = new LogEntryDTO();
+            dto.setTimestamp(log.getTimestamp());
+            dto.setUsername(log.getUsername());
+            dto.setControllerMethod(log.getControllerMethod());
+            dto.setModule("Usuário");
+            logsRecentes.add(dto);
+        });
+        
+        // Ordenar por timestamp (mais recentes primeiro) e limitar
+        logsRecentes.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
+        List<LogEntryDTO> limitedList = logsRecentes.stream()
+            .limit(limit)
+            .collect(java.util.stream.Collectors.toList());
+        
+        return ResponseEntity.ok(limitedList);
     }
 }

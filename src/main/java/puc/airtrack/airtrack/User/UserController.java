@@ -19,6 +19,7 @@ import puc.airtrack.airtrack.Login.User;
 import puc.airtrack.airtrack.Login.UserDTO;
 import puc.airtrack.airtrack.Login.UserRole;
 import puc.airtrack.airtrack.Login.UserService;
+import puc.airtrack.airtrack.User.UserStatsDTO;
 
 @Controller
 public class UserController {
@@ -124,5 +125,41 @@ public class UserController {
         } else {
             return ResponseEntity.status(404).body("User not found");
         }
+    }
+
+    @GetMapping("/admin/users/stats")
+    public ResponseEntity<UserStatsDTO> getUserStats() {
+        List<User> todosUsuarios = service.findAll();
+        
+        long totalUsuarios = todosUsuarios.size();
+        long usuariosAtivos = todosUsuarios.stream()
+            .filter(u -> u.getStatus() != null && u.getStatus())
+            .count();
+        
+        long usuariosEngenheiro = todosUsuarios.stream()
+            .filter(u -> u.getRole() != null && u.getRole() == UserRole.ROLE_ENGENHEIRO && u.getStatus() != null && u.getStatus())
+            .count();
+        
+        long usuariosAuditor = todosUsuarios.stream()
+            .filter(u -> u.getRole() != null && u.getRole() == UserRole.ROLE_AUDITOR && u.getStatus() != null && u.getStatus())
+            .count();
+        
+        long usuariosSupervisor = todosUsuarios.stream()
+            .filter(u -> u.getRole() != null && u.getRole() == UserRole.ROLE_SUPERVISOR && u.getStatus() != null && u.getStatus())
+            .count();
+        
+        long usuariosAdmin = todosUsuarios.stream()
+            .filter(u -> u.getRole() != null && u.getRole() == UserRole.ROLE_ADMIN && u.getStatus() != null && u.getStatus())
+            .count();
+        
+        UserStatsDTO stats = new UserStatsDTO();
+        stats.setTotalUsuarios((int) totalUsuarios);
+        stats.setUsuariosAtivos((int) usuariosAtivos);
+        stats.setUsuariosEngenheiro((int) usuariosEngenheiro);
+        stats.setUsuariosAuditor((int) usuariosAuditor);
+        stats.setUsuariosSupervisor((int) usuariosSupervisor);
+        stats.setUsuariosAdmin((int) usuariosAdmin);
+        
+        return ResponseEntity.ok(stats);
     }
 }
