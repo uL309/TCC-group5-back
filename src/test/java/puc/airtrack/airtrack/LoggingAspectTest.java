@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import puc.airtrack.airtrack.User.UserController;
 import puc.airtrack.airtrack.Cliente.ClienteController;
 import puc.airtrack.airtrack.Cliente.ClienteDTO;
 import puc.airtrack.airtrack.Fornecedor.FornecedorController;
@@ -24,7 +25,6 @@ import puc.airtrack.airtrack.OrdemDeServico.CabecalhoOrdemController;
 import puc.airtrack.airtrack.OrdemDeServico.LinhaOrdemController;
 import puc.airtrack.airtrack.Pecas.Pecas;
 import puc.airtrack.airtrack.Pecas.PecasController;
-import puc.airtrack.airtrack.User.UserController;
 import puc.airtrack.airtrack.logs.LoggingAspect;
 import puc.airtrack.airtrack.logs.LoggingService;
 
@@ -319,4 +319,134 @@ public class LoggingAspectTest {
     public void updateCliente(String id) {}
     public void createFornecedor(puc.airtrack.airtrack.Fornecedor.FornecedorDTO dto) {}
     public void deletePeca(String id) {}
+
+    @Test
+    void logMotorOperation_withStringArg_resultNull() throws Exception {
+        String serie = "SER-STR";
+        Method m = this.getClass().getMethod("getMotorBySerie", String.class);
+        when(methodSignature.getMethod()).thenReturn(m);
+        when(joinPoint.getSignature()).thenReturn(methodSignature);
+        when(joinPoint.getArgs()).thenReturn(new Object[]{serie});
+
+        aspect.logMotorOperation(joinPoint, null);
+
+        verify(loggingService).logMotorOperation(
+            eq(MotorController.class.getSimpleName() + "." + m.getName()),
+            eq(serie),
+            isNull(),
+            eq(serie),
+            eq("READ")
+        );
+    }
+
+    @Test
+    void logMotorOperation_withArgMotor_andResultMotor() throws Exception {
+        Motor argMotor = new Motor();
+        argMotor.setSerie_motor("SER-ARG");
+        Motor resMotor = new Motor();
+        resMotor.setSerie_motor("SER-RES");
+        Method m = this.getClass().getMethod("updateMotor", Motor.class);
+        when(methodSignature.getMethod()).thenReturn(m);
+        when(joinPoint.getSignature()).thenReturn(methodSignature);
+        when(joinPoint.getArgs()).thenReturn(new Object[]{argMotor});
+
+        aspect.logMotorOperation(joinPoint, resMotor);
+
+        // dependendo da implementação, ajuste expectedSerie para SER-ARG ou SER-RES
+        String expectedSerie = "SER-RES"; // aspecto usa série do resultado quando presente
+        verify(loggingService).logMotorOperation(
+            eq(MotorController.class.getSimpleName() + "." + m.getName()),
+            same(argMotor),
+            same(resMotor),
+            eq(expectedSerie),
+            eq("UPDATE")
+        );
+    }
+
+    @Test
+    void logMotorOperation_resultNull_noArgs() throws Exception {
+        Method m = this.getClass().getMethod("otherMotorMethod");
+        when(methodSignature.getMethod()).thenReturn(m);
+        when(joinPoint.getSignature()).thenReturn(methodSignature);
+        when(joinPoint.getArgs()).thenReturn(new Object[]{});
+
+        aspect.logMotorOperation(joinPoint, null);
+
+        verify(loggingService).logMotorOperation(
+            eq(MotorController.class.getSimpleName() + "." + m.getName()),
+            isNull(),
+            isNull(),
+            isNull(),
+            eq("OTHER")
+        );
+    }
+
+    @Test
+    void logUserOperation_withStringArg_resultNull() throws Exception {
+        String username = "userA";
+        Method m = this.getClass().getMethod("getUserByUsername", String.class);
+        when(methodSignature.getMethod()).thenReturn(m);
+        when(joinPoint.getSignature()).thenReturn(methodSignature);
+        when(joinPoint.getArgs()).thenReturn(new Object[]{username});
+
+        aspect.logUserOperation(joinPoint, null);
+
+        verify(loggingService).logUserOperation(
+            eq(UserController.class.getSimpleName() + "." + m.getName()),
+            eq(username),
+            isNull(),
+            eq(username),
+            eq("READ")
+        );
+    }
+
+    @Test
+    void logUserOperation_withArgUser_andResultUser() throws Exception {
+        puc.airtrack.airtrack.Login.User arg = new puc.airtrack.airtrack.Login.User();
+        arg.setUsername("argUser");
+        puc.airtrack.airtrack.Login.User res = new puc.airtrack.airtrack.Login.User();
+        res.setUsername("resUser");
+        Method m = this.getClass().getMethod("updateUser", puc.airtrack.airtrack.Login.User.class);
+        when(methodSignature.getMethod()).thenReturn(m);
+        when(joinPoint.getSignature()).thenReturn(methodSignature);
+        when(joinPoint.getArgs()).thenReturn(new Object[]{arg});
+
+        aspect.logUserOperation(joinPoint, res);
+
+        String expected = "resUser"; // aspecto usa username do resultado quando presente
+        verify(loggingService).logUserOperation(
+            eq(UserController.class.getSimpleName() + "." + m.getName()),
+            same(arg),
+            same(res),
+            eq(expected),
+            eq("UPDATE")
+        );
+    }
+
+    @Test
+    void logUserOperation_argUserSemUsername_resultNull() throws Exception {
+        puc.airtrack.airtrack.Login.User arg = new puc.airtrack.airtrack.Login.User(); // username null
+        Method m = this.getClass().getMethod("deleteUser", puc.airtrack.airtrack.Login.User.class);
+        when(methodSignature.getMethod()).thenReturn(m);
+        when(joinPoint.getSignature()).thenReturn(methodSignature);
+        when(joinPoint.getArgs()).thenReturn(new Object[]{arg});
+
+        aspect.logUserOperation(joinPoint, null);
+
+        verify(loggingService).logUserOperation(
+            eq(UserController.class.getSimpleName() + "." + m.getName()),
+            same(arg),
+            isNull(),
+            isNull(),
+            eq("DELETE")
+        );
+    }
+
+    // helper dummy methods for new tests
+    public void getMotorBySerie(String serie) {}
+    public void updateMotor(Motor m) {}
+    public void otherMotorMethod() {}
+    public void getUserByUsername(String u) {}
+    public void updateUser(puc.airtrack.airtrack.Login.User u) {}
+    public void deleteUser(puc.airtrack.airtrack.Login.User u) {}
 }
