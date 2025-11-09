@@ -69,7 +69,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/logs/**").hasRole("ADMIN")
                         
                         // ADMIN only - User management and role switching
-                        .requestMatchers("/cre", "/ge", "/gel", "/upe", "/de", "/switch-role").hasRole("ADMIN")
+                        .requestMatchers("/cre", "/ge", "/gel", "/upe", "/de", "/switch-role", "/admin/users/stats").hasRole("ADMIN")
 
                         // SUPERVISOR or ADMIN
                         .requestMatchers("/cforn", "/gforn", "/gforns", "/uforn", "/dforn",
@@ -99,6 +99,8 @@ public class SecurityConfig {
                         .requestMatchers("/ordem/auditor/os-concluidas", "/ordem/auditor/stats", "/ordem/auditor/alertas-conformidade", "/ordem/auditor/riscos").hasAnyRole("AUDITOR", "ADMIN")
                         // Endpoints específicos do supervisor
                         .requestMatchers("/ordem/supervisor/stats", "/ordem/supervisor/motores-alerta", "/ordem/supervisor/os-pendentes").hasAnyRole("SUPERVISOR", "ADMIN")
+                        // Endpoints específicos do admin
+                        .requestMatchers("/ordem/admin/stats").hasRole("ADMIN")
                         .requestMatchers("/ordem/{orderId}/anexos").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         .requestMatchers("/ordem/{orderId}/anexos/**").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")
                         .requestMatchers("/ordem/{orderId}/pdf").hasAnyRole("SUPERVISOR", "ENGENHEIRO", "AUDITOR", "ADMIN")

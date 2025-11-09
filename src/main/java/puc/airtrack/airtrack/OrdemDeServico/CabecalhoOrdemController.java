@@ -40,6 +40,7 @@ import puc.airtrack.airtrack.Motor.MotorRepository;
 import puc.airtrack.airtrack.tipoMotor.TipoMotor;
 import puc.airtrack.airtrack.tipoMotor.TipoMotorRepository;
 import puc.airtrack.airtrack.Fornecedor.FornecedorRepo;
+import puc.airtrack.airtrack.Repositorio;
 import java.time.LocalDate;
 import java.time.temporal.WeekFields;
 import java.util.Locale;
@@ -66,6 +67,8 @@ public class CabecalhoOrdemController {
     private TipoMotorRepository tipoMotorRepository;
     @Autowired
     private FornecedorRepo fornecedorRepo;
+    @Autowired
+    private Repositorio userRepository;
 
     @Operation(
         summary = "Criar ordem de serviço",
@@ -762,6 +765,93 @@ public class CabecalhoOrdemController {
         riscos.setTotalRiscos(totalRiscos);
         
         return ResponseEntity.ok(riscos);
+    }
+
+    @Operation(
+        summary = "Buscar estatísticas gerais para administrador",
+        description = "Retorna estatísticas consolidadas do sistema para administração, incluindo OS, usuários, motores e alertas críticos."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Estatísticas encontradas"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado"),
+        @ApiResponse(responseCode = "403", description = "Acesso negado - apenas administradores podem acessar")
+    })
+    @GetMapping("/admin/stats")
+    public ResponseEntity<AdminStatsDTO> getEstatisticasAdmin() {
+        // Buscar todas as OS
+        List<CabecalhoOrdem> todasOs = cabecalhoOrdemRepository.findAllByOrderByIdDesc();
+        List<CabecalhoOrdem> osConcluidas = cabecalhoOrdemRepository
+            .findByStatusOrderByIdDesc(OrdemStatus.CONCLUIDA);
+        List<CabecalhoOrdem> osAndamento = cabecalhoOrdemRepository
+            .findByStatusOrderByIdDesc(OrdemStatus.ANDAMENTO);
+        List<CabecalhoOrdem> osPendentes = cabecalhoOrdemRepository
+            .findByStatusOrderByIdDesc(OrdemStatus.PENDENTE);
+        
+        // Calcular taxa de conclusão
+        float taxaConclusaoGeral = 0;
+        if (todasOs.size() > 0) {
+            taxaConclusaoGeral = (float) osConcluidas.size() / todasOs.size() * 100;
+        }
+        
+        // Calcular motores ativos
+        List<Motor> todosMotores = motorRepository.findAll();
+        long totalMotoresAtivos = todosMotores.stream()
+            .filter(m -> m.getStatus() != null && m.getStatus())
+            .count();
+        
+        // Calcular motores com TBO expirado
+        int motoresTboExpirado = 0;
+        for (Motor motor : todosMotores) {
+            if (motor.getStatus() != null && motor.getStatus()) {
+                TipoMotor tipoMotor = tipoMotorRepository.findByMarcaAndModelo(motor.getMarca(), motor.getModelo());
+                if (tipoMotor != null && tipoMotor.getTbo() > 0) {
+                    float percentual = (float) motor.getHoras_operacao() / tipoMotor.getTbo() * 100;
+                    if (percentual >= 100) {
+                        motoresTboExpirado++;
+                    }
+                }
+            }
+        }
+        
+        // Calcular OS pendentes críticas (há mais de 7 dias)
+        LocalDate now = LocalDate.now();
+        LocalDate seteDiasAtras = now.minusDays(7);
+        int osPendentesCriticas = 0;
+        for (CabecalhoOrdem os : osPendentes) {
+            if (os.getDataAbertura() != null && !os.getDataAbertura().isEmpty()) {
+                try {
+                    LocalDate dataAbertura = LocalDate.parse(os.getDataAbertura());
+                    if (dataAbertura.isBefore(seteDiasAtras) || dataAbertura.isEqual(seteDiasAtras)) {
+                        osPendentesCriticas++;
+                    }
+                } catch (Exception e) {
+                    // Ignora erros de parsing
+                }
+            }
+        }
+        
+        // Calcular usuários ativos
+        List<User> todosUsuarios = userRepository.findAll();
+        long totalUsuariosAtivos = todosUsuarios.stream()
+            .filter(u -> u.getStatus() != null && u.getStatus())
+            .count();
+        
+        // Calcular alertas críticos (TBO expirado + OS pendentes críticas)
+        int alertasCriticos = motoresTboExpirado + osPendentesCriticas;
+        
+        AdminStatsDTO stats = new AdminStatsDTO();
+        stats.setTotalOs(todasOs.size());
+        stats.setOsConcluidas(osConcluidas.size());
+        stats.setOsEmAndamento(osAndamento.size());
+        stats.setOsPendentes(osPendentes.size());
+        stats.setTaxaConclusaoGeral(taxaConclusaoGeral);
+        stats.setTotalMotoresAtivos((int) totalMotoresAtivos);
+        stats.setTotalUsuariosAtivos((int) totalUsuariosAtivos);
+        stats.setMotoresTboExpirado(motoresTboExpirado);
+        stats.setOsPendentesCriticas(osPendentesCriticas);
+        stats.setAlertasCriticos(alertasCriticos);
+        
+        return ResponseEntity.ok(stats);
     }
 
     private CabecalhoOrdemDTO convertToDTO(CabecalhoOrdem entity) {
