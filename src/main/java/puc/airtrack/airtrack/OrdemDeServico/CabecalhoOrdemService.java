@@ -46,7 +46,6 @@ public class CabecalhoOrdemService {
         if (dto != null) {
             CabecalhoOrdem entity = new CabecalhoOrdem();
             entity.setDataAbertura(dto.getDataAbertura());
-            entity.setDataFechamento(dto.getDataFechamento());
             entity.setDescricao(dto.getDescricao());
             entity.setTipo(dto.getTipo());
             entity.setTempoUsado(dto.getTempoUsado());
@@ -54,6 +53,34 @@ public class CabecalhoOrdemService {
             OrdemStatus status = OrdemStatus.values()[dto.getStatus()];
             entity.setStatus(obterStatusCabecalho(Boolean.TRUE, status));
             entity.setValorHora(dto.getValorHora());
+            
+            // Lógica automática para data_fechamento baseada no status
+            if (status == OrdemStatus.CONCLUIDA) {
+                // Se status é CONCLUIDA, setar data_fechamento com data e hora atual
+                if (dto.getDataFechamento() != null && !dto.getDataFechamento().isEmpty()) {
+                    entity.setDataFechamento(dto.getDataFechamento());
+                } else {
+                    // Se não foi fornecido, setar data e hora atual
+                    entity.setDataFechamento(java.time.LocalDateTime.now().toString());
+                }
+            } else {
+                // Se status não é CONCLUIDA, não setar data_fechamento
+                entity.setDataFechamento(null);
+            }
+            
+            // Garantir que data_abertura tenha hora se não tiver
+            if (entity.getDataAbertura() != null && !entity.getDataAbertura().isEmpty()) {
+                try {
+                    // Se data_abertura não tem hora, adicionar hora atual
+                    if (!entity.getDataAbertura().contains("T") && !entity.getDataAbertura().contains(" ")) {
+                        // Formato apenas data (YYYY-MM-DD), adicionar hora atual
+                        entity.setDataAbertura(java.time.LocalDate.parse(entity.getDataAbertura())
+                            .atStartOfDay().toString());
+                    }
+                } catch (Exception e) {
+                    // Se não conseguir parsear, manter como está
+                }
+            }
             if (dto.getClienteId() != null) {
                 entity.setCliente(clienteRepo.findByCpf(dto.getClienteId()).orElse(null));
             }
@@ -94,7 +121,6 @@ public class CabecalhoOrdemService {
                 OrdemStatus oldStatus = entity.getStatus();
 
                 entity.setDataAbertura(dto.getDataAbertura());
-                entity.setDataFechamento(dto.getDataFechamento());
                 entity.setDescricao(dto.getDescricao());
                 entity.setTipo(dto.getTipo());
                 entity.setTempoUsado(dto.getTempoUsado());
@@ -103,6 +129,35 @@ public class CabecalhoOrdemService {
                 entity.setStatus(obterStatusCabecalho(Boolean.FALSE, status));
                 entity.setTempoUsado(dto.getTempoUsado());
                 entity.setValorHora(dto.getValorHora());
+                
+                // Lógica automática para data_fechamento baseada no status
+                if (status == OrdemStatus.CONCLUIDA) {
+                    // Se status é CONCLUIDA, setar data_fechamento se não existir ou se foi fornecido no DTO
+                    if (dto.getDataFechamento() != null && !dto.getDataFechamento().isEmpty()) {
+                        entity.setDataFechamento(dto.getDataFechamento());
+                    } else if (entity.getDataFechamento() == null || entity.getDataFechamento().isEmpty()) {
+                        // Se não tem data_fechamento, setar data e hora atual
+                        entity.setDataFechamento(java.time.LocalDateTime.now().toString());
+                    }
+                    // Se já tem data_fechamento e não foi fornecido novo valor, mantém o existente
+                } else {
+                    // Se status não é CONCLUIDA, limpar data_fechamento
+                    entity.setDataFechamento(null);
+                }
+                
+                // Garantir que data_abertura tenha hora se não tiver
+                if (entity.getDataAbertura() != null && !entity.getDataAbertura().isEmpty()) {
+                    try {
+                        // Se data_abertura não tem hora, adicionar hora atual
+                        if (!entity.getDataAbertura().contains("T") && !entity.getDataAbertura().contains(" ")) {
+                            // Formato apenas data (YYYY-MM-DD), adicionar hora atual
+                            entity.setDataAbertura(java.time.LocalDate.parse(entity.getDataAbertura())
+                                .atStartOfDay().toString());
+                        }
+                    } catch (Exception e) {
+                        // Se não conseguir parsear, manter como está
+                    }
+                }
 
                 if (dto.getClienteId() != null) {
                     entity.setCliente(clienteRepo.findByCpf(dto.getClienteId()).orElse(null));
@@ -155,6 +210,32 @@ public class CabecalhoOrdemService {
             OrdemStatus oldStatus = entity.getStatus();
             OrdemStatus status = OrdemStatus.values()[novoStatus];
             entity.setStatus(status);
+            
+            // Lógica automática para data_fechamento baseada no status
+            if (status == OrdemStatus.CONCLUIDA) {
+                // Se status é CONCLUIDA, setar data_fechamento com data e hora atual se não existir
+                if (entity.getDataFechamento() == null || entity.getDataFechamento().isEmpty()) {
+                    entity.setDataFechamento(java.time.LocalDateTime.now().toString());
+                }
+            } else {
+                // Se status não é CONCLUIDA, limpar data_fechamento
+                entity.setDataFechamento(null);
+            }
+            
+            // Garantir que data_abertura tenha hora se não tiver
+            if (entity.getDataAbertura() != null && !entity.getDataAbertura().isEmpty()) {
+                try {
+                    // Se data_abertura não tem hora, adicionar hora atual
+                    if (!entity.getDataAbertura().contains("T") && !entity.getDataAbertura().contains(" ")) {
+                        // Formato apenas data (YYYY-MM-DD), adicionar hora atual
+                        entity.setDataAbertura(java.time.LocalDate.parse(entity.getDataAbertura())
+                            .atStartOfDay().toString());
+                    }
+                } catch (Exception e) {
+                    // Se não conseguir parsear, manter como está
+                }
+            }
+            
             cabecalhoOrdemRepository.save(entity);
             OrdemStatus newStatus = entity.getStatus();
             if (oldStatus != OrdemStatus.PENDENTE && newStatus == OrdemStatus.PENDENTE) {
