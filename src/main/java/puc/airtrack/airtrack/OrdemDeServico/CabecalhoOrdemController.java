@@ -42,6 +42,7 @@ import puc.airtrack.airtrack.tipoMotor.TipoMotorRepository;
 import puc.airtrack.airtrack.Fornecedor.FornecedorRepo;
 import puc.airtrack.airtrack.Repositorio;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.WeekFields;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -237,12 +238,14 @@ public class CabecalhoOrdemController {
             // Calcular tempo trabalhado esta semana (baseado na data de abertura)
             if (os.getDataAbertura() != null && !os.getDataAbertura().isEmpty()) {
                 try {
-                    LocalDate dataAbertura = LocalDate.parse(os.getDataAbertura());
-                    int semanaOs = dataAbertura.get(weekFields.weekOfWeekBasedYear());
-                    int anoOs = dataAbertura.get(weekFields.weekBasedYear());
-                    
-                    if (semanaOs == currentWeek && anoOs == currentYear) {
-                        tempoEstaSemana += os.getTempoUsado();
+                    LocalDate dataAbertura = parseDateToLocalDate(os.getDataAbertura());
+                    if (dataAbertura != null) {
+                        int semanaOs = dataAbertura.get(weekFields.weekOfWeekBasedYear());
+                        int anoOs = dataAbertura.get(weekFields.weekBasedYear());
+                        
+                        if (semanaOs == currentWeek && anoOs == currentYear) {
+                            tempoEstaSemana += os.getTempoUsado();
+                        }
                     }
                 } catch (Exception e) {
                     // Ignora erros de parsing de data
@@ -253,8 +256,8 @@ public class CabecalhoOrdemController {
             if (os.getStatus() == puc.airtrack.airtrack.OrdemDeServico.OrdemStatus.CONCLUIDA) {
                 if (os.getDataFechamento() != null && !os.getDataFechamento().isEmpty()) {
                     try {
-                        LocalDate dataFechamento = LocalDate.parse(os.getDataFechamento());
-                        if (dataFechamento.isAfter(primeiroDiaMes.minusDays(1))) {
+                        LocalDate dataFechamento = parseDateToLocalDate(os.getDataFechamento());
+                        if (dataFechamento != null && dataFechamento.isAfter(primeiroDiaMes.minusDays(1))) {
                             completadasEsteMes++;
                         }
                     } catch (Exception e) {
@@ -336,18 +339,19 @@ public class CabecalhoOrdemController {
         for (CabecalhoOrdem os : osConcluidas) {
             if (os.getDataFechamento() != null && !os.getDataFechamento().isEmpty()) {
                 try {
-                    LocalDate dataFechamento = LocalDate.parse(os.getDataFechamento());
-                    
-                    // Verificar se foi concluída este mês
-                    if (dataFechamento.isAfter(primeiroDiaMes.minusDays(1))) {
-                        concluidasEsteMes++;
-                    }
-                    
-                    // Verificar se foi concluída esta semana
-                    int semanaOs = dataFechamento.get(weekFields.weekOfWeekBasedYear());
-                    int anoOs = dataFechamento.get(weekFields.weekBasedYear());
-                    if (semanaOs == currentWeek && anoOs == currentYear) {
-                        concluidasEstaSemana++;
+                    LocalDate dataFechamento = parseDateToLocalDate(os.getDataFechamento());
+                    if (dataFechamento != null) {
+                        // Verificar se foi concluída este mês
+                        if (dataFechamento.isAfter(primeiroDiaMes.minusDays(1))) {
+                            concluidasEsteMes++;
+                        }
+                        
+                        // Verificar se foi concluída esta semana
+                        int semanaOs = dataFechamento.get(weekFields.weekOfWeekBasedYear());
+                        int anoOs = dataFechamento.get(weekFields.weekBasedYear());
+                        if (semanaOs == currentWeek && anoOs == currentYear) {
+                            concluidasEstaSemana++;
+                        }
                     }
                 } catch (Exception e) {
                     // Ignora erros de parsing de data
@@ -408,15 +412,17 @@ public class CabecalhoOrdemController {
             if (os.getDataAbertura() != null && !os.getDataAbertura().isEmpty() 
                 && os.getDataFechamento() != null && !os.getDataFechamento().isEmpty()) {
                 try {
-                    LocalDate dataAbertura = LocalDate.parse(os.getDataAbertura());
-                    LocalDate dataFechamento = LocalDate.parse(os.getDataFechamento());
+                    LocalDate dataAbertura = parseDateToLocalDate(os.getDataAbertura());
+                    LocalDate dataFechamento = parseDateToLocalDate(os.getDataFechamento());
                     
-                    // Apenas OS concluídas nos últimos 30 dias
-                    if (dataFechamento.isAfter(trintaDiasAtras.minusDays(1))) {
-                        long diasEntre = java.time.temporal.ChronoUnit.DAYS.between(dataAbertura, dataFechamento);
-                        if (diasEntre >= 0) {
-                            totalDias += diasEntre;
-                            osCompletadasUltimos30Dias++;
+                    if (dataAbertura != null && dataFechamento != null) {
+                        // Apenas OS concluídas nos últimos 30 dias
+                        if (dataFechamento.isAfter(trintaDiasAtras.minusDays(1))) {
+                            long diasEntre = java.time.temporal.ChronoUnit.DAYS.between(dataAbertura, dataFechamento);
+                            if (diasEntre >= 0) {
+                                totalDias += diasEntre;
+                                osCompletadasUltimos30Dias++;
+                            }
                         }
                     }
                 } catch (Exception e) {
@@ -482,8 +488,8 @@ public class CabecalhoOrdemController {
         for (CabecalhoOrdem os : osConcluidas) {
             if (os.getDataFechamento() != null && !os.getDataFechamento().isEmpty()) {
                 try {
-                    LocalDate dataFechamento = LocalDate.parse(os.getDataFechamento());
-                    if (dataFechamento.isAfter(primeiroDiaMes.minusDays(1))) {
+                    LocalDate dataFechamento = parseDateToLocalDate(os.getDataFechamento());
+                    if (dataFechamento != null && dataFechamento.isAfter(primeiroDiaMes.minusDays(1))) {
                         osConcluidasMes++;
                     }
                 } catch (Exception e) {
@@ -600,8 +606,11 @@ public class CabecalhoOrdemController {
             if (a.getDataAbertura() == null) return 1;
             if (b.getDataAbertura() == null) return -1;
             try {
-                LocalDate dataA = LocalDate.parse(a.getDataAbertura());
-                LocalDate dataB = LocalDate.parse(b.getDataAbertura());
+                LocalDate dataA = parseDateToLocalDate(a.getDataAbertura());
+                LocalDate dataB = parseDateToLocalDate(b.getDataAbertura());
+                if (dataA == null && dataB == null) return 0;
+                if (dataA == null) return 1;
+                if (dataB == null) return -1;
                 return dataA.compareTo(dataB);
             } catch (Exception e) {
                 return 0;
@@ -666,8 +675,8 @@ public class CabecalhoOrdemController {
         for (CabecalhoOrdem os : osPendentes) {
             if (os.getDataAbertura() != null && !os.getDataAbertura().isEmpty()) {
                 try {
-                    LocalDate dataAbertura = LocalDate.parse(os.getDataAbertura());
-                    if (dataAbertura.isBefore(seteDiasAtras) || dataAbertura.isEqual(seteDiasAtras)) {
+                    LocalDate dataAbertura = parseDateToLocalDate(os.getDataAbertura());
+                    if (dataAbertura != null && (dataAbertura.isBefore(seteDiasAtras) || dataAbertura.isEqual(seteDiasAtras))) {
                         long diasPendente = java.time.temporal.ChronoUnit.DAYS.between(dataAbertura, now);
                         AlertaConformidadeDTO alerta = new AlertaConformidadeDTO();
                         alerta.setTipo("OS_PENDENTE_CRITICA");
@@ -745,8 +754,8 @@ public class CabecalhoOrdemController {
         for (CabecalhoOrdem os : osPendentes) {
             if (os.getDataAbertura() != null && !os.getDataAbertura().isEmpty()) {
                 try {
-                    LocalDate dataAbertura = LocalDate.parse(os.getDataAbertura());
-                    if (dataAbertura.isBefore(seteDiasAtras) || dataAbertura.isEqual(seteDiasAtras)) {
+                    LocalDate dataAbertura = parseDateToLocalDate(os.getDataAbertura());
+                    if (dataAbertura != null && (dataAbertura.isBefore(seteDiasAtras) || dataAbertura.isEqual(seteDiasAtras))) {
                         osPendentesCriticas++;
                     }
                 } catch (Exception e) {
@@ -1165,6 +1174,48 @@ public class CabecalhoOrdemController {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Erro ao gerar PDF da ordem de serviço: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    /**
+     * Método helper para parsear string de data para LocalDate.
+     * Suporta tanto formato com hora (LocalDateTime) quanto apenas data (LocalDate).
+     * 
+     * @param dateString String contendo a data no formato YYYY-MM-DD ou YYYY-MM-DDTHH:mm:ss
+     * @return LocalDate ou null se não conseguir parsear
+     */
+    private LocalDate parseDateToLocalDate(String dateString) {
+        if (dateString == null || dateString.isEmpty()) {
+            return null;
+        }
+        
+        try {
+            // Primeiro tenta parsear como LocalDateTime (formato com hora)
+            if (dateString.contains("T") || dateString.contains(" ")) {
+                // Formato ISO com hora: YYYY-MM-DDTHH:mm:ss ou YYYY-MM-DD HH:mm:ss
+                // Remove milissegundos se houver e normaliza separador
+                String normalizedDate = dateString.replace(" ", "T");
+                if (normalizedDate.contains(".")) {
+                    normalizedDate = normalizedDate.split("\\.")[0]; // Remove milissegundos
+                }
+                // Se não termina com hora completa, adiciona
+                if (!normalizedDate.contains(":")) {
+                    normalizedDate = normalizedDate + "T00:00:00";
+                }
+                LocalDateTime dateTime = LocalDateTime.parse(normalizedDate);
+                return dateTime.toLocalDate();
+            } else {
+                // Formato apenas data: YYYY-MM-DD
+                return LocalDate.parse(dateString);
+            }
+        } catch (Exception e) {
+            // Se falhar, tenta parsear como LocalDate diretamente pegando apenas a parte da data
+            try {
+                String datePart = dateString.split(" ")[0].split("T")[0]; // Pega apenas a parte da data
+                return LocalDate.parse(datePart);
+            } catch (Exception e2) {
+                return null;
+            }
         }
     }
 }
