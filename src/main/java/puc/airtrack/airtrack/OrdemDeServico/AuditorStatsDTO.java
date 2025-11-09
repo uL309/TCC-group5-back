@@ -22,5 +22,17 @@ public class AuditorStatsDTO {
     
     @JsonProperty("os_concluidas_esta_semana")
     private int osConcluidasEstaSemana;
+    
+    @JsonProperty("taxa_conclusao")
+    private float taxaConclusao;
+    
+    @JsonProperty("motores_tbo_expirado")
+    private int motoresTboExpirado;
+    
+    @JsonProperty("os_pendentes_criticas")
+    private int osPendentesCriticas;
+    
+    @JsonProperty("tempo_medio_conclusao")
+    private float tempoMedioConclusao;
 }
 

@@ -345,6 +345,78 @@ public class CabecalhoOrdemController {
         stats.setOsConcluidasEsteMes(concluidasEsteMes);
         stats.setOsConcluidasEstaSemana(concluidasEstaSemana);
         
+        // Calcular taxa de conclusão
+        float taxaConclusao = 0;
+        if (todasOs.size() > 0) {
+            taxaConclusao = (float) osConcluidas.size() / todasOs.size() * 100;
+        }
+        stats.setTaxaConclusao(taxaConclusao);
+        
+        // Calcular motores com TBO expirado
+        List<Motor> todosMotores = motorRepository.findAll();
+        int motoresTboExpirado = 0;
+        for (Motor motor : todosMotores) {
+            if (motor.getStatus() != null && motor.getStatus()) {
+                TipoMotor tipoMotor = tipoMotorRepository.findByMarcaAndModelo(motor.getMarca(), motor.getModelo());
+                if (tipoMotor != null && tipoMotor.getTbo() > 0) {
+                    float percentual = (float) motor.getHoras_operacao() / tipoMotor.getTbo() * 100;
+                    if (percentual >= 100) {
+                        motoresTboExpirado++;
+                    }
+                }
+            }
+        }
+        stats.setMotoresTboExpirado(motoresTboExpirado);
+        
+        // Calcular OS pendentes críticas (há mais de 7 dias)
+        LocalDate seteDiasAtras = now.minusDays(7);
+        int osPendentesCriticas = 0;
+        for (CabecalhoOrdem os : osPendentes) {
+            if (os.getDataAbertura() != null && !os.getDataAbertura().isEmpty()) {
+                try {
+                    LocalDate dataAbertura = LocalDate.parse(os.getDataAbertura());
+                    if (dataAbertura.isBefore(seteDiasAtras) || dataAbertura.isEqual(seteDiasAtras)) {
+                        osPendentesCriticas++;
+                    }
+                } catch (Exception e) {
+                    // Ignora erros de parsing
+                }
+            }
+        }
+        stats.setOsPendentesCriticas(osPendentesCriticas);
+        
+        // Calcular tempo médio de conclusão (últimos 30 dias)
+        LocalDate trintaDiasAtras = now.minusDays(30);
+        float tempoMedioConclusao = 0;
+        int osCompletadasUltimos30Dias = 0;
+        long totalDias = 0;
+        
+        for (CabecalhoOrdem os : osConcluidas) {
+            if (os.getDataAbertura() != null && !os.getDataAbertura().isEmpty() 
+                && os.getDataFechamento() != null && !os.getDataFechamento().isEmpty()) {
+                try {
+                    LocalDate dataAbertura = LocalDate.parse(os.getDataAbertura());
+                    LocalDate dataFechamento = LocalDate.parse(os.getDataFechamento());
+                    
+                    // Apenas OS concluídas nos últimos 30 dias
+                    if (dataFechamento.isAfter(trintaDiasAtras.minusDays(1))) {
+                        long diasEntre = java.time.temporal.ChronoUnit.DAYS.between(dataAbertura, dataFechamento);
+                        if (diasEntre >= 0) {
+                            totalDias += diasEntre;
+                            osCompletadasUltimos30Dias++;
+                        }
+                    }
+                } catch (Exception e) {
+                    // Ignora erros de parsing
+                }
+            }
+        }
+        
+        if (osCompletadasUltimos30Dias > 0) {
+            tempoMedioConclusao = (float) totalDias / osCompletadasUltimos30Dias;
+        }
+        stats.setTempoMedioConclusao(tempoMedioConclusao);
+        
         return ResponseEntity.ok(stats);
     }
 
@@ -534,6 +606,162 @@ public class CabecalhoOrdemController {
             dtos.add(dto);
         }
         return ResponseEntity.ok(dtos);
+    }
+
+    @Operation(
+        summary = "Buscar alertas de conformidade para auditoria",
+        description = "Retorna alertas críticos de conformidade, incluindo motores com TBO expirado e OS pendentes há muito tempo."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Alertas encontrados"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado"),
+        @ApiResponse(responseCode = "403", description = "Acesso negado - apenas auditores podem acessar")
+    })
+    @GetMapping("/auditor/alertas-conformidade")
+    public ResponseEntity<List<AlertaConformidadeDTO>> getAlertasConformidade(
+            @RequestParam(defaultValue = "10") int limit) {
+        List<AlertaConformidadeDTO> alertas = new ArrayList<>();
+        LocalDate now = LocalDate.now();
+        LocalDate seteDiasAtras = now.minusDays(7);
+        
+        // Alertas de motores com TBO expirado
+        List<Motor> todosMotores = motorRepository.findAll();
+        for (Motor motor : todosMotores) {
+            if (motor.getStatus() != null && motor.getStatus()) {
+                TipoMotor tipoMotor = tipoMotorRepository.findByMarcaAndModelo(motor.getMarca(), motor.getModelo());
+                if (tipoMotor != null && tipoMotor.getTbo() > 0) {
+                    float percentual = (float) motor.getHoras_operacao() / tipoMotor.getTbo() * 100;
+                    if (percentual >= 100) {
+                        AlertaConformidadeDTO alerta = new AlertaConformidadeDTO();
+                        alerta.setTipo("TBO_EXPIRADO");
+                        alerta.setSeveridade("CRITICO");
+                        alerta.setTitulo("TBO Excedido");
+                        alerta.setDescricao(String.format("Motor %s (%s %s) excedeu o TBO (%.1f%%)", 
+                            motor.getSerie_motor(), motor.getMarca(), motor.getModelo(), percentual));
+                        alerta.setMotorId(motor.getId());
+                        alerta.setMotorSerie(motor.getSerie_motor());
+                        alerta.setData(now.toString());
+                        alertas.add(alerta);
+                    }
+                }
+            }
+        }
+        
+        // Alertas de OS pendentes há mais de 7 dias
+        List<CabecalhoOrdem> osPendentes = cabecalhoOrdemRepository
+            .findByStatusOrderByIdDesc(OrdemStatus.PENDENTE);
+        for (CabecalhoOrdem os : osPendentes) {
+            if (os.getDataAbertura() != null && !os.getDataAbertura().isEmpty()) {
+                try {
+                    LocalDate dataAbertura = LocalDate.parse(os.getDataAbertura());
+                    if (dataAbertura.isBefore(seteDiasAtras) || dataAbertura.isEqual(seteDiasAtras)) {
+                        long diasPendente = java.time.temporal.ChronoUnit.DAYS.between(dataAbertura, now);
+                        AlertaConformidadeDTO alerta = new AlertaConformidadeDTO();
+                        alerta.setTipo("OS_PENDENTE_CRITICA");
+                        alerta.setSeveridade(diasPendente > 14 ? "CRITICO" : "ALTO");
+                        alerta.setTitulo("OS Pendente Crítica");
+                        alerta.setDescricao(String.format("OS #%d está pendente há %d dias", os.getId(), diasPendente));
+                        alerta.setOsId(os.getId());
+                        alerta.setData(dataAbertura.toString());
+                        if (os.getNumSerieMotor() != null) {
+                            alerta.setMotorId(os.getNumSerieMotor().getId());
+                            alerta.setMotorSerie(os.getNumSerieMotor().getSerie_motor());
+                        }
+                        alertas.add(alerta);
+                    }
+                } catch (Exception e) {
+                    // Ignora erros de parsing
+                }
+            }
+        }
+        
+        // Ordenar: críticos primeiro, depois por data (mais antigos primeiro)
+        alertas.sort((a, b) -> {
+            if (a.getSeveridade().equals("CRITICO") && !b.getSeveridade().equals("CRITICO")) {
+                return -1;
+            }
+            if (!a.getSeveridade().equals("CRITICO") && b.getSeveridade().equals("CRITICO")) {
+                return 1;
+            }
+            return a.getData().compareTo(b.getData());
+        });
+        
+        // Limitar quantidade
+        List<AlertaConformidadeDTO> limitedList = alertas.stream()
+            .limit(limit)
+            .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(limitedList);
+    }
+
+    @Operation(
+        summary = "Buscar resumo de riscos identificados para auditoria",
+        description = "Retorna um resumo dos riscos identificados no sistema, incluindo motores com TBO expirado e OS pendentes críticas."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Riscos encontrados"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado"),
+        @ApiResponse(responseCode = "403", description = "Acesso negado - apenas auditores podem acessar")
+    })
+    @GetMapping("/auditor/riscos")
+    public ResponseEntity<RiscosDTO> getRiscos() {
+        RiscosDTO riscos = new RiscosDTO();
+        LocalDate now = LocalDate.now();
+        LocalDate seteDiasAtras = now.minusDays(7);
+        
+        // Calcular motores com TBO expirado
+        List<Motor> todosMotores = motorRepository.findAll();
+        int motoresTboExpirado = 0;
+        for (Motor motor : todosMotores) {
+            if (motor.getStatus() != null && motor.getStatus()) {
+                TipoMotor tipoMotor = tipoMotorRepository.findByMarcaAndModelo(motor.getMarca(), motor.getModelo());
+                if (tipoMotor != null && tipoMotor.getTbo() > 0) {
+                    float percentual = (float) motor.getHoras_operacao() / tipoMotor.getTbo() * 100;
+                    if (percentual >= 100) {
+                        motoresTboExpirado++;
+                    }
+                }
+            }
+        }
+        riscos.setMotoresTboExpirado(motoresTboExpirado);
+        
+        // Calcular OS pendentes críticas
+        List<CabecalhoOrdem> osPendentes = cabecalhoOrdemRepository
+            .findByStatusOrderByIdDesc(OrdemStatus.PENDENTE);
+        int osPendentesCriticas = 0;
+        for (CabecalhoOrdem os : osPendentes) {
+            if (os.getDataAbertura() != null && !os.getDataAbertura().isEmpty()) {
+                try {
+                    LocalDate dataAbertura = LocalDate.parse(os.getDataAbertura());
+                    if (dataAbertura.isBefore(seteDiasAtras) || dataAbertura.isEqual(seteDiasAtras)) {
+                        osPendentesCriticas++;
+                    }
+                } catch (Exception e) {
+                    // Ignora erros de parsing
+                }
+            }
+        }
+        riscos.setOsPendentesCriticas(osPendentesCriticas);
+        
+        // Calcular taxa de conclusão
+        List<CabecalhoOrdem> todasOs = cabecalhoOrdemRepository.findAllByOrderByIdDesc();
+        List<CabecalhoOrdem> osConcluidas = cabecalhoOrdemRepository
+            .findByStatusOrderByIdDesc(OrdemStatus.CONCLUIDA);
+        float taxaConclusao = 0;
+        if (todasOs.size() > 0) {
+            taxaConclusao = (float) osConcluidas.size() / todasOs.size() * 100;
+        }
+        riscos.setTaxaConclusao(taxaConclusao);
+        riscos.setTaxaConclusaoBaixa(taxaConclusao < 50); // Considerar baixa se < 50%
+        
+        // Total de riscos
+        int totalRiscos = motoresTboExpirado + osPendentesCriticas;
+        if (riscos.isTaxaConclusaoBaixa()) {
+            totalRiscos++;
+        }
+        riscos.setTotalRiscos(totalRiscos);
+        
+        return ResponseEntity.ok(riscos);
     }
 
     private CabecalhoOrdemDTO convertToDTO(CabecalhoOrdem entity) {
