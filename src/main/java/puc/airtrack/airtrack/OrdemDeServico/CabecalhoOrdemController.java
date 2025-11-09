@@ -24,7 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.azure.storage.blob.BlobClient;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -242,6 +241,97 @@ public class CabecalhoOrdemController {
         
         stats.setTempoTotalEstaSemana(tempoEstaSemana);
         stats.setOsCompletadasEsteMes(completadasEsteMes);
+        
+        return ResponseEntity.ok(stats);
+    }
+
+    @Operation(
+        summary = "Buscar OS concluídas recentes para auditoria",
+        description = "Retorna as últimas ordens de serviço concluídas ordenadas por ID descendente (mais recentes primeiro)."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Ordens encontradas"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado"),
+        @ApiResponse(responseCode = "403", description = "Acesso negado - apenas auditores podem acessar")
+    })
+    @GetMapping("/auditor/os-concluidas")
+    public ResponseEntity<List<CabecalhoOrdemDTO>> getOsConcluidasRecentes(
+            @RequestParam(defaultValue = "5") int limit) {
+        List<CabecalhoOrdem> list = cabecalhoOrdemRepository
+            .findByStatusOrderByIdDesc(OrdemStatus.CONCLUIDA);
+        
+        // Limitar a quantidade solicitada
+        List<CabecalhoOrdem> limitedList = list.stream()
+            .limit(limit)
+            .collect(java.util.stream.Collectors.toList());
+        
+        List<CabecalhoOrdemDTO> dtos = new ArrayList<>();
+        for (CabecalhoOrdem entity : limitedList) {
+            CabecalhoOrdemDTO dto = convertToDTO(entity);
+            dtos.add(dto);
+        }
+        return ResponseEntity.ok(dtos);
+    }
+
+    @Operation(
+        summary = "Buscar estatísticas para auditoria",
+        description = "Retorna estatísticas gerais do sistema para auditoria, incluindo total de OS, OS concluídas, etc."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Estatísticas encontradas"),
+        @ApiResponse(responseCode = "401", description = "Não autorizado"),
+        @ApiResponse(responseCode = "403", description = "Acesso negado - apenas auditores podem acessar")
+    })
+    @GetMapping("/auditor/stats")
+    public ResponseEntity<AuditorStatsDTO> getEstatisticasAuditor() {
+        List<CabecalhoOrdem> todasOs = cabecalhoOrdemRepository.findAllByOrderByIdDesc();
+        List<CabecalhoOrdem> osConcluidas = cabecalhoOrdemRepository
+            .findByStatusOrderByIdDesc(OrdemStatus.CONCLUIDA);
+        List<CabecalhoOrdem> osAndamento = cabecalhoOrdemRepository
+            .findByStatusOrderByIdDesc(OrdemStatus.ANDAMENTO);
+        List<CabecalhoOrdem> osPendentes = cabecalhoOrdemRepository
+            .findByStatusOrderByIdDesc(OrdemStatus.PENDENTE);
+        
+        AuditorStatsDTO stats = new AuditorStatsDTO();
+        stats.setTotalOs(todasOs.size());
+        stats.setOsConcluidas(osConcluidas.size());
+        stats.setOsEmAndamento(osAndamento.size());
+        stats.setOsPendentes(osPendentes.size());
+        
+        // Calcular OS concluídas este mês e esta semana
+        LocalDate now = LocalDate.now();
+        WeekFields weekFields = WeekFields.of(Locale.getDefault());
+        int currentWeek = now.get(weekFields.weekOfWeekBasedYear());
+        int currentYear = now.get(weekFields.weekBasedYear());
+        LocalDate primeiroDiaMes = now.withDayOfMonth(1);
+        
+        int concluidasEsteMes = 0;
+        int concluidasEstaSemana = 0;
+        
+        for (CabecalhoOrdem os : osConcluidas) {
+            if (os.getDataFechamento() != null && !os.getDataFechamento().isEmpty()) {
+                try {
+                    LocalDate dataFechamento = LocalDate.parse(os.getDataFechamento());
+                    
+                    // Verificar se foi concluída este mês
+                    if (dataFechamento.isAfter(primeiroDiaMes.minusDays(1))) {
+                        concluidasEsteMes++;
+                    }
+                    
+                    // Verificar se foi concluída esta semana
+                    int semanaOs = dataFechamento.get(weekFields.weekOfWeekBasedYear());
+                    int anoOs = dataFechamento.get(weekFields.weekBasedYear());
+                    if (semanaOs == currentWeek && anoOs == currentYear) {
+                        concluidasEstaSemana++;
+                    }
+                } catch (Exception e) {
+                    // Ignora erros de parsing de data
+                }
+            }
+        }
+        
+        stats.setOsConcluidasEsteMes(concluidasEsteMes);
+        stats.setOsConcluidasEstaSemana(concluidasEstaSemana);
         
         return ResponseEntity.ok(stats);
     }

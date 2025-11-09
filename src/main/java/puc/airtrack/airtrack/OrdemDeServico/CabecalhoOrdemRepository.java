@@ -11,4 +11,5 @@ public interface CabecalhoOrdemRepository extends JpaRepository<CabecalhoOrdem, 
     List<CabecalhoOrdem> findAllByOrderByIdDesc();
     List<CabecalhoOrdem> findByEngenheiroAtuanteOrderByIdDesc(User engenheiro);
     List<CabecalhoOrdem> findByEngenheiroAtuanteAndStatusOrderByIdDesc(User engenheiro, OrdemStatus status);
+    List<CabecalhoOrdem> findByStatusOrderByIdDesc(OrdemStatus status);
 }
