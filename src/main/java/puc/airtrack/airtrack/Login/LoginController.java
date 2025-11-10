@@ -19,6 +19,7 @@ import jakarta.validation.Valid;
 import puc.airtrack.airtrack.TokenService;
 import puc.airtrack.airtrack.services.PasswordResetService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -124,9 +125,53 @@ public class LoginController {
     }
 
 
+    @Operation(
+        summary = "Registrar novo usuário",
+        description = "Registra um novo usuário no sistema com senha criptografada. Este endpoint pode ser usado para auto-registro ou criação de usuários por administradores."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Usuário registrado com sucesso",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(value = "\"User registered successfully: joao@airtrack.com\"")
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Dados inválidos ou usuário já existe",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(value = "\"Invalid user data\"")
+            )
+        )
+    })
     // Endpoint para registrar um novo usuário (ajustado para novo padrão User/UserDTO)
     @PostMapping("/register")
-    public ResponseEntity<String> postRegister(@RequestBody @Valid UserDTO entity) {
+    public ResponseEntity<String> postRegister(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Dados do usuário a ser registrado",
+            required = true,
+            content = @Content(
+                schema = @Schema(implementation = UserDTO.class),
+                examples = @ExampleObject(
+                    name = "Novo Engenheiro",
+                    value = """
+                    {
+                      "name": "Carlos Souza",
+                      "username": "carlos.souza@airtrack.com",
+                      "password": "senha789",
+                      "role": "ROLE_ENGENHEIRO",
+                      "status": true,
+                      "firstAccess": true,
+                      "cpf": "456.789.123-00"
+                    }
+                    """
+                )
+            )
+        )
+        @RequestBody @Valid UserDTO entity) {
         User user = new User();
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         user.setUsername(entity.getUsername());
@@ -140,14 +185,76 @@ public class LoginController {
         return ResponseEntity.ok().body("User registered successfully: " + user.getUsername());
     }
 
+    @Operation(
+        summary = "Resetar senha do usuário",
+        description = "Inicia o processo de reset de senha para um usuário. Um e-mail com instruções será enviado para o usuário."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Processo de reset iniciado com sucesso"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Usuário não encontrado"
+        )
+    })
     @PostMapping("/reset-password")
-    public ResponseEntity<Void> resetPassword(@RequestParam String username) {
+    public ResponseEntity<Void> resetPassword(
+        @Parameter(description = "Username/email do usuário", example = "joao@airtrack.com", required = true)
+        @RequestParam String username) {
         passwordResetService.resetPassword(username);
         return ResponseEntity.ok().build();
     }
 
+    @Operation(
+        summary = "Atualizar senha no primeiro acesso",
+        description = "Permite que um usuário altere sua senha no primeiro acesso ao sistema. O usuário é identificado pelo CPF e a flag firstAccess é automaticamente marcada como false."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Senha atualizada com sucesso",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(value = "\"Password updated successfully\"")
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Usuário não encontrado",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(value = "\"User not found\"")
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Senha inválida ou não fornecida",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(value = "\"Password is required\"")
+            )
+        )
+    })
     @PutMapping("/first-access")
-    public ResponseEntity<String> updatePasswordOnFirstAccess(@RequestBody @Valid FirstAccessRequest request) {
+    public ResponseEntity<String> updatePasswordOnFirstAccess(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "CPF e nova senha",
+            required = true,
+            content = @Content(
+                schema = @Schema(implementation = FirstAccessRequest.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                      "cpf": "123.456.789-00",
+                      "newPassword": "minhaNovaSenha123"
+                    }
+                    """
+                )
+            )
+        )
+        @RequestBody @Valid FirstAccessRequest request) {
         User user = userService.findByCpf(request.getCpf());
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");

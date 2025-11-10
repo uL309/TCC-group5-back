@@ -23,13 +23,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import puc.airtrack.airtrack.Cliente.Cliente;
 import puc.airtrack.airtrack.Cliente.ClienteRepo;
 import puc.airtrack.airtrack.tipoMotor.TipoMotor;
 import puc.airtrack.airtrack.tipoMotor.TipoMotorRepository;
 
 @RestController
-@Tag(name = "Motor", description = "Gerenciamento de motores de aeronaves - Cadastro, atualização, consulta e exclusão lógica de motores")
+@Tag(name = "Motores", description = "Gerenciamento de motores de aeronaves - Cadastro, atualização, consulta e exclusão lógica de motores")
+@SecurityRequirement(name = "bearerAuth")
 public class MotorController {
 
     @Autowired
